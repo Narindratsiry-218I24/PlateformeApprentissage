@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="sidebar" class="sidebar">
+    <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="sidebar-header">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-chalkboard-user text-3xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold">EduTrack</h1>
+                    <p class="text-xs text-blue-200">Espace Professeur</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav flex-1">
+            <div class="space-y-1">
+                <!-- Dashboard -->
+                <a th:href="@{/professeur/dashboard}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span>Tableau de bord</span>
+                </a>
+
+                <!-- Mes cours -->
+                <a th:href="@{/professeur/cours}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'cours' or currentPage == 'ajouter-cours'} ? 'active' : ''">
+                    <i class="fas fa-book-open w-5"></i>
+                    <span>Mes cours</span>
+                </a>
+
+                <!-- Ajouter un cours -->
+                <a th:href="@{/professeur/cours/ajouter}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'ajouter-cours'} ? 'active' : ''">
+                    <i class="fas fa-plus-circle w-5"></i>
+                    <span>Ajouter un cours</span>
+                </a>
+
+                <!-- Étudiants -->
+                <a th:href="@{/professeur/etudiants}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'etudiants'} ? 'active' : ''">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Étudiants</span>
+                </a>
+
+                <!-- Messages -->
+                <a th:href="@{/professeur/messages}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'messages'} ? 'active' : ''">
+                    <i class="fas fa-envelope w-5"></i>
+                    <span>Messages</span>
+                    <span id="sidebarMessagesBadge"
+                          th:if="${unreadMessagesCount != null and unreadMessagesCount > 0}"
+                          class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"
+                          th:text="${unreadMessagesCount}"></span>
+                </a>
+
+                <!-- Alertes -->
+                <a th:href="@{/professeur/alertes}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'alertes'} ? 'active' : ''">
+                    <i class="fas fa-bell w-5"></i>
+                    <span>Alertes</span>
+                    <span th:if="${alertesCount != null and alertesCount > 0}"
+                          class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"
+                          th:text="${alertesCount}"></span>
+                </a>
+
+                <!-- Statistiques -->
+                <a th:href="@{/professeur/statistiques}"
+                   class="nav-item"
+                   th:classappend="${currentPage == 'statistiques'} ? 'active' : ''">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Statistiques</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Footer with Profile -->
+        <div class="sidebar-footer">
+            <!-- Mon profil -->
+            <a th:href="@{/professeur/profil}"
+               class="nav-item"
+               th:classappend="${currentPage == 'profil'} ? 'active' : ''">
+                <i class="fas fa-user-circle w-5"></i>
+                <span>Mon profil</span>
+            </a>
+
+            <!-- Paramètres -->
+            <a th:href="@{/professeur/parametres}"
+               class="nav-item"
+               th:classappend="${currentPage == 'parametres'} ? 'active' : ''">
+                <i class="fas fa-cog w-5"></i>
+                <span>Paramètres</span>
+            </a>
+
+            <!-- Déconnexion -->
+            <a th:href="@{/logout}" class="nav-item">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span>Déconnexion</span>
+            </a>
+        </div>
+    </div>
+</div>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base.html}">
+<head>
+    <title>Mes cours - Professeur</title>
+</head>
+<div layout:fragment="content">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Mes cours</h1>
+            <p class="text-gray-600" th:text="${#lists.size(cours)} + ' cours au total'">0 cours</p>
+        </div>
+        <a th:href="@{/professeur/cours/ajouter}"
+           class="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md">
+            <i class="fas fa-plus"></i>
+            Créer un cours
+        </a>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div class="relative">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text"
+                   id="searchInput"
+                   placeholder="Rechercher un cours par titre..."
+                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div id="noResults" class="hidden text-center py-12">
+        <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Aucun cours trouvé</h3>
+        <p class="text-gray-600">Essayez une autre recherche</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="coursesGrid">
+        <div th:each="cours : ${cours}" class="course-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all">
+            <!-- Thumbnail -->
+            <div class="relative h-48 bg-gray-100">
+                <img th:if="${cours.imageCouverture}"
+                     th:src="${cours.imageCouverture}"
+                     th:alt="${cours.titre}"
+                     class="w-full h-full object-cover">
+                <div th:unless="${cours.imageCouverture}"
+                     class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-5xl text-white/50"></i>
+                </div>
+                <div class="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium"
+                     th:text="${cours.categorie != null ? cours.categorie.nom : 'Non catégorisé'}">
+                    Catégorie
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-5">
+                <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2" th:text="${cours.titre}">
+                    Titre du cours
+                </h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2" th:text="${cours.descriptionCourte}">
+                    Description
+                </p>
+
+                <!-- Stats -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="fas fa-users"></i>
+                        <span th:text="${cours.nombreApprenants}">0</span>
+                        <span>étudiants</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="fas fa-clock"></i>
+                        <span th:text="${cours.dureeEstimee}">0</span>
+                        <span>min</span>
+                    </div>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="mb-4">
+                    <span th:if="${cours.publie}" class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                        <i class="fas fa-check-circle"></i> Publié
+                    </span>
+                    <span th:unless="${cours.publie}" class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+                        <i class="fas fa-clock"></i> Brouillon
+                    </span>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-2">
+                    <a th:href="@{/professeur/cours/{id}/editer(id=${cours.id})}"
+                       class="flex-1 bg-gray-100 text-gray-700 text-center py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-edit mr-1"></i> Modifier
+                    </a>
+                    <a th:href="@{/professeur/cours/{id}/gerer(id=${cours.id})}"
+                       class="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-layer-group mr-1"></i> Gérer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const courseCards = document.querySelectorAll('.course-card');
+        const noResults = document.getElementById('noResults');
+        const coursesGrid = document.getElementById('coursesGrid');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let visibleCount = 0;
+
+            courseCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0) {
+                noResults.classList.remove('hidden');
+                coursesGrid.classList.add('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                coursesGrid.classList.remove('hidden');
+            }
+        });
+    </script>
+</div>
+</html>

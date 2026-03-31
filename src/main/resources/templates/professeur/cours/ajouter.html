@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un cours - Professeur</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+        .step-active { background: #3b82f6; color: white; }
+        .step-completed { background: #10b981; color: white; }
+        .step-pending { background: #e5e7eb; color: #6b7280; }
+        .transition-all { transition: all 0.3s ease; }
+        .ql-container { min-height: 250px; font-size: 16px; }
+        .ql-editor { min-height: 250px; }
+        .error-border { border-color: #ef4444 !important; }
+        .error-message { color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; }
+        .toast-success { background: #10b981; color: white; position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; z-index: 1000; animation: slideIn 0.3s ease; }
+        .toast-error { background: #ef4444; color: white; position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .content-type-tab.active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
+        .field-required::after { content: "*"; color: #ef4444; margin-left: 4px; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center">
+                <a href="/professeur/dashboard" class="flex items-center gap-2">
+                    <i class="fas fa-chalkboard-user text-2xl text-blue-600"></i>
+                    <span class="text-xl font-bold text-gray-900">EduTrack</span>
+                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">Prof</span>
+                </a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/professeur/cours" class="text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-arrow-left mr-2"></i>Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Créer un nouveau cours</h1>
+        <p class="text-gray-600 mt-2">Structurez votre contenu pédagogique en sections, chapitres et leçons</p>
+    </div>
+
+    <!-- Stepper -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div class="step-item flex-1 text-center">
+                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-active" id="step1Circle">1</div>
+                <div class="step-label mt-2 text-sm font-medium text-blue-600" id="step1Label">Informations</div>
+            </div>
+            <div class="step-line flex-1 h-1 bg-gray-200" id="line1"></div>
+            <div class="step-item flex-1 text-center">
+                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending" id="step2Circle">2</div>
+                <div class="step-label mt-2 text-sm font-medium text-gray-400" id="step2Label">Structure</div>
+            </div>
+            <div class="step-line flex-1 h-1 bg-gray-200" id="line2"></div>
+            <div class="step-item flex-1 text-center">
+                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending" id="step3Circle">3</div>
+                <div class="step-label mt-2 text-sm font-medium text-gray-400" id="step3Label">Contenu</div>
+            </div>
+            <div class="step-line flex-1 h-1 bg-gray-200" id="line3"></div>
+            <div class="step-item flex-1 text-center">
+                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending" id="step4Circle">4</div>
+                <div class="step-label mt-2 text-sm font-medium text-gray-400" id="step4Label">Publication</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Informations du cours -->
+    <div id="step1" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Informations générales</h2>
+            <form id="courseInfoForm" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre du cours</label>
+                        <input type="text" id="courseTitre" name="titre"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Ex: Mathématiques Appliquées">
+                        <div id="titreError" class="error-message hidden"></div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Slug (URL unique)</label>
+                        <input type="text" id="courseSlug" name="slug"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                               placeholder="mathematiques-appliquees" readonly>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Catégorie</label>
+                    <select id="courseCategorie" name="categorieId" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="">Sélectionner une catégorie</option>
+                        <option value="tasd">TExte</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.nom}"></option>
+                    </select>
+                    <div id="categorieError" class="error-message hidden"></div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description courte</label>
+                    <input type="text" id="courseDescriptionCourte" maxlength="300"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                           placeholder="Résumé du cours (max 300 caractères)">
+                    <p class="text-xs text-gray-500 mt-1"><span id="charCount">0</span>/300</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description complète</label>
+                    <textarea id="courseDescription" rows="5"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                              placeholder="Décrivez en détail le contenu, les prérequis, les objectifs..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Durée estimée (minutes)</label>
+                        <input type="number" id="courseDuree" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                               placeholder="Ex: 480">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Niveau</label>
+                        <select id="courseNiveau" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            <option value="debutant">Débutant</option>
+                            <option value="intermediaire">Intermédiaire</option>
+                            <option value="avance">Avancé</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Image de couverture</label>
+                    <div class="flex gap-4 items-center">
+                        <button type="button" onclick="document.getElementById('courseImage').click()"
+                                class="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">
+                            <i class="fas fa-upload mr-2"></i>Choisir une image
+                        </button>
+                        <input type="file" id="courseImage" accept="image/*" class="hidden">
+                        <div id="imagePreview" class="hidden w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                            <img id="previewImg" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-xs text-gray-500">PNG, JPG, JPEG (max 5MB)</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="button" onclick="validateAndNextStep()"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Suivant <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Step 2: Structure (Sections, Chapitres, Sous-chapitres) -->
+    <div id="step2" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Structure du cours</h2>
+                <button onclick="openAddSectionModal()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                    <i class="fas fa-plus mr-2"></i>Ajouter une section
+                </button>
+            </div>
+
+            <div id="sectionsContainer" class="space-y-4">
+                <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                    <i class="fas fa-layer-group text-4xl mb-3"></i>
+                    <p>Cliquez sur "Ajouter une section" pour commencer</p>
+                    <p class="text-sm mt-2">Exemple: Section "Math Appliquée" → Chapitre "Algèbre Linéaire" → Sous-chapitre "Espace Vectoriel" → Leçons</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>Précédent
+                </button>
+                <button type="button" onclick="nextStep()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Suivant <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Contenu des Leçons -->
+    <div id="step3" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Ajouter du contenu pédagogique</h2>
+            <p class="text-gray-600 mb-4">Sélectionnez un chapitre ou sous-chapitre pour ajouter des leçons</p>
+            <div id="leconsContainer" class="space-y-4 max-h-96 overflow-y-auto">
+                <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                    <i class="fas fa-book-open text-4xl mb-3"></i>
+                    <p>Sélectionnez un chapitre dans la structure pour ajouter des leçons</p>
+                </div>
+            </div>
+            <div class="flex justify-between mt-6">
+                <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>Précédent
+                </button>
+                <button type="button" onclick="nextStep()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Suivant <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Publication -->
+    <div id="step4" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Publication du cours</h2>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <div class="flex items-start gap-4">
+                    <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
+                    <div>
+                        <h3 class="font-semibold text-blue-900">Récapitulatif</h3>
+                        <ul class="mt-2 space-y-1 text-sm text-blue-800">
+                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Cours : <span id="recapTitre">-</span></li>
+                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Sections : <span id="recapSections">0</span></li>
+                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Chapitres : <span id="recapChapitres">0</span></li>
+                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Sous-chapitres : <span id="recapSousChapitres">0</span></li>
+                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Leçons : <span id="recapLecons">0</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg mb-6">
+                <input type="checkbox" id="publieCheckbox" class="w-5 h-5 text-blue-600 rounded">
+                <label for="publieCheckbox" class="text-gray-700">
+                    <span class="font-semibold">Publier immédiatement</span>
+                    <p class="text-sm text-gray-500">Le cours sera visible par les étudiants</p>
+                </label>
+            </div>
+
+            <div class="flex justify-between">
+                <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>Précédent
+                </button>
+                <button type="button" onclick="saveCourse()" class="bg-green-600 text-white px-8 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-save mr-2"></i>Enregistrer et publier
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ajouter Section -->
+<div id="sectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Ajouter une section</h3>
+            <button onclick="closeModal('sectionModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre de la section</label>
+                <input type="text" id="sectionTitre" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                       placeholder="Ex: Introduction à React">
+                <div id="sectionTitreError" class="error-message hidden"></div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea id="sectionDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                          placeholder="Description de la section..."></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeModal('sectionModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Annuler</button>
+                <button onclick="addSection()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ajouter Chapitre / Sous-chapitre -->
+<div id="chapitreModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold" id="chapitreModalTitle">Ajouter un chapitre</h3>
+            <button onclick="closeModal('chapitreModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <input type="hidden" id="chapitreParentType" value="">
+        <input type="hidden" id="chapitreParentId" value="">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre</label>
+                <input type="text" id="chapitreTitre" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                       placeholder="Ex: Les bases de React">
+                <div id="chapitreTitreError" class="error-message hidden"></div>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea id="chapitreDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                          placeholder="Description du chapitre..."></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeModal('chapitreModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Annuler</button>
+                <button onclick="addChapitre()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Ajouter Leçon -->
+<div id="leconModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl max-w-4xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Ajouter une leçon</h3>
+            <button onclick="closeModal('leconModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <input type="hidden" id="leconParentId" value="">
+        <input type="hidden" id="leconParentType" value="">
+
+        <div class="space-y-6">
+            <!-- Titre -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre de la leçon</label>
+                <input type="text" id="leconTitre" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                       placeholder="Ex: Tirez le maximum de ce cours">
+                <div id="leconTitreError" class="error-message hidden"></div>
+            </div>
+
+            <!-- Objectifs -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Objectifs de la leçon</label>
+                <textarea id="leconObjectifs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                          placeholder="Ce que l'étudiant va apprendre..."></textarea>
+            </div>
+
+            <!-- Onglets -->
+            <div>
+                <div class="border-b border-gray-200 mb-4">
+                    <div class="flex gap-4">
+                        <button type="button" onclick="switchContentTab('video')" id="tabVideo"
+                                class="content-type-tab px-4 py-2 font-medium text-gray-600 active">
+                            <i class="fas fa-video mr-2"></i>Vidéo
+                        </button>
+                        <button type="button" onclick="switchContentTab('texte')" id="tabTexte"
+                                class="content-type-tab px-4 py-2 font-medium text-gray-600">
+                            <i class="fas fa-file-alt mr-2"></i>Texte explicatif
+                        </button>
+                        <button type="button" onclick="switchContentTab('pdf')" id="tabPdf"
+                                class="content-type-tab px-4 py-2 font-medium text-gray-600">
+                            <i class="fas fa-file-pdf mr-2"></i>PDF / Document
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vidéo -->
+                <div id="videoContent" class="content-panel">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-play-circle text-blue-600 text-xl"></i>
+                            <div>
+                                <p class="text-sm text-blue-800 font-medium">Conseil :</p>
+                                <p class="text-sm text-blue-700">Ajoutez une vidéo explicative (YouTube, Vimeo, etc.)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL de la vidéo</label>
+                    <input type="url" id="leconVideoUrl" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                           placeholder="https://www.youtube.com/watch?v=...">
+                    <div id="videoPreview" class="mt-3 hidden">
+                        <div class="bg-gray-100 rounded-lg p-3 text-sm">
+                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                            <span id="videoPreviewText">Vidéo chargée</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Support YouTube, Vimeo, Dailymotion</p>
+                </div>
+
+                <!-- Texte avec Quill -->
+                <div id="texteContent" class="content-panel hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-lightbulb text-green-600 text-xl"></i>
+                            <div>
+                                <p class="text-sm text-green-800 font-medium">Conseil :</p>
+                                <p class="text-sm text-green-700">Rédigez un texte explicatif avec des exemples et des exercices</p>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contenu texte</label>
+                    <div id="editorContainer" style="height: 350px;">
+                        <div id="quillEditor"></div>
+                    </div>
+                    <textarea id="leconContenuTexte" class="hidden"></textarea>
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fichiers joints (optionnel)</label>
+                        <input type="file" id="leconFichiers" multiple class="w-full">
+                    </div>
+                </div>
+
+                <!-- PDF -->
+                <div id="pdfContent" class="content-panel hidden">
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-file-pdf text-purple-600 text-xl"></i>
+                            <div>
+                                <p class="text-sm text-purple-800 font-medium">Conseil :</p>
+                                <p class="text-sm text-purple-700">Ajoutez un document PDF (cours, exercices, fiches)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fichier PDF</label>
+                    <input type="file" id="leconPdf" accept=".pdf" class="w-full">
+                    <p class="text-xs text-gray-500 mt-1">Format PDF uniquement, max 50MB</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Durée (minutes)</label>
+                    <input type="number" id="leconDuree" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ordre</label>
+                    <input type="number" id="leconOrdre" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="leconApercuGratuit" class="w-4 h-4 text-blue-600 rounded">
+                <label for="leconApercuGratuit" class="text-sm text-gray-700">
+                    <span class="font-medium">Aperçu gratuit</span> - accessible sans inscription
+                </label>
+            </div>
+
+            <div class="flex gap-3 pt-4 border-t border-gray-200">
+                <button onclick="closeModal('leconModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Annuler</button>
+                <button onclick="addLecon()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter la leçon</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Variables globales
+    let currentStep = 1;
+    let sections = [];
+    let quillEditor = null;
+    let currentContentTab = 'video';
+
+    // Initialisation Quill
+    function initQuillEditor() {
+        if (!quillEditor && document.getElementById('quillEditor')) {
+            quillEditor = new Quill('#quillEditor', {
+                theme: 'snow',
+                placeholder: 'Rédigez votre contenu ici...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+        }
+    }
+
+    // Validation Step 1
+    function validateStep1() {
+        let isValid = true;
+        const titre = document.getElementById('courseTitre').value.trim();
+        const categorie = document.getElementById('courseCategorie').value;
+
+        if (!titre) {
+            showError('titreError', 'Le titre du cours est obligatoire');
+            document.getElementById('courseTitre').classList.add('error-border');
+            isValid = false;
+        } else {
+            clearError('titreError');
+            document.getElementById('courseTitre').classList.remove('error-border');
+        }
+
+        if (!categorie) {
+            showError('categorieError', 'Veuillez sélectionner une catégorie');
+            document.getElementById('courseCategorie').classList.add('error-border');
+            isValid = false;
+        } else {
+            clearError('categorieError');
+            document.getElementById('courseCategorie').classList.remove('error-border');
+        }
+
+        return isValid;
+    }
+
+    function validateAndNextStep() {
+        if (validateStep1()) {
+            nextStep();
+        } else {
+            showToast('Veuillez remplir tous les champs obligatoires', 'error');
+        }
+    }
+
+    function showError(elementId, message) {
+        const errorDiv = document.getElementById(elementId);
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    }
+
+    function clearError(elementId) {
+        const errorDiv = document.getElementById(elementId);
+        if (errorDiv) errorDiv.classList.add('hidden');
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = type === 'success' ? 'toast-success' : 'toast-error';
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Navigation
+    function nextStep() {
+        if (currentStep === 2 && sections.length === 0) {
+            showToast('Veuillez ajouter au moins une section', 'error');
+            return;
+        }
+        if (currentStep < 4) currentStep++;
+        updateStepUI();
+        if (currentStep === 3) renderLeconsContainer();
+        if (currentStep === 4) updateRecap();
+    }
+
+    function prevStep() {
+        if (currentStep > 1) currentStep--;
+        updateStepUI();
+    }
+
+    function updateStepUI() {
+        for(let i = 1; i <= 4; i++) {
+            const circle = document.getElementById(`step${i}Circle`);
+            const label = document.getElementById(`step${i}Label`);
+            if(i < currentStep) {
+                circle.className = "step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-completed";
+                circle.innerHTML = '<i class="fas fa-check"></i>';
+                label.className = "step-label mt-2 text-sm font-medium text-green-600";
+            } else if(i === currentStep) {
+                circle.className = "step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-active";
+                circle.innerHTML = i;
+                label.className = "step-label mt-2 text-sm font-medium text-blue-600";
+            } else {
+                circle.className = "step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending";
+                circle.innerHTML = i;
+                label.className = "step-label mt-2 text-sm font-medium text-gray-400";
+            }
+        }
+        for(let i = 1; i <= 3; i++) {
+            const line = document.getElementById(`line${i}`);
+            if(line) line.className = i < currentStep ? "flex-1 h-1 bg-green-500" : "flex-1 h-1 bg-gray-200";
+        }
+        for(let i = 1; i <= 4; i++) {
+            const content = document.getElementById(`step${i}`);
+            if(content) content.classList.toggle('hidden', i !== currentStep);
+        }
+    }
+
+    // Gestion des sections
+    function openAddSectionModal() {
+        document.getElementById('sectionTitre').value = '';
+        document.getElementById('sectionDescription').value = '';
+        document.getElementById('sectionTitreError')?.classList.add('hidden');
+        openModal('sectionModal');
+    }
+
+    function addSection() {
+        const titre = document.getElementById('sectionTitre').value.trim();
+        if (!titre) {
+            showError('sectionTitreError', 'Le titre de la section est obligatoire');
+            document.getElementById('sectionTitre').classList.add('error-border');
+            return;
+        }
+        sections.push({
+            id: Date.now(),
+            titre: titre,
+            description: document.getElementById('sectionDescription').value,
+            chapitres: []
+        });
+        renderSections();
+        closeModal('sectionModal');
+        showToast('Section ajoutée avec succès');
+    }
+
+    function renderSections() {
+        const container = document.getElementById('sectionsContainer');
+        if(sections.length === 0) {
+            container.innerHTML = `<div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                                    <i class="fas fa-layer-group text-4xl mb-3"></i>
+                                    <p>Cliquez sur "Ajouter une section" pour commencer</p>
+                                </div>`;
+            return;
+        }
+        container.innerHTML = sections.map(section => `
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 p-4 flex justify-between items-center">
+                    <div class="flex items-center gap-3 flex-1">
+                        <i class="fas fa-folder-open text-blue-500"></i>
+                        <input type="text" value="${escapeHtml(section.titre)}"
+                               onchange="updateSectionTitle(${section.id}, this.value)"
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-semibold">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openAddChapitreModal('section', ${section.id})"
+                                class="text-green-600 hover:bg-green-50 px-3 py-1 rounded text-sm">
+                            <i class="fas fa-plus"></i> Chapitre
+                        </button>
+                        <button onclick="deleteSection(${section.id})"
+                                class="text-red-600 hover:bg-red-50 px-2 py-1 rounded">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    ${renderChapitres(section.chapitres, section.id)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderChapitres(chapitresList, sectionId) {
+        if(!chapitresList || chapitresList.length === 0) {
+            return `<div class="text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-lg">
+                        <i class="fas fa-folder-open"></i> Aucun chapitre
+                        <button onclick="openAddChapitreModal('section', ${sectionId})" class="ml-2 text-blue-600">Ajouter</button>
+                    </div>`;
+        }
+        return chapitresList.map(chapitre => `
+            <div class="border border-gray-200 rounded-lg mb-3">
+                <div class="bg-blue-50 p-3 flex justify-between items-center">
+                    <div class="flex items-center gap-3 flex-1">
+                        <i class="fas fa-chevron-right cursor-pointer text-gray-500" onclick="toggleChapitre(${chapitre.id})"></i>
+                        <i class="fas fa-book text-blue-500"></i>
+                        <input type="text" value="${escapeHtml(chapitre.titre)}"
+                               onchange="updateChapitreTitle(${chapitre.id}, this.value)"
+                               class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm">
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="openAddSousChapitreModal('chapitre', ${chapitre.id})"
+                                class="text-green-600 text-xs hover:bg-green-50 px-2 py-1 rounded">
+                            <i class="fas fa-level-down-alt"></i> Sous-chapitre
+                        </button>
+                        <button onclick="openAddLeconModal('chapitre', ${chapitre.id})"
+                                class="text-blue-600 text-xs hover:bg-blue-50 px-2 py-1 rounded">
+                            <i class="fas fa-plus"></i> Leçon
+                        </button>
+                        <button onclick="deleteChapitre(${chapitre.id})"
+                                class="text-red-600 text-xs hover:bg-red-50 px-2 py-1 rounded">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="chapitre-${chapitre.id}" class="p-3 hidden">
+                    ${renderSousChapitres(chapitre.sousChapitres || [], chapitre.id)}
+                    ${renderLeconsList(chapitre.lecons || [], chapitre.id)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderSousChapitres(sousChapitres, parentId) {
+        if(!sousChapitres.length) return '';
+        return sousChapitres.map(sous => `
+            <div class="border-l-2 border-green-300 ml-4 pl-3 mb-2">
+                <div class="bg-green-50 p-2 rounded flex justify-between items-center">
+                    <div class="flex items-center gap-2 flex-1">
+                        <i class="fas fa-level-down-alt text-green-600"></i>
+                        <input type="text" value="${escapeHtml(sous.titre)}"
+                               onchange="updateChapitreTitle(${sous.id}, this.value)"
+                               class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm">
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="openAddLeconModal('sousChapitre', ${sous.id})"
+                                class="text-blue-600 text-xs hover:bg-blue-50 px-2 py-1 rounded">
+                            <i class="fas fa-plus"></i> Leçon
+                        </button>
+                        <button onclick="deleteChapitre(${sous.id})"
+                                class="text-red-600 text-xs hover:bg-red-50 px-2 py-1 rounded">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="chapitre-${sous.id}" class="pl-4 mt-2">
+                    ${renderLeconsList(sous.lecons || [], sous.id)}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderLeconsList(leconsList, parentId) {
+        if(!leconsList || leconsList.length === 0) {
+            return `<div class="text-center py-2 text-gray-400 text-sm">
+                        <i class="fas fa-plus-circle"></i> Cliquez sur + Leçon pour ajouter du contenu
+                    </div>`;
+        }
+        return leconsList.map(lecon => `
+            <div class="bg-purple-50 p-2 rounded flex justify-between items-center mb-1">
+                <div class="flex items-center gap-2 flex-1">
+                    <i class="fas ${lecon.type === 'VIDEO' ? 'fa-video' : lecon.type === 'TEXTE' ? 'fa-file-alt' : 'fa-file-pdf'}"></i>
+                    <span class="text-sm font-medium">${escapeHtml(lecon.titre)}</span>
+                    ${lecon.apercuGratuit ? '<span class="text-xs bg-green-100 text-green-700 px-1 rounded">Aperçu</span>' : ''}
+                </div>
+                <button onclick="editLecon(${lecon.id})" class="text-blue-600 text-xs px-2">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // Gestion des chapitres
+    function openAddChapitreModal(parentType, parentId) {
+        document.getElementById('chapitreModalTitle').innerText = parentType === 'section' ? 'Ajouter un chapitre' : 'Ajouter un sous-chapitre';
+        document.getElementById('chapitreParentType').value = parentType;
+        document.getElementById('chapitreParentId').value = parentId;
+        document.getElementById('chapitreTitre').value = '';
+        document.getElementById('chapitreDescription').value = '';
+        document.getElementById('chapitreTitreError')?.classList.add('hidden');
+        openModal('chapitreModal');
+    }
+
+    function openAddSousChapitreModal(parentType, parentId) {
+        openAddChapitreModal(parentType, parentId);
+    }
+
+    function addChapitre() {
+        const titre = document.getElementById('chapitreTitre').value.trim();
+        if (!titre) {
+            showError('chapitreTitreError', 'Le titre est obligatoire');
+            document.getElementById('chapitreTitre').classList.add('error-border');
+            return;
+        }
+        const parentType = document.getElementById('chapitreParentType').value;
+        const parentId = parseInt(document.getElementById('chapitreParentId').value);
+        const chapitre = {
+            id: Date.now(),
+            titre: titre,
+            description: document.getElementById('chapitreDescription').value,
+            lecons: [],
+            sousChapitres: []
+        };
+        if(parentType === 'section') {
+            const section = sections.find(s => s.id === parentId);
+            if(section) section.chapitres.push(chapitre);
+        } else {
+            function addToChapitre(list) {
+                for(let section of sections) {
+                    for(let chap of section.chapitres) {
+                        if(chap.id === parentId) { chap.sousChapitres.push(chapitre); return true; }
+                        for(let sous of chap.sousChapitres || []) {
+                            if(sous.id === parentId) { sous.sousChapitres.push(chapitre); return true; }
+                        }
+                    }
+                }
+                return false;
+            }
+            addToChapitre();
+        }
+        renderSections();
+        closeModal('chapitreModal');
+        showToast(parentType === 'section' ? 'Chapitre ajouté' : 'Sous-chapitre ajouté');
+    }
+
+    // Gestion des leçons
+    function openAddLeconModal(parentType, parentId) {
+        document.getElementById('leconParentId').value = parentId;
+        document.getElementById('leconParentType').value = parentType;
+        document.getElementById('leconTitre').value = '';
+        document.getElementById('leconObjectifs').value = '';
+        document.getElementById('leconVideoUrl').value = '';
+        document.getElementById('leconDuree').value = '';
+        document.getElementById('leconOrdre').value = '0';
+        document.getElementById('leconApercuGratuit').checked = false;
+        document.getElementById('videoPreview')?.classList.add('hidden');
+        if(quillEditor) quillEditor.root.innerHTML = '';
+        switchContentTab('video');
+        initQuillEditor();
+        openModal('leconModal');
+    }
+
+    function switchContentTab(tab) {
+        currentContentTab = tab;
+        document.querySelectorAll('.content-type-tab').forEach(t => t.classList.remove('active', 'border-blue-500', 'text-blue-600'));
+        document.querySelectorAll('.content-type-tab').forEach(t => t.classList.add('text-gray-600'));
+        document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
+        const activeTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+        if(activeTab) activeTab.classList.add('active', 'border-blue-500', 'text-blue-600');
+        document.getElementById(`${tab}Content`).classList.remove('hidden');
+    }
+
+    function addLecon() {
+        const titre = document.getElementById('leconTitre').value.trim();
+        if (!titre) {
+            showError('leconTitreError', 'Le titre de la leçon est obligatoire');
+            document.getElementById('leconTitre').classList.add('error-border');
+            return;
+        }
+        clearError('leconTitreError');
+        document.getElementById('leconTitre').classList.remove('error-border');
+
+        const parentId = parseInt(document.getElementById('leconParentId').value);
+        let contenuTexte = '';
+        if(quillEditor) contenuTexte = quillEditor.root.innerHTML;
+
+        const lecon = {
+            id: Date.now(),
+            titre: titre,
+            objectifs: document.getElementById('leconObjectifs').value,
+            type: currentContentTab.toUpperCase(),
+            videoUrl: document.getElementById('leconVideoUrl').value,
+            contenuTexte: contenuTexte,
+            duree: document.getElementById('leconDuree').value,
+            ordre: document.getElementById('leconOrdre').value,
+            apercuGratuit: document.getElementById('leconApercuGratuit').checked
+        };
+
+        function addToParent() {
+            for(let section of sections) {
+                for(let chap of section.chapitres) {
+                    if(chap.id === parentId) { chap.lecons.push(lecon); return true; }
+                    for(let sous of chap.sousChapitres || []) {
+                        if(sous.id === parentId) { sous.lecons.push(lecon); return true; }
+                    }
+                }
+            }
+            return false;
+        }
+        addToParent();
+        renderSections();
+        renderLeconsContainer();
+        closeModal('leconModal');
+        showToast('Leçon ajoutée avec succès');
+    }
+
+    function renderLeconsContainer() {
+        const container = document.getElementById('leconsContainer');
+        if(sections.length === 0) {
+            container.innerHTML = `<div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                                    <i class="fas fa-book-open text-4xl mb-3"></i>
+                                    <p>Créez d'abord une section et des chapitres</p>
+                                </div>`;
+            return;
+        }
+        let html = '<div class="space-y-4">';
+        sections.forEach(section => {
+            html += `<div class="border border-gray-200 rounded-lg"><div class="bg-gray-50 p-3"><h3 class="font-semibold"><i class="fas fa-folder-open text-blue-500 mr-2"></i>${escapeHtml(section.titre)}</h3></div><div class="p-3">`;
+            section.chapitres.forEach(chapitre => {
+                html += `<div class="mb-3 border-l-4 border-blue-300 pl-3"><div class="font-medium text-blue-700"><i class="fas fa-book mr-2"></i>${escapeHtml(chapitre.titre)}</div>`;
+                html += renderLeconsForParent(chapitre.lecons);
+                chapitre.sousChapitres?.forEach(sous => {
+                    html += `<div class="ml-4 mt-2 border-l-2 border-green-300 pl-3"><div class="text-sm text-green-600"><i class="fas fa-level-down-alt mr-1"></i>${escapeHtml(sous.titre)}</div>`;
+                    html += renderLeconsForParent(sous.lecons);
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            });
+            html += `</div></div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function renderLeconsForParent(leconsList) {
+        if(!leconsList || leconsList.length === 0) return '<div class="text-gray-400 text-sm ml-4">Aucune leçon</div>';
+        return leconsList.map(l => `
+            <div class="ml-4 p-2 bg-purple-50 rounded mb-1 flex justify-between items-center">
+                <span><i class="fas ${l.type === 'VIDEO' ? 'fa-video' : l.type === 'TEXTE' ? 'fa-file-alt' : 'fa-file-pdf'} mr-2"></i>${escapeHtml(l.titre)}</span>
+                ${l.apercuGratuit ? '<span class="text-xs bg-green-100 text-green-700 px-1 rounded">Gratuit</span>' : ''}
+            </div>
+        `).join('');
+    }
+
+    // Utilitaires
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+    function openModal(id) { const modal = document.getElementById(id); if(modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); } }
+    function closeModal(id) { const modal = document.getElementById(id); if(modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); } }
+    function toggleChapitre(id) { const el = document.getElementById(`chapitre-${id}`); if(el) el.classList.toggle('hidden'); }
+    function updateRecap() {
+        let totalChapitres = 0, totalSousChapitres = 0, totalLecons = 0;
+        sections.forEach(s => {
+            s.chapitres.forEach(c => {
+                totalChapitres++;
+                totalLecons += (c.lecons || []).length;
+                if(c.sousChapitres) {
+                    totalSousChapitres += c.sousChapitres.length;
+                    c.sousChapitres.forEach(sc => totalLecons += (sc.lecons || []).length);
+                }
+            });
+        });
+        document.getElementById('recapTitre').innerText = document.getElementById('courseTitre').value || '-';
+        document.getElementById('recapSections').innerText = sections.length;
+        document.getElementById('recapChapitres').innerText = totalChapitres;
+        document.getElementById('recapSousChapitres').innerText = totalSousChapitres;
+        document.getElementById('recapLecons').innerText = totalLecons;
+    }
+
+    function saveCourse() {
+        const courseData = {
+            titre: document.getElementById('courseTitre').value,
+            slug: document.getElementById('courseSlug').value,
+            categorieId: document.getElementById('courseCategorie').value,
+            descriptionCourte: document.getElementById('courseDescriptionCourte').value,
+            description: document.getElementById('courseDescription').value,
+            niveau: document.getElementById('courseNiveau').value,
+            dureeEstimee: document.getElementById('courseDuree').value,
+            publie: document.getElementById('publieCheckbox').checked,
+            sections: sections
+        };
+        console.log('Course saved:', courseData);
+        showToast('Cours enregistré avec succès !');
+        setTimeout(() => window.location.href = '/professeur/cours', 1500);
+    }
+
+    // Événements
+    document.getElementById('courseTitre').addEventListener('input', function() {
+        const slug = this.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        document.getElementById('courseSlug').value = slug;
+    });
+    document.getElementById('courseDescriptionCourte').addEventListener('input', function() {
+        document.getElementById('charCount').innerText = this.value.length;
+    });
+    document.getElementById('courseImage').addEventListener('change', function(e) {
+        if(e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = ev => { document.getElementById('previewImg').src = ev.target.result; document.getElementById('imagePreview').classList.remove('hidden'); };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+    document.getElementById('leconVideoUrl').addEventListener('input', function() {
+        const preview = document.getElementById('videoPreview');
+        if(this.value.trim()) { preview.classList.remove('hidden'); document.getElementById('videoPreviewText').innerText = this.value; }
+        else preview.classList.add('hidden');
+    });
+
+    updateStepUI();
+</script>
+</body>
+</html>

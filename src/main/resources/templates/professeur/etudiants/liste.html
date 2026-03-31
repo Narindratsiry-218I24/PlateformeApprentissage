@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base.html}">
+<head>
+    <title>Mes étudiants - Professeur</title>
+    <style>
+        .student-sidebar {
+            height: calc(100vh - 280px);
+            overflow-y: auto;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .student-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+
+        .student-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .student-item.active {
+            background-color: #eff6ff;
+            border-left-color: #3b82f6;
+        }
+
+        .stat-card {
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .detail-section {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .course-card {
+            transition: all 0.2s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<div layout:fragment="content">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Suivi des étudiants</h1>
+        <p class="text-gray-600">Consultez la progression de vos étudiants et communiquez avec eux</p>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Total étudiants</p>
+                    <p class="text-2xl font-bold text-gray-900" id="statTotal">0</p>
+                </div>
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Progression moyenne</p>
+                    <p class="text-2xl font-bold text-gray-900" id="statMoyenne">0%</p>
+                </div>
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-chart-line text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">Étudiants actifs</p>
+                    <p class="text-2xl font-bold text-gray-900" id="statActifs">0</p>
+                </div>
+                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check-circle text-yellow-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-200 stat-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-500">En difficulté</p>
+                    <p class="text-2xl font-bold text-red-600" id="statDifficulte">0</p>
+                </div>
+                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des étudiants et détails -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 h-[calc(100vh-280px)] min-h-[500px]">
+            <!-- Sidebar gauche: Liste des étudiants -->
+            <div class="border-r border-gray-200">
+                <div class="p-4 border-b border-gray-200 bg-gray-50">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text"
+                               id="searchStudent"
+                               placeholder="Rechercher un étudiant..."
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div id="studentsList" class="student-sidebar divide-y divide-gray-100">
+                    <!-- Les étudiants seront chargés dynamiquement par JavaScript -->
+                </div>
+            </div>
+
+            <!-- Zone droite: Détails de l'étudiant -->
+            <div class="lg:col-span-2 flex flex-col">
+                <!-- Message par défaut -->
+                <div id="defaultMessage" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-user-graduate text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucun étudiant sélectionné</h3>
+                    <p class="text-gray-500 max-w-sm">Cliquez sur un étudiant dans la liste pour voir sa progression et lui envoyer un message</p>
+                </div>
+
+                <!-- Détails de l'étudiant (caché par défaut) -->
+                <div id="studentDetails" class="hidden flex-1 flex-col">
+                    <!-- En-tête avec infos étudiant -->
+                    <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-4">
+                                <div id="studentAvatar" class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    <i class="fas fa-user-graduate text-blue-600 text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h2 id="studentName" class="text-xl font-bold text-gray-900">-</h2>
+                                    <p id="studentClass" class="text-gray-600">-</p>
+                                    <p id="studentEmail" class="text-sm text-gray-500 mt-1">-</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="messageBtn"
+                                        onclick="openChat()"
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>Message</span>
+                                </button>
+                                <button id="alertBtn"
+                                        onclick="sendAlert()"
+                                        class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistiques de progression -->
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="font-semibold text-gray-900 mb-4">Progression globale</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="relative inline-flex">
+                                    <svg class="w-20 h-20 transform -rotate-90">
+                                        <circle cx="40" cy="40" r="36" stroke="#e5e7eb" stroke-width="4" fill="none"/>
+                                        <circle id="progressCircle" cx="40" cy="40" r="36" stroke="#3b82f6" stroke-width="4" fill="none" stroke-dasharray="226.2" stroke-dashoffset="226.2"/>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <span id="progressPercent" class="text-xl font-bold text-gray-900">0%</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2">Progression</p>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <p class="text-2xl font-bold text-blue-600" id="leconsVues">0</p>
+                                <p class="text-xs text-gray-500">Leçons vues</p>
+                                <p class="text-xs text-gray-400">sur <span id="leconsTotales">0</span></p>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <p class="text-2xl font-bold text-green-600" id="quizReussis">0</p>
+                                <p class="text-xs text-gray-500">Quiz réussis</p>
+                            </div>
+                            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                                <p class="text-2xl font-bold text-purple-600" id="tempsTotal">0</p>
+                                <p class="text-xs text-gray-500">Heures d'étude</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Détails des cours -->
+                    <div class="flex-1 p-6 overflow-y-auto">
+                        <h3 class="font-semibold text-gray-900 mb-4">Cours suivis</h3>
+                        <div id="coursesList" class="space-y-3">
+                            <!-- Les cours seront chargés dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Données des étudiants (transmises par Thymeleaf)
+    const etudiantsData = /*[[${etudiants}]]*/ [];
+
+    // Données des cours par étudiant
+    const coursesData = {
+        1: [
+            { titre: "Mathématiques - Algèbre", progression: 85, leconsVues: 17, leconsTotales: 20, derniereActivite: "24/03/2024" },
+            { titre: "Physique - Mécanique", progression: 72, leconsVues: 18, leconsTotales: 25, derniereActivite: "23/03/2024" },
+            { titre: "Informatique - Programmation", progression: 90, leconsVues: 9, leconsTotales: 10, derniereActivite: "24/03/2024" }
+        ],
+        2: [
+            { titre: "Mathématiques - Algèbre", progression: 45, leconsVues: 9, leconsTotales: 20, derniereActivite: "22/03/2024" },
+            { titre: "Physique - Mécanique", progression: 40, leconsVues: 10, leconsTotales: 25, derniereActivite: "21/03/2024" }
+        ],
+        3: [
+            { titre: "Mathématiques - Algèbre", progression: 95, leconsVues: 19, leconsTotales: 20, derniereActivite: "24/03/2024" },
+            { titre: "Physique - Mécanique", progression: 88, leconsVues: 22, leconsTotales: 25, derniereActivite: "24/03/2024" },
+            { titre: "Informatique - Programmation", progression: 100, leconsVues: 10, leconsTotales: 10, derniereActivite: "23/03/2024" }
+        ],
+        4: [
+            { titre: "Mathématiques - Algèbre", progression: 23, leconsVues: 5, leconsTotales: 20, derniereActivite: "18/03/2024" }
+        ],
+        5: [
+            { titre: "Mathématiques - Algèbre", progression: 67, leconsVues: 13, leconsTotales: 20, derniereActivite: "23/03/2024" },
+            { titre: "Physique - Mécanique", progression: 65, leconsVues: 16, leconsTotales: 25, derniereActivite: "22/03/2024" }
+        ]
+    };
+
+    const extraData = {
+        1: { quizReussis: 12, heuresEtude: 28 },
+        2: { quizReussis: 6, heuresEtude: 15 },
+        3: { quizReussis: 14, heuresEtude: 35 },
+        4: { quizReussis: 2, heuresEtude: 8 },
+        5: { quizReussis: 9, heuresEtude: 22 }
+    };
+
+    let currentStudentId = null;
+
+    // Afficher la liste des étudiants
+    function renderStudentsList() {
+        const container = document.getElementById('studentsList');
+        if (!container) return;
+
+        if (!etudiantsData || etudiantsData.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-users text-4xl mb-2"></i><p>Aucun étudiant</p></div>';
+            return;
+        }
+
+        let html = '';
+        etudiantsData.forEach(etudiant => {
+            const statutClass = etudiant.statut === 'INACTIF' ? 'bg-red-100 text-red-700' :
+                (etudiant.statut === 'EXCELLENT' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700');
+            const statutText = etudiant.statut === 'INACTIF' ? 'Inactif' :
+                (etudiant.statut === 'EXCELLENT' ? 'Excellent' : 'Actif');
+
+            html += `
+                <div class="student-item p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                     data-id="${etudiant.id}"
+                     data-nom="${etudiant.nom}"
+                     data-prenom="${etudiant.prenom}"
+                     data-classe="${etudiant.classe}"
+                     data-email="${etudiant.email}"
+                     data-avatar="${etudiant.avatar || ''}"
+                     data-progression="${etudiant.progression}"
+                     data-lecons-vues="${etudiant.leconsVues}"
+                     data-lecons-totales="${etudiant.leconsTotales}"
+                     data-statut="${etudiant.statut}"
+                     onclick="selectStudent(this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden">
+                            ${etudiant.avatar ? `<img src="${etudiant.avatar}" class="w-full h-full object-cover">` : '<i class="fas fa-user-graduate text-blue-600 text-lg"></i>'}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <p class="font-medium text-gray-900 truncate">${escapeHtml(etudiant.prenom)} ${escapeHtml(etudiant.nom)}</p>
+                                <span class="text-xs ${statutClass} px-2 py-0.5 rounded-full">${statutText}</span>
+                            </div>
+                            <p class="text-sm text-gray-500 truncate">${escapeHtml(etudiant.classe)}</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                            <div class="bg-blue-600 h-1.5 rounded-full" style="width: ${etudiant.progression}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${etudiant.progression}% accompli</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        // Mettre à jour les stats
+        updateStats();
+    }
+
+    function updateStats() {
+        if (!etudiantsData || etudiantsData.length === 0) return;
+
+        const total = etudiantsData.length;
+        const moyenne = Math.round(etudiantsData.reduce((sum, e) => sum + e.progression, 0) / total);
+        const actifs = etudiantsData.filter(e => e.statut === 'ACTIF').length;
+        const enDifficulte = etudiantsData.filter(e => e.progression < 30).length;
+
+        document.getElementById('statTotal').innerText = total;
+        document.getElementById('statMoyenne').innerText = moyenne + '%';
+        document.getElementById('statActifs').innerText = actifs;
+        document.getElementById('statDifficulte').innerText = enDifficulte;
+    }
+
+    // Sélectionner un étudiant
+    function selectStudent(element) {
+        // Retirer la classe active de tous les éléments
+        document.querySelectorAll('.student-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Ajouter la classe active à l'élément sélectionné
+        element.classList.add('active');
+
+        // Récupérer les données
+        currentStudentId = element.getAttribute('data-id');
+        const nom = element.getAttribute('data-nom');
+        const prenom = element.getAttribute('data-prenom');
+        const classe = element.getAttribute('data-classe');
+        const email = element.getAttribute('data-email');
+        const avatar = element.getAttribute('data-avatar');
+        const progression = parseInt(element.getAttribute('data-progression'));
+        const leconsVues = parseInt(element.getAttribute('data-lecons-vues'));
+        const leconsTotales = parseInt(element.getAttribute('data-lecons-totales'));
+
+        // Afficher les détails
+        document.getElementById('defaultMessage').classList.add('hidden');
+        document.getElementById('studentDetails').classList.remove('hidden');
+
+        // Remplir les informations
+        document.getElementById('studentName').innerHTML = `${prenom} ${nom}`;
+        document.getElementById('studentClass').innerHTML = classe;
+        document.getElementById('studentEmail').innerHTML = `<i class="fas fa-envelope mr-1"></i>${email}`;
+
+        // Avatar
+        const avatarDiv = document.getElementById('studentAvatar');
+        if (avatar && avatar !== 'null' && avatar !== '') {
+            avatarDiv.innerHTML = `<img src="${avatar}" class="w-full h-full object-cover" alt="avatar">`;
+        } else {
+            avatarDiv.innerHTML = `<i class="fas fa-user-graduate text-blue-600 text-2xl"></i>`;
+        }
+
+        // Mettre à jour le cercle de progression
+        document.getElementById('progressPercent').innerText = progression + '%';
+        const circumference = 2 * Math.PI * 36;
+        const offset = circumference - (progression / 100) * circumference;
+        const progressCircle = document.getElementById('progressCircle');
+        if (progressCircle) {
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        // Mettre à jour les statistiques
+        document.getElementById('leconsVues').innerText = leconsVues;
+        document.getElementById('leconsTotales').innerText = leconsTotales;
+
+        // Charger les données supplémentaires
+        const extra = extraData[currentStudentId] || { quizReussis: 0, heuresEtude: 0 };
+        document.getElementById('quizReussis').innerHTML = `${extra.quizReussis}<span class="text-xs text-gray-400">/15</span>`;
+        document.getElementById('tempsTotal').innerText = extra.heuresEtude;
+
+        // Charger les cours
+        renderCourses(currentStudentId);
+    }
+
+    // Afficher les cours de l'étudiant
+    function renderCourses(studentId) {
+        const courses = coursesData[studentId] || [];
+        const container = document.getElementById('coursesList');
+
+        if (!container) return;
+
+        if (courses.length === 0) {
+            container.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fas fa-book-open text-4xl mb-2"></i><p>Aucun cours suivi</p></div>';
+            return;
+        }
+
+        let html = '';
+        courses.forEach(course => {
+            const progressColor = course.progression >= 70 ? 'bg-green-500' : (course.progression >= 40 ? 'bg-yellow-500' : 'bg-red-500');
+            const textColor = course.progression >= 70 ? 'text-green-600' : (course.progression >= 40 ? 'text-yellow-600' : 'text-red-600');
+
+            html += `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow course-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-semibold text-gray-900">${escapeHtml(course.titre)}</h4>
+                        <span class="text-sm font-medium ${textColor}">
+                            ${course.progression}%
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                        <div class="${progressColor} h-2 rounded-full" style="width: ${course.progression}%"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span><i class="fas fa-check-circle mr-1"></i> ${course.leconsVues}/${course.leconsTotales} leçons</span>
+                        <span><i class="fas fa-calendar-alt mr-1"></i> ${course.derniereActivite}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // Ouvrir la messagerie
+    function openChat() {
+        if (currentStudentId) {
+            const studentElement = document.querySelector(`.student-item[data-id="${currentStudentId}"]`);
+            if (studentElement) {
+                const nom = studentElement.getAttribute('data-nom');
+                const prenom = studentElement.getAttribute('data-prenom');
+                window.location.href = `/professeur/messages?userId=${currentStudentId}&userName=${encodeURIComponent(prenom + ' ' + nom)}`;
+            }
+        }
+    }
+
+    // Envoyer une alerte
+    function sendAlert() {
+        if (currentStudentId) {
+            const studentElement = document.querySelector(`.student-item[data-id="${currentStudentId}"]`);
+            if (studentElement) {
+                const nom = studentElement.getAttribute('data-nom');
+                const prenom = studentElement.getAttribute('data-prenom');
+
+                if (confirm(`Envoyer une notification de rappel à ${prenom} ${nom} ?`)) {
+                    showToast(`Notification envoyée à ${prenom} ${nom}`, 'success');
+                }
+            }
+        }
+    }
+
+    // Recherche d'étudiants
+    function initSearch() {
+        const searchInput = document.getElementById('searchStudent');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const students = document.querySelectorAll('.student-item');
+                let visibleCount = 0;
+
+                students.forEach(student => {
+                    const nom = student.getAttribute('data-nom')?.toLowerCase() || '';
+                    const prenom = student.getAttribute('data-prenom')?.toLowerCase() || '';
+                    const classe = student.getAttribute('data-classe')?.toLowerCase() || '';
+
+                    if (nom.includes(searchTerm) || prenom.includes(searchTerm) || classe.includes(searchTerm)) {
+                        student.style.display = '';
+                        visibleCount++;
+                    } else {
+                        student.style.display = 'none';
+                    }
+                });
+            });
+        }
+    }
+
+    // Fonction utilitaire
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} animate-slide-in shadow-lg`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Initialisation au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        renderStudentsList();
+        initSearch();
+    });
+</script>
+</th:block>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="${pageTitle} ?: 'EduTrack - Espace Professeur'">EduTrack - Espace Professeur</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/professeur.css}">
+
+    <style>
+        /* Tailwind custom configuration */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <div th:replace="~{professeur/fragments/sidebar :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <div class="main-content flex-1 flex flex-col">
+        <!-- Header -->
+        <div th:replace="~{professeur/fragments/header :: header}"></div>
+
+        <!-- Page Content -->
+        <main class="flex-1 p-6">
+            <div layout:fragment="content">
+                <!-- Page specific content will be injected here -->
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Custom JavaScript -->
+<script th:src="@{/js/professeur.js}"></script>
+
+<!-- Page specific JavaScript -->
+<th:block layout:fragment="scripts"></th:block>
+</body>
+</html>

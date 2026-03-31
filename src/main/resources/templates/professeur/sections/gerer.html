@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base.html}">
+<head>
+  <title>Gérer le cours - Professeur</title>
+</head>
+<div layout:fragment="content">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <a th:href="@{/professeur/cours}" class="text-blue-600 hover:text-blue-700 mb-2 inline-block">
+          <i class="fas fa-arrow-left mr-2"></i>Retour aux cours
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Structure du cours</h1>
+        <p class="text-gray-600 mt-1">Organisez votre cours en sections, chapitres et leçons</p>
+      </div>
+      <button onclick="openAddSectionModal()"
+              class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+        <i class="fas fa-plus"></i>
+        Ajouter une section
+      </button>
+    </div>
+  </div>
+
+  <!-- Sections Container -->
+  <div id="sectionsContainer" class="space-y-4">
+    <!-- Section 1 - Example -->
+    <div class="border border-gray-200 rounded-lg bg-white overflow-hidden">
+      <div class="bg-gray-50 p-4 flex items-center justify-between border-b border-gray-200">
+        <div class="flex items-center gap-3 flex-1">
+          <i class="fas fa-grip-vertical text-gray-400 cursor-move"></i>
+          <i class="fas fa-chevron-right text-gray-500 cursor-pointer" onclick="toggleSection(this)"></i>
+          <input type="text"
+                 value="Introduction"
+                 class="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openAddChapterModal(this)" class="text-green-600 hover:bg-green-50 p-2 rounded">
+            <i class="fas fa-plus"></i> Chapitre
+          </button>
+          <button class="text-red-600 hover:bg-red-50 p-2 rounded">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="section-content p-4 hidden">
+        <!-- Chapters will go here -->
+        <div class="ml-6 space-y-3">
+          <!-- Chapter 1 -->
+          <div class="border border-gray-200 rounded-lg">
+            <div class="bg-blue-50 p-3 flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1">
+                <i class="fas fa-chevron-right text-gray-500 cursor-pointer" onclick="toggleChapter(this)"></i>
+                <i class="fas fa-folder-open text-blue-500"></i>
+                <input type="text"
+                       value="Les bases de la programmation"
+                       class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="openAddSousChapitreModal(this)" class="text-green-600 text-sm hover:bg-green-50 px-2 py-1 rounded">
+                  <i class="fas fa-plus"></i> Sous-chapitre
+                </button>
+                <button onclick="openAddLessonModal(this)" class="text-blue-600 text-sm hover:bg-blue-50 px-2 py-1 rounded">
+                  <i class="fas fa-plus"></i> Leçon
+                </button>
+                <button class="text-red-600 text-sm hover:bg-red-50 p-1 rounded">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="chapter-content p-3 hidden">
+              <!-- Lessons -->
+              <div class="ml-6 space-y-2">
+                <div class="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
+                  <div class="flex items-center gap-3 flex-1">
+                    <i class="fas fa-video text-purple-500"></i>
+                    <input type="text"
+                           value="Introduction à la programmation"
+                           class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="text-blue-600 text-sm hover:bg-blue-50 p-1 rounded">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-red-600 text-sm hover:bg-red-50 p-1 rounded">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
+                  <div class="flex items-center gap-3 flex-1">
+                    <i class="fas fa-file-alt text-purple-500"></i>
+                    <input type="text"
+                           value="Les variables et types"
+                           class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="text-blue-600 text-sm hover:bg-blue-50 p-1 rounded">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-red-600 text-sm hover:bg-red-50 p-1 rounded">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chapter 2 with Subchapter -->
+          <div class="border border-gray-200 rounded-lg">
+            <div class="bg-blue-50 p-3 flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1">
+                <i class="fas fa-chevron-right text-gray-500 cursor-pointer" onclick="toggleChapter(this)"></i>
+                <i class="fas fa-folder-open text-blue-500"></i>
+                <input type="text"
+                       value="Structures de contrôle"
+                       class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="text-green-600 text-sm hover:bg-green-50 px-2 py-1 rounded">
+                  <i class="fas fa-plus"></i> Sous-chapitre
+                </button>
+                <button class="text-blue-600 text-sm hover:bg-blue-50 px-2 py-1 rounded">
+                  <i class="fas fa-plus"></i> Leçon
+                </button>
+                <button class="text-red-600 text-sm hover:bg-red-50 p-1 rounded">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="chapter-content p-3 hidden">
+              <!-- Subchapter -->
+              <div class="ml-6 mb-3 border-l-2 border-gray-200 pl-3">
+                <div class="bg-green-50 p-2 rounded-lg flex items-center justify-between">
+                  <div class="flex items-center gap-3 flex-1">
+                    <i class="fas fa-level-down-alt text-gray-500"></i>
+                    <input type="text"
+                           value="Les conditions"
+                           class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="text-blue-600 text-sm hover:bg-blue-50 p-1 rounded">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="text-red-600 text-sm hover:bg-red-50 p-1 rounded">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <!-- Lessons in subchapter -->
+                <div class="ml-6 mt-2 space-y-2">
+                  <div class="bg-purple-50 p-2 rounded-lg flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1">
+                      <i class="fas fa-video text-purple-500"></i>
+                      <input type="text"
+                             value="Les instructions if/else"
+                             class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    </div>
+                    <div class="flex gap-2">
+                      <button class="text-blue-600 text-sm hover:bg-blue-50 p-1 rounded">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="text-red-600 text-sm hover:bg-red-50 p-1 rounded">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Section Modal -->
+  <div id="sectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Ajouter une section</h3>
+        <button onclick="closeModal('sectionModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="sectionForm">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Titre de la section *</label>
+          <input type="text" id="sectionTitre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea id="sectionDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button type="button" onclick="closeModal('sectionModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Annuler</button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Chapter Modal -->
+  <div id="chapterModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold" id="chapterModalTitle">Ajouter un chapitre</h3>
+        <button onclick="closeModal('chapterModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="chapterForm">
+        <input type="hidden" id="chapterParentId">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Titre du chapitre *</label>
+          <input type="text" id="chapterTitre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+          <textarea id="chapterDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button type="button" onclick="closeModal('chapterModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Annuler</button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Lesson Modal -->
+  <div id="lessonModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Ajouter une leçon</h3>
+        <button onclick="closeModal('lessonModal')" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="lessonForm">
+        <input type="hidden" id="lessonChapterId">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Titre de la leçon *</label>
+          <input type="text" id="lessonTitre" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Type de contenu *</label>
+          <select id="lessonType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleLessonFields()">
+            <option value="VIDEO">Vidéo</option>
+            <option value="TEXTE">Texte</option>
+            <option value="PDF">PDF</option>
+            <option value="LIEN">Lien externe</option>
+          </select>
+        </div>
+
+        <!-- Video Field -->
+        <div id="videoField" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">URL de la vidéo</label>
+          <input type="url" id="lessonVideoUrl" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+
+        <!-- Text Field -->
+        <div id="textField" class="mb-4 hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Contenu texte</label>
+          <textarea id="lessonContenuTexte" rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Rédigez votre contenu ici..."></textarea>
+          <div class="mt-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fichier joint (optionnel)</label>
+            <input type="file" id="lessonFile" class="w-full">
+          </div>
+        </div>
+
+        <!-- PDF Field -->
+        <div id="pdfField" class="mb-4 hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Fichier PDF</label>
+          <input type="file" id="lessonPdf" accept=".pdf" class="w-full">
+        </div>
+
+        <!-- Link Field -->
+        <div id="linkField" class="mb-4 hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Lien externe</label>
+          <input type="url" id="lessonLienExterne" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 placeholder="https://...">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Durée estimée (minutes)</label>
+          <input type="number" id="lessonDuree" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-4 flex items-center">
+          <input type="checkbox" id="lessonApercuGratuit" class="w-4 h-4 text-blue-600 border-gray-300 rounded">
+          <label for="lessonApercuGratuit" class="ml-2 text-sm text-gray-700">Aperçu gratuit (accessible sans inscription)</label>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" onclick="closeModal('lessonModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">Annuler</button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Toggle section content
+    function toggleSection(element) {
+      const content = element.closest('.border').querySelector('.section-content');
+      content.classList.toggle('hidden');
+      element.classList.toggle('fa-chevron-right');
+      element.classList.toggle('fa-chevron-down');
+    }
+
+    // Toggle chapter content
+    function toggleChapter(element) {
+      const content = element.closest('.border').querySelector('.chapter-content');
+      content.classList.toggle('hidden');
+      element.classList.toggle('fa-chevron-right');
+      element.classList.toggle('fa-chevron-down');
+    }
+
+    // Modals
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      document.getElementById(modalId).classList.add('flex');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      document.getElementById(modalId).classList.remove('flex');
+    }
+
+    function openAddSectionModal() {
+      openModal('sectionModal');
+    }
+
+    function openAddChapterModal(btn) {
+      openModal('chapterModal');
+    }
+
+    function openAddSousChapitreModal(btn) {
+      document.getElementById('chapterModalTitle').innerText = 'Ajouter un sous-chapitre';
+      openModal('chapterModal');
+    }
+
+    function openAddLessonModal(btn) {
+      openModal('lessonModal');
+    }
+
+    function toggleLessonFields() {
+      const type = document.getElementById('lessonType').value;
+      document.getElementById('videoField').classList.add('hidden');
+      document.getElementById('textField').classList.add('hidden');
+      document.getElementById('pdfField').classList.add('hidden');
+      document.getElementById('linkField').classList.add('hidden');
+
+      switch(type) {
+        case 'VIDEO':
+          document.getElementById('videoField').classList.remove('hidden');
+          break;
+        case 'TEXTE':
+          document.getElementById('textField').classList.remove('hidden');
+          break;
+        case 'PDF':
+          document.getElementById('pdfField').classList.remove('hidden');
+          break;
+        case 'LIEN':
+          document.getElementById('linkField').classList.remove('hidden');
+          break;
+      }
+    }
+
+    // Close modals on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        });
+      }
+    });
+  </script>
+</div>
+</html>

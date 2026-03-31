@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<header class="header">
+    <div class="header-content">
+        <!-- Mobile menu button -->
+        <button onclick="toggleSidebar()" class="menu-toggle">
+            <i class="fas fa-bars text-gray-600 text-xl"></i>
+        </button>
+
+        <!-- Search bar -->
+        <div class="search-bar hide-mobile">
+            <div class="relative w-full">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text"
+                       id="searchCourses"
+                       placeholder="Rechercher un cours, un étudiant..."
+                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+
+        <!-- Right section -->
+        <div class="flex items-center gap-4">
+            <!-- Notifications -->
+            <div class="relative">
+                <a th:href="@{/professeur/alertes}" class="p-2 rounded-lg hover:bg-gray-100 relative inline-block">
+                    <i class="fas fa-bell text-gray-600 text-xl"></i>
+                    <span th:if="${notificationsCount != null and notificationsCount > 0}"
+                          class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </a>
+            </div>
+
+            <!-- Messages with unread count -->
+            <div class="relative">
+                <a th:href="@{/professeur/messages}" class="p-2 rounded-lg hover:bg-gray-100 relative inline-block">
+                    <i class="fas fa-envelope text-gray-600 text-xl"></i>
+                    <span id="messagesUnreadBadge"
+                          th:if="${unreadMessagesCount != null and unreadMessagesCount > 0}"
+                          class="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[1.25rem] h-5 rounded-full flex items-center justify-center px-1">
+                        <span th:text="${unreadMessagesCount}">0</span>
+                    </span>
+                </a>
+            </div>
+
+            <!-- Professor info with dropdown -->
+            <div class="relative group">
+                <button class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-graduate text-blue-600"></i>
+                    </div>
+                    <div class="hide-mobile">
+                        <p class="text-sm font-semibold text-gray-900"
+                           th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">
+                            Professeur
+                        </p>
+                        <p class="text-xs text-gray-500"
+                           th:text="${professeur != null ? professeur.specialite : 'Enseignant'}">
+                            Enseignant
+                        </p>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                    <a th:href="@{/professeur/profil}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-user mr-2"></i>Mon profil
+                    </a>
+                    <a th:href="@{/professeur/parametres}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-cog mr-2"></i>Paramètres
+                    </a>
+                    <div class="border-t border-gray-200"></div>
+                    <a th:href="@{/logout}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+</html>
