@@ -1,970 +1,778 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" class="light" lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajouter un cours - Professeur</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Quill Editor -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Ajouter un Cours - L'Érudition Augmentée</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
-        .step-active { background: #3b82f6; color: white; }
-        .step-completed { background: #10b981; color: white; }
-        .step-pending { background: #e5e7eb; color: #6b7280; }
-        .transition-all { transition: all 0.3s ease; }
-        .ql-container { min-height: 250px; font-size: 16px; }
-        .ql-editor { min-height: 250px; }
-        .error-border { border-color: #ef4444 !important; }
-        .error-message { color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; }
-        .toast-success { background: #10b981; color: white; position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; z-index: 1000; animation: slideIn 0.3s ease; }
-        .toast-error { background: #ef4444; color: white; position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; z-index: 1000; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .content-type-tab.active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
-        .field-required::after { content: "*"; color: #ef4444; margin-left: 4px; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-active {
+            color: #003178;
+            font-weight: 700;
+            border-bottom: 2px solid #003178;
+            background-color: white;
+        }
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        .bg-primary { background-color: #003178; }
+        .text-primary { color: #003178; }
+        .border-primary { border-color: #003178; }
+        .bg-surface-container-low { background-color: #f2f4f6; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .chapitre-item, .contenu-item {
+            background-color: #f8fafc;
+            border-left: 3px solid #003178;
+        }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="bg-gray-50 font-body">
 
-<!-- Header -->
-<nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex items-center">
-                <a href="/professeur/dashboard" class="flex items-center gap-2">
-                    <i class="fas fa-chalkboard-user text-2xl text-blue-600"></i>
-                    <span class="text-xl font-bold text-gray-900">EduTrack</span>
-                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full ml-2">Prof</span>
-                </a>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="/professeur/cours" class="text-gray-600 hover:text-gray-900">
-                    <i class="fas fa-arrow-left mr-2"></i>Retour
-                </a>
-            </div>
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-gray-200 shadow-sm px-8 h-16 flex justify-between items-center">
+    <div class="flex items-center gap-8">
+        <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
+        <div class="hidden md:flex gap-6">
+            <a href="/professeur/dashboard" class="text-slate-500 hover:text-primary transition-colors">Tableau de bord</a>
+            <a href="/professeur/cours" class="text-primary font-bold border-b-2 border-primary">Cours</a>
+            <a href="/professeur/etudiants" class="text-slate-500 hover:text-primary transition-colors">Étudiants</a>
+        </div>
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">
+            <span th:text="${professeur != null and professeur.utilisateur != null ? #strings.substring(professeur.utilisateur.prenom, 0, 1) : 'P'}">P</span>
         </div>
     </div>
 </nav>
 
-<div class="max-w-6xl mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Créer un nouveau cours</h1>
-        <p class="text-gray-600 mt-2">Structurez votre contenu pédagogique en sections, chapitres et leçons</p>
+<!-- Sidebar -->
+<aside class="hidden lg:flex flex-col p-6 gap-4 h-screen w-64 fixed left-0 top-0 z-40 bg-surface-container-low pt-24">
+    <nav class="flex flex-col gap-2">
+        <a href="/professeur/dashboard" class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary transition-all">Tableau de bord</a>
+        <a href="/professeur/cours" class="flex items-center gap-3 p-3 text-primary font-bold bg-white rounded-lg shadow-sm">Mes cours</a>
+        <a href="/professeur/etudiants" class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary transition-all">Étudiants</a>
+    </nav>
+    <div class="mt-auto pt-8">
+        <a href="/logout" class="flex items-center gap-3 p-3 text-red-600 hover:opacity-80 transition-all">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Déconnexion</span>
+        </a>
     </div>
+</aside>
 
-    <!-- Stepper -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div class="step-item flex-1 text-center">
-                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-active" id="step1Circle">1</div>
-                <div class="step-label mt-2 text-sm font-medium text-blue-600" id="step1Label">Informations</div>
+<!-- Main Content -->
+<main class="lg:ml-64 pt-24 pb-12 px-4 md:px-8 max-w-6xl mx-auto">
+    <form id="courseForm">
+        <header class="mb-12">
+            <a href="/professeur/cours" class="flex items-center gap-2 text-sm uppercase tracking-widest text-secondary mb-2 hover:text-primary">
+                <span class="material-symbols-outlined text-[1rem]">arrow_back</span>
+                <span>Retour aux cours</span>
+            </a>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tighter mb-4">Ajouter un Nouveau Cours</h1>
+        </header>
+
+        <!-- Stepper -->
+        <div class="bg-surface-container-low rounded-xl p-2 mb-8 flex flex-wrap md:flex-nowrap gap-2">
+            <div class="step step-1 flex-1 text-center py-3 px-6 rounded-lg bg-white shadow-sm border-b-2 border-primary cursor-pointer">
+                <span class="text-label-sm font-bold uppercase tracking-wider">1. Infos Générales</span>
             </div>
-            <div class="step-line flex-1 h-1 bg-gray-200" id="line1"></div>
-            <div class="step-item flex-1 text-center">
-                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending" id="step2Circle">2</div>
-                <div class="step-label mt-2 text-sm font-medium text-gray-400" id="step2Label">Structure</div>
+            <div class="step step-2 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer">
+                <span class="text-label-sm font-medium uppercase tracking-wider">2. Structure</span>
             </div>
-            <div class="step-line flex-1 h-1 bg-gray-200" id="line2"></div>
-            <div class="step-item flex-1 text-center">
-                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending" id="step3Circle">3</div>
-                <div class="step-label mt-2 text-sm font-medium text-gray-400" id="step3Label">Contenu</div>
+            <div class="step step-3 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer">
+                <span class="text-label-sm font-medium uppercase tracking-wider">3. Contenu</span>
             </div>
-            <div class="step-line flex-1 h-1 bg-gray-200" id="line3"></div>
-            <div class="step-item flex-1 text-center">
-                <div class="step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending" id="step4Circle">4</div>
-                <div class="step-label mt-2 text-sm font-medium text-gray-400" id="step4Label">Publication</div>
+            <div class="step step-4 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer">
+                <span class="text-label-sm font-medium uppercase tracking-wider">4. Publication</span>
             </div>
         </div>
-    </div>
 
-    <!-- Step 1: Informations du cours -->
-    <div id="step1" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Informations générales</h2>
-            <form id="courseInfoForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Étape 1 -->
+        <div id="step1" class="step-content">
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <h2 class="text-xl font-bold mb-6">Identité du Cours</h2>
+                <div class="space-y-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre du cours</label>
-                        <input type="text" id="courseTitre" name="titre"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Ex: Mathématiques Appliquées">
-                        <div id="titreError" class="error-message hidden"></div>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Titre du cours *</label>
+                        <input type="text" id="titre" name="titre" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Ex: Fondamentaux du Design" required/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Slug (URL unique)</label>
-                        <input type="text" id="courseSlug" name="slug"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                               placeholder="mathematiques-appliquees" readonly>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Catégorie</label>
-                    <select id="courseCategorie" name="categorieId" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                        <option value="">Sélectionner une catégorie</option>
-                        <option value="tasd">TExte</option>
-                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.nom}"></option>
-                    </select>
-                    <div id="categorieError" class="error-message hidden"></div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description courte</label>
-                    <input type="text" id="courseDescriptionCourte" maxlength="300"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                           placeholder="Résumé du cours (max 300 caractères)">
-                    <p class="text-xs text-gray-500 mt-1"><span id="charCount">0</span>/300</p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description complète</label>
-                    <textarea id="courseDescription" rows="5"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                              placeholder="Décrivez en détail le contenu, les prérequis, les objectifs..."></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Durée estimée (minutes)</label>
-                        <input type="number" id="courseDuree" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                               placeholder="Ex: 480">
+                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Description courte</label>
+                        <input type="text" id="descriptionCourte" name="descriptionCourte" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Brève description"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Niveau</label>
-                        <select id="courseNiveau" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                            <option value="debutant">Débutant</option>
-                            <option value="intermediaire">Intermédiaire</option>
-                            <option value="avance">Avancé</option>
-                            <option value="expert">Expert</option>
-                        </select>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Description complète</label>
+                        <textarea id="description" name="description" rows="6" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Décrivez les objectifs pédagogiques..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Durée estimée (minutes)</label>
+                        <input type="number" id="dureeEstimee" name="dureeEstimee" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Ex: 120"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Image de couverture</label>
+                        <input type="file" id="imageCouverture" name="imageCouverture" accept="image/jpeg,image/png,image/gif" class="w-full bg-gray-50 border rounded-lg p-4"/>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Image de couverture</label>
-                    <div class="flex gap-4 items-center">
-                        <button type="button" onclick="document.getElementById('courseImage').click()"
-                                class="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">
-                            <i class="fas fa-upload mr-2"></i>Choisir une image
-                        </button>
-                        <input type="file" id="courseImage" accept="image/*" class="hidden">
-                        <div id="imagePreview" class="hidden w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
-                            <img id="previewImg" class="w-full h-full object-cover">
-                        </div>
-                        <span class="text-xs text-gray-500">PNG, JPG, JPEG (max 5MB)</span>
-                    </div>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="button" onclick="validateAndNextStep()"
-                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                        Suivant <i class="fas fa-arrow-right ml-2"></i>
+        <!-- Étape 2 -->
+        <div id="step2" class="step-content" style="display:none;">
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Sections du cours</h2>
+                    <button type="button" id="addSectionBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                        + Ajouter une section
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Step 2: Structure (Sections, Chapitres, Sous-chapitres) -->
-    <div id="step2" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-900">Structure du cours</h2>
-                <button onclick="openAddSectionModal()"
-                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
-                    <i class="fas fa-plus mr-2"></i>Ajouter une section
-                </button>
+                <div id="sectionsContainer" class="space-y-4"></div>
             </div>
+        </div>
 
-            <div id="sectionsContainer" class="space-y-4">
-                <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                    <i class="fas fa-layer-group text-4xl mb-3"></i>
-                    <p>Cliquez sur "Ajouter une section" pour commencer</p>
-                    <p class="text-sm mt-2">Exemple: Section "Math Appliquée" → Chapitre "Algèbre Linéaire" → Sous-chapitre "Espace Vectoriel" → Leçons</p>
+        <!-- Étape 3 -->
+        <div id="step3" class="step-content" style="display:none;">
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <h2 class="text-xl font-bold mb-6">Aperçu du contenu</h2>
+                <div id="previewContainer">
+                    <p class="text-slate-500">Aucune section créée pour le moment.</p>
                 </div>
             </div>
-
-            <div class="flex justify-between mt-6">
-                <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <i class="fas fa-arrow-left mr-2"></i>Précédent
-                </button>
-                <button type="button" onclick="nextStep()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                    Suivant <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
         </div>
-    </div>
 
-    <!-- Step 3: Contenu des Leçons -->
-    <div id="step3" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Ajouter du contenu pédagogique</h2>
-            <p class="text-gray-600 mb-4">Sélectionnez un chapitre ou sous-chapitre pour ajouter des leçons</p>
-            <div id="leconsContainer" class="space-y-4 max-h-96 overflow-y-auto">
-                <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                    <i class="fas fa-book-open text-4xl mb-3"></i>
-                    <p>Sélectionnez un chapitre dans la structure pour ajouter des leçons</p>
-                </div>
-            </div>
-            <div class="flex justify-between mt-6">
-                <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <i class="fas fa-arrow-left mr-2"></i>Précédent
-                </button>
-                <button type="button" onclick="nextStep()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                    Suivant <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Step 4: Publication -->
-    <div id="step4" class="step-content bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hidden">
-        <div class="p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-6">Publication du cours</h2>
-
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-                <div class="flex items-start gap-4">
-                    <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
-                    <div>
-                        <h3 class="font-semibold text-blue-900">Récapitulatif</h3>
-                        <ul class="mt-2 space-y-1 text-sm text-blue-800">
-                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Cours : <span id="recapTitre">-</span></li>
-                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Sections : <span id="recapSections">0</span></li>
-                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Chapitres : <span id="recapChapitres">0</span></li>
-                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Sous-chapitres : <span id="recapSousChapitres">0</span></li>
-                            <li><i class="fas fa-check-circle text-green-600 mr-2"></i>Leçons : <span id="recapLecons">0</span></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg mb-6">
-                <input type="checkbox" id="publieCheckbox" class="w-5 h-5 text-blue-600 rounded">
-                <label for="publieCheckbox" class="text-gray-700">
-                    <span class="font-semibold">Publier immédiatement</span>
-                    <p class="text-sm text-gray-500">Le cours sera visible par les étudiants</p>
-                </label>
-            </div>
-
-            <div class="flex justify-between">
-                <button type="button" onclick="prevStep()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <i class="fas fa-arrow-left mr-2"></i>Précédent
-                </button>
-                <button type="button" onclick="saveCourse()" class="bg-green-600 text-white px-8 py-2 rounded-lg hover:bg-green-700">
-                    <i class="fas fa-save mr-2"></i>Enregistrer et publier
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Ajouter Section -->
-<div id="sectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Ajouter une section</h3>
-            <button onclick="closeModal('sectionModal')" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre de la section</label>
-                <input type="text" id="sectionTitre" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                       placeholder="Ex: Introduction à React">
-                <div id="sectionTitreError" class="error-message hidden"></div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea id="sectionDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Description de la section..."></textarea>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeModal('sectionModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Annuler</button>
-                <button onclick="addSection()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg">Ajouter</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Ajouter Chapitre / Sous-chapitre -->
-<div id="chapitreModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl max-w-md w-full mx-4 p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold" id="chapitreModalTitle">Ajouter un chapitre</h3>
-            <button onclick="closeModal('chapitreModal')" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <input type="hidden" id="chapitreParentType" value="">
-        <input type="hidden" id="chapitreParentId" value="">
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre</label>
-                <input type="text" id="chapitreTitre" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                       placeholder="Ex: Les bases de React">
-                <div id="chapitreTitreError" class="error-message hidden"></div>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea id="chapitreDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Description du chapitre..."></textarea>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeModal('chapitreModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">Annuler</button>
-                <button onclick="addChapitre()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg">Ajouter</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Ajouter Leçon -->
-<div id="leconModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl max-w-4xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Ajouter une leçon</h3>
-            <button onclick="closeModal('leconModal')" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <input type="hidden" id="leconParentId" value="">
-        <input type="hidden" id="leconParentType" value="">
-
-        <div class="space-y-6">
-            <!-- Titre -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2 field-required">Titre de la leçon</label>
-                <input type="text" id="leconTitre" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                       placeholder="Ex: Tirez le maximum de ce cours">
-                <div id="leconTitreError" class="error-message hidden"></div>
-            </div>
-
-            <!-- Objectifs -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Objectifs de la leçon</label>
-                <textarea id="leconObjectifs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                          placeholder="Ce que l'étudiant va apprendre..."></textarea>
-            </div>
-
-            <!-- Onglets -->
-            <div>
-                <div class="border-b border-gray-200 mb-4">
+        <!-- Étape 4 -->
+        <div id="step4" class="step-content" style="display:none;">
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <h2 class="text-xl font-bold mb-6">Publication</h2>
+                <div class="bg-primary/5 p-6 rounded-xl">
+                    <h3 class="font-bold text-lg mb-2">Prêt à publier ?</h3>
+                    <p class="text-slate-600 mb-4">Votre cours sera visible par tous les apprenants après publication.</p>
                     <div class="flex gap-4">
-                        <button type="button" onclick="switchContentTab('video')" id="tabVideo"
-                                class="content-type-tab px-4 py-2 font-medium text-gray-600 active">
-                            <i class="fas fa-video mr-2"></i>Vidéo
-                        </button>
-                        <button type="button" onclick="switchContentTab('texte')" id="tabTexte"
-                                class="content-type-tab px-4 py-2 font-medium text-gray-600">
-                            <i class="fas fa-file-alt mr-2"></i>Texte explicatif
-                        </button>
-                        <button type="button" onclick="switchContentTab('pdf')" id="tabPdf"
-                                class="content-type-tab px-4 py-2 font-medium text-gray-600">
-                            <i class="fas fa-file-pdf mr-2"></i>PDF / Document
-                        </button>
+                        <button type="button" id="saveDraftBtn" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300">Sauvegarder en brouillon</button>
+                        <button type="button" id="publishBtn" class="px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary/90">Publier le cours</button>
                     </div>
-                </div>
-
-                <!-- Vidéo -->
-                <div id="videoContent" class="content-panel">
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fas fa-play-circle text-blue-600 text-xl"></i>
-                            <div>
-                                <p class="text-sm text-blue-800 font-medium">Conseil :</p>
-                                <p class="text-sm text-blue-700">Ajoutez une vidéo explicative (YouTube, Vimeo, etc.)</p>
-                            </div>
-                        </div>
-                    </div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">URL de la vidéo</label>
-                    <input type="url" id="leconVideoUrl" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                           placeholder="https://www.youtube.com/watch?v=...">
-                    <div id="videoPreview" class="mt-3 hidden">
-                        <div class="bg-gray-100 rounded-lg p-3 text-sm">
-                            <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                            <span id="videoPreviewText">Vidéo chargée</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Support YouTube, Vimeo, Dailymotion</p>
-                </div>
-
-                <!-- Texte avec Quill -->
-                <div id="texteContent" class="content-panel hidden">
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fas fa-lightbulb text-green-600 text-xl"></i>
-                            <div>
-                                <p class="text-sm text-green-800 font-medium">Conseil :</p>
-                                <p class="text-sm text-green-700">Rédigez un texte explicatif avec des exemples et des exercices</p>
-                            </div>
-                        </div>
-                    </div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Contenu texte</label>
-                    <div id="editorContainer" style="height: 350px;">
-                        <div id="quillEditor"></div>
-                    </div>
-                    <textarea id="leconContenuTexte" class="hidden"></textarea>
-                    <div class="mt-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Fichiers joints (optionnel)</label>
-                        <input type="file" id="leconFichiers" multiple class="w-full">
-                    </div>
-                </div>
-
-                <!-- PDF -->
-                <div id="pdfContent" class="content-panel hidden">
-                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-                        <div class="flex items-start gap-3">
-                            <i class="fas fa-file-pdf text-purple-600 text-xl"></i>
-                            <div>
-                                <p class="text-sm text-purple-800 font-medium">Conseil :</p>
-                                <p class="text-sm text-purple-700">Ajoutez un document PDF (cours, exercices, fiches)</p>
-                            </div>
-                        </div>
-                    </div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fichier PDF</label>
-                    <input type="file" id="leconPdf" accept=".pdf" class="w-full">
-                    <p class="text-xs text-gray-500 mt-1">Format PDF uniquement, max 50MB</p>
                 </div>
             </div>
+        </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Durée (minutes)</label>
-                    <input type="number" id="leconDuree" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+        <!-- Navigation -->
+        <div class="flex justify-between pt-8 mt-8 border-t">
+            <button type="button" id="prevBtn" class="px-8 py-4 text-primary font-bold hover:bg-white rounded-lg" style="display:none;">Précédent</button>
+            <div class="flex gap-4 ml-auto">
+                <button type="button" id="nextBtn" class="px-10 py-4 bg-primary text-white font-bold rounded-lg shadow-lg">Étape suivante</button>
+            </div>
+        </div>
+    </form>
+</main>
+
+<!-- Modal pour ajouter/modifier un chapitre -->
+<div id="chapitreModal" class="modal">
+    <div class="modal-content p-6">
+        <h3 class="text-xl font-bold mb-4" id="modalTitle">Ajouter un chapitre</h3>
+        <input type="hidden" id="currentSectionId">
+        <input type="hidden" id="currentChapitreId">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-2">Titre du chapitre *</label>
+                <input type="text" id="chapitreTitre" class="w-full border rounded-lg p-3" placeholder="Ex: Introduction">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-2">Description</label>
+                <textarea id="chapitreDescription" rows="3" class="w-full border rounded-lg p-3" placeholder="Description du chapitre"></textarea>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+            <button type="button" id="closeModalBtn" class="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button>
+            <button type="button" id="saveChapitreBtn" class="px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter/modifier un contenu -->
+<div id="contenuModal" class="modal">
+    <div class="modal-content p-6">
+        <h3 class="text-xl font-bold mb-4" id="contenuModalTitle">Ajouter un contenu</h3>
+        <input type="hidden" id="currentContenuSectionId">
+        <input type="hidden" id="currentContenuChapitreId">
+        <input type="hidden" id="currentContenuId">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-bold mb-2">Titre du contenu *</label>
+                <input type="text" id="contenuTitre" class="w-full border rounded-lg p-3" placeholder="Ex: Vidéo d'introduction">
+            </div>
+            <div>
+                <label class="block text-sm font-bold mb-2">Type de contenu</label>
+                <select id="contenuType" class="w-full border rounded-lg p-3">
+                    <option value="VIDEO">Vidéo</option>
+                    <option value="TEXTE">Texte</option>
+                    <option value="PDF">PDF</option>
+                    <option value="IMAGE">Image</option>
+                    <option value="LIEN">Lien externe</option>
+                </select>
+            </div>
+            <div id="contenuSpecificFields">
+                <div id="videoFields">
+                    <label class="block text-sm font-bold mb-2">URL de la vidéo</label>
+                    <input type="text" id="videoUrl" class="w-full border rounded-lg p-3" placeholder="https://...">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Ordre</label>
-                    <input type="number" id="leconOrdre" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                <div id="texteFields" style="display:none;">
+                    <label class="block text-sm font-bold mb-2">Contenu texte</label>
+                    <textarea id="contenuTexte" rows="5" class="w-full border rounded-lg p-3" placeholder="Écrivez votre contenu..."></textarea>
+                </div>
+                <div id="fichierFields" style="display:none;">
+                    <label class="block text-sm font-bold mb-2">Fichier (PDF/Image)</label>
+                    <input type="file" id="fichierFile" class="w-full border rounded-lg p-3">
+                </div>
+                <div id="lienFields" style="display:none;">
+                    <label class="block text-sm font-bold mb-2">URL externe</label>
+                    <input type="text" id="lienUrl" class="w-full border rounded-lg p-3" placeholder="https://...">
+                    <label class="block text-sm font-bold mt-2 mb-2">Texte du lien</label>
+                    <input type="text" id="lienTexte" class="w-full border rounded-lg p-3" placeholder="Cliquez ici">
                 </div>
             </div>
-
-            <div class="flex items-center gap-3">
-                <input type="checkbox" id="leconApercuGratuit" class="w-4 h-4 text-blue-600 rounded">
-                <label for="leconApercuGratuit" class="text-sm text-gray-700">
-                    <span class="font-medium">Aperçu gratuit</span> - accessible sans inscription
+            <div>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="apercuGratuit">
+                    <span class="text-sm">Aperçu gratuit</span>
                 </label>
             </div>
-
-            <div class="flex gap-3 pt-4 border-t border-gray-200">
-                <button onclick="closeModal('leconModal')" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Annuler</button>
-                <button onclick="addLecon()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Ajouter la leçon</button>
-            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+            <button type="button" id="closeContenuModalBtn" class="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button>
+            <button type="button" id="saveContenuBtn" class="px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Variables globales
-    let currentStep = 1;
-    let sections = [];
-    let quillEditor = null;
-    let currentContentTab = 'video';
+    $(document).ready(function() {
+        let currentStep = 1;
+        let sectionsData = [];
 
-    // Initialisation Quill
-    function initQuillEditor() {
-        if (!quillEditor && document.getElementById('quillEditor')) {
-            quillEditor = new Quill('#quillEditor', {
-                theme: 'snow',
-                placeholder: 'Rédigez votre contenu ici...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline'],
-                        ['blockquote', 'code-block'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
-                }
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
             });
         }
-    }
 
-    // Validation Step 1
-    function validateStep1() {
-        let isValid = true;
-        const titre = document.getElementById('courseTitre').value.trim();
-        const categorie = document.getElementById('courseCategorie').value;
-
-        if (!titre) {
-            showError('titreError', 'Le titre du cours est obligatoire');
-            document.getElementById('courseTitre').classList.add('error-border');
-            isValid = false;
-        } else {
-            clearError('titreError');
-            document.getElementById('courseTitre').classList.remove('error-border');
-        }
-
-        if (!categorie) {
-            showError('categorieError', 'Veuillez sélectionner une catégorie');
-            document.getElementById('courseCategorie').classList.add('error-border');
-            isValid = false;
-        } else {
-            clearError('categorieError');
-            document.getElementById('courseCategorie').classList.remove('error-border');
-        }
-
-        return isValid;
-    }
-
-    function validateAndNextStep() {
-        if (validateStep1()) {
-            nextStep();
-        } else {
-            showToast('Veuillez remplir tous les champs obligatoires', 'error');
-        }
-    }
-
-    function showError(elementId, message) {
-        const errorDiv = document.getElementById(elementId);
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-        }
-    }
-
-    function clearError(elementId) {
-        const errorDiv = document.getElementById(elementId);
-        if (errorDiv) errorDiv.classList.add('hidden');
-    }
-
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = type === 'success' ? 'toast-success' : 'toast-error';
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    // Navigation
-    function nextStep() {
-        if (currentStep === 2 && sections.length === 0) {
-            showToast('Veuillez ajouter au moins une section', 'error');
-            return;
-        }
-        if (currentStep < 4) currentStep++;
-        updateStepUI();
-        if (currentStep === 3) renderLeconsContainer();
-        if (currentStep === 4) updateRecap();
-    }
-
-    function prevStep() {
-        if (currentStep > 1) currentStep--;
-        updateStepUI();
-    }
-
-    function updateStepUI() {
-        for(let i = 1; i <= 4; i++) {
-            const circle = document.getElementById(`step${i}Circle`);
-            const label = document.getElementById(`step${i}Label`);
-            if(i < currentStep) {
-                circle.className = "step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-completed";
-                circle.innerHTML = '<i class="fas fa-check"></i>';
-                label.className = "step-label mt-2 text-sm font-medium text-green-600";
-            } else if(i === currentStep) {
-                circle.className = "step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-active";
-                circle.innerHTML = i;
-                label.className = "step-label mt-2 text-sm font-medium text-blue-600";
-            } else {
-                circle.className = "step-circle w-10 h-10 mx-auto rounded-full flex items-center justify-center font-semibold step-pending";
-                circle.innerHTML = i;
-                label.className = "step-label mt-2 text-sm font-medium text-gray-400";
+        function updatePreview() {
+            const container = $('#previewContainer');
+            if (sectionsData.length === 0) {
+                container.html('<p class="text-slate-500">Aucune section créée pour le moment.</p>');
+                return;
             }
-        }
-        for(let i = 1; i <= 3; i++) {
-            const line = document.getElementById(`line${i}`);
-            if(line) line.className = i < currentStep ? "flex-1 h-1 bg-green-500" : "flex-1 h-1 bg-gray-200";
-        }
-        for(let i = 1; i <= 4; i++) {
-            const content = document.getElementById(`step${i}`);
-            if(content) content.classList.toggle('hidden', i !== currentStep);
-        }
-    }
 
-    // Gestion des sections
-    function openAddSectionModal() {
-        document.getElementById('sectionTitre').value = '';
-        document.getElementById('sectionDescription').value = '';
-        document.getElementById('sectionTitreError')?.classList.add('hidden');
-        openModal('sectionModal');
-    }
+            let html = '<div class="space-y-6">';
+            sectionsData.forEach((section, sIdx) => {
+                const sectionTitre = section.titre && section.titre.trim() !== '' ? section.titre : `Section ${sIdx + 1}`;
+                html += `
+                    <div class="border-l-4 border-primary pl-4">
+                        <h3 class="font-bold text-lg">${escapeHtml(sectionTitre)}</h3>
+                        ${section.description ? `<p class="text-gray-500 text-sm">${escapeHtml(section.description)}</p>` : ''}
+                `;
 
-    function addSection() {
-        const titre = document.getElementById('sectionTitre').value.trim();
-        if (!titre) {
-            showError('sectionTitreError', 'Le titre de la section est obligatoire');
-            document.getElementById('sectionTitre').classList.add('error-border');
-            return;
-        }
-        sections.push({
-            id: Date.now(),
-            titre: titre,
-            description: document.getElementById('sectionDescription').value,
-            chapitres: []
-        });
-        renderSections();
-        closeModal('sectionModal');
-        showToast('Section ajoutée avec succès');
-    }
-
-    function renderSections() {
-        const container = document.getElementById('sectionsContainer');
-        if(sections.length === 0) {
-            container.innerHTML = `<div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                                    <i class="fas fa-layer-group text-4xl mb-3"></i>
-                                    <p>Cliquez sur "Ajouter une section" pour commencer</p>
-                                </div>`;
-            return;
-        }
-        container.innerHTML = sections.map(section => `
-            <div class="border border-gray-200 rounded-lg overflow-hidden">
-                <div class="bg-gray-50 p-4 flex justify-between items-center">
-                    <div class="flex items-center gap-3 flex-1">
-                        <i class="fas fa-folder-open text-blue-500"></i>
-                        <input type="text" value="${escapeHtml(section.titre)}"
-                               onchange="updateSectionTitle(${section.id}, this.value)"
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-semibold">
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="openAddChapitreModal('section', ${section.id})"
-                                class="text-green-600 hover:bg-green-50 px-3 py-1 rounded text-sm">
-                            <i class="fas fa-plus"></i> Chapitre
-                        </button>
-                        <button onclick="deleteSection(${section.id})"
-                                class="text-red-600 hover:bg-red-50 px-2 py-1 rounded">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="p-4">
-                    ${renderChapitres(section.chapitres, section.id)}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderChapitres(chapitresList, sectionId) {
-        if(!chapitresList || chapitresList.length === 0) {
-            return `<div class="text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-lg">
-                        <i class="fas fa-folder-open"></i> Aucun chapitre
-                        <button onclick="openAddChapitreModal('section', ${sectionId})" class="ml-2 text-blue-600">Ajouter</button>
-                    </div>`;
-        }
-        return chapitresList.map(chapitre => `
-            <div class="border border-gray-200 rounded-lg mb-3">
-                <div class="bg-blue-50 p-3 flex justify-between items-center">
-                    <div class="flex items-center gap-3 flex-1">
-                        <i class="fas fa-chevron-right cursor-pointer text-gray-500" onclick="toggleChapitre(${chapitre.id})"></i>
-                        <i class="fas fa-book text-blue-500"></i>
-                        <input type="text" value="${escapeHtml(chapitre.titre)}"
-                               onchange="updateChapitreTitle(${chapitre.id}, this.value)"
-                               class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm">
-                    </div>
-                    <div class="flex gap-1">
-                        <button onclick="openAddSousChapitreModal('chapitre', ${chapitre.id})"
-                                class="text-green-600 text-xs hover:bg-green-50 px-2 py-1 rounded">
-                            <i class="fas fa-level-down-alt"></i> Sous-chapitre
-                        </button>
-                        <button onclick="openAddLeconModal('chapitre', ${chapitre.id})"
-                                class="text-blue-600 text-xs hover:bg-blue-50 px-2 py-1 rounded">
-                            <i class="fas fa-plus"></i> Leçon
-                        </button>
-                        <button onclick="deleteChapitre(${chapitre.id})"
-                                class="text-red-600 text-xs hover:bg-red-50 px-2 py-1 rounded">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="chapitre-${chapitre.id}" class="p-3 hidden">
-                    ${renderSousChapitres(chapitre.sousChapitres || [], chapitre.id)}
-                    ${renderLeconsList(chapitre.lecons || [], chapitre.id)}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderSousChapitres(sousChapitres, parentId) {
-        if(!sousChapitres.length) return '';
-        return sousChapitres.map(sous => `
-            <div class="border-l-2 border-green-300 ml-4 pl-3 mb-2">
-                <div class="bg-green-50 p-2 rounded flex justify-between items-center">
-                    <div class="flex items-center gap-2 flex-1">
-                        <i class="fas fa-level-down-alt text-green-600"></i>
-                        <input type="text" value="${escapeHtml(sous.titre)}"
-                               onchange="updateChapitreTitle(${sous.id}, this.value)"
-                               class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm">
-                    </div>
-                    <div class="flex gap-1">
-                        <button onclick="openAddLeconModal('sousChapitre', ${sous.id})"
-                                class="text-blue-600 text-xs hover:bg-blue-50 px-2 py-1 rounded">
-                            <i class="fas fa-plus"></i> Leçon
-                        </button>
-                        <button onclick="deleteChapitre(${sous.id})"
-                                class="text-red-600 text-xs hover:bg-red-50 px-2 py-1 rounded">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div id="chapitre-${sous.id}" class="pl-4 mt-2">
-                    ${renderLeconsList(sous.lecons || [], sous.id)}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderLeconsList(leconsList, parentId) {
-        if(!leconsList || leconsList.length === 0) {
-            return `<div class="text-center py-2 text-gray-400 text-sm">
-                        <i class="fas fa-plus-circle"></i> Cliquez sur + Leçon pour ajouter du contenu
-                    </div>`;
-        }
-        return leconsList.map(lecon => `
-            <div class="bg-purple-50 p-2 rounded flex justify-between items-center mb-1">
-                <div class="flex items-center gap-2 flex-1">
-                    <i class="fas ${lecon.type === 'VIDEO' ? 'fa-video' : lecon.type === 'TEXTE' ? 'fa-file-alt' : 'fa-file-pdf'}"></i>
-                    <span class="text-sm font-medium">${escapeHtml(lecon.titre)}</span>
-                    ${lecon.apercuGratuit ? '<span class="text-xs bg-green-100 text-green-700 px-1 rounded">Aperçu</span>' : ''}
-                </div>
-                <button onclick="editLecon(${lecon.id})" class="text-blue-600 text-xs px-2">
-                    <i class="fas fa-edit"></i>
-                </button>
-            </div>
-        `).join('');
-    }
-
-    // Gestion des chapitres
-    function openAddChapitreModal(parentType, parentId) {
-        document.getElementById('chapitreModalTitle').innerText = parentType === 'section' ? 'Ajouter un chapitre' : 'Ajouter un sous-chapitre';
-        document.getElementById('chapitreParentType').value = parentType;
-        document.getElementById('chapitreParentId').value = parentId;
-        document.getElementById('chapitreTitre').value = '';
-        document.getElementById('chapitreDescription').value = '';
-        document.getElementById('chapitreTitreError')?.classList.add('hidden');
-        openModal('chapitreModal');
-    }
-
-    function openAddSousChapitreModal(parentType, parentId) {
-        openAddChapitreModal(parentType, parentId);
-    }
-
-    function addChapitre() {
-        const titre = document.getElementById('chapitreTitre').value.trim();
-        if (!titre) {
-            showError('chapitreTitreError', 'Le titre est obligatoire');
-            document.getElementById('chapitreTitre').classList.add('error-border');
-            return;
-        }
-        const parentType = document.getElementById('chapitreParentType').value;
-        const parentId = parseInt(document.getElementById('chapitreParentId').value);
-        const chapitre = {
-            id: Date.now(),
-            titre: titre,
-            description: document.getElementById('chapitreDescription').value,
-            lecons: [],
-            sousChapitres: []
-        };
-        if(parentType === 'section') {
-            const section = sections.find(s => s.id === parentId);
-            if(section) section.chapitres.push(chapitre);
-        } else {
-            function addToChapitre(list) {
-                for(let section of sections) {
-                    for(let chap of section.chapitres) {
-                        if(chap.id === parentId) { chap.sousChapitres.push(chapitre); return true; }
-                        for(let sous of chap.sousChapitres || []) {
-                            if(sous.id === parentId) { sous.sousChapitres.push(chapitre); return true; }
-                        }
-                    }
+                if (section.chapitres && section.chapitres.length > 0) {
+                    html += '<div class="mt-2 space-y-2 ml-4">';
+                    section.chapitres.forEach(chapitre => {
+                        html += `
+                            <div>
+                                <strong class="text-primary">📖 ${escapeHtml(chapitre.titre)}</strong>
+                                ${chapitre.description ? `<p class="text-sm text-gray-500">${escapeHtml(chapitre.description)}</p>` : ''}
+                                ${chapitre.contenus && chapitre.contenus.length > 0 ? `<p class="text-xs text-gray-400">${chapitre.contenus.length} élément(s) de contenu</p>` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
                 }
-                return false;
-            }
-            addToChapitre();
+                html += '</div>';
+            });
+            html += '</div>';
+            container.html(html);
         }
-        renderSections();
-        closeModal('chapitreModal');
-        showToast(parentType === 'section' ? 'Chapitre ajouté' : 'Sous-chapitre ajouté');
-    }
 
-    // Gestion des leçons
-    function openAddLeconModal(parentType, parentId) {
-        document.getElementById('leconParentId').value = parentId;
-        document.getElementById('leconParentType').value = parentType;
-        document.getElementById('leconTitre').value = '';
-        document.getElementById('leconObjectifs').value = '';
-        document.getElementById('leconVideoUrl').value = '';
-        document.getElementById('leconDuree').value = '';
-        document.getElementById('leconOrdre').value = '0';
-        document.getElementById('leconApercuGratuit').checked = false;
-        document.getElementById('videoPreview')?.classList.add('hidden');
-        if(quillEditor) quillEditor.root.innerHTML = '';
-        switchContentTab('video');
-        initQuillEditor();
-        openModal('leconModal');
-    }
-
-    function switchContentTab(tab) {
-        currentContentTab = tab;
-        document.querySelectorAll('.content-type-tab').forEach(t => t.classList.remove('active', 'border-blue-500', 'text-blue-600'));
-        document.querySelectorAll('.content-type-tab').forEach(t => t.classList.add('text-gray-600'));
-        document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
-        const activeTab = document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
-        if(activeTab) activeTab.classList.add('active', 'border-blue-500', 'text-blue-600');
-        document.getElementById(`${tab}Content`).classList.remove('hidden');
-    }
-
-    function addLecon() {
-        const titre = document.getElementById('leconTitre').value.trim();
-        if (!titre) {
-            showError('leconTitreError', 'Le titre de la leçon est obligatoire');
-            document.getElementById('leconTitre').classList.add('error-border');
-            return;
-        }
-        clearError('leconTitreError');
-        document.getElementById('leconTitre').classList.remove('error-border');
-
-        const parentId = parseInt(document.getElementById('leconParentId').value);
-        let contenuTexte = '';
-        if(quillEditor) contenuTexte = quillEditor.root.innerHTML;
-
-        const lecon = {
-            id: Date.now(),
-            titre: titre,
-            objectifs: document.getElementById('leconObjectifs').value,
-            type: currentContentTab.toUpperCase(),
-            videoUrl: document.getElementById('leconVideoUrl').value,
-            contenuTexte: contenuTexte,
-            duree: document.getElementById('leconDuree').value,
-            ordre: document.getElementById('leconOrdre').value,
-            apercuGratuit: document.getElementById('leconApercuGratuit').checked
-        };
-
-        function addToParent() {
-            for(let section of sections) {
-                for(let chap of section.chapitres) {
-                    if(chap.id === parentId) { chap.lecons.push(lecon); return true; }
-                    for(let sous of chap.sousChapitres || []) {
-                        if(sous.id === parentId) { sous.lecons.push(lecon); return true; }
-                    }
+        function saveSectionsFromDOM() {
+            sectionsData = [];
+            $('.section-card').each(function(idx) {
+                let titre = $(this).find('.section-title').val() || '';
+                if (titre.trim() === '') {
+                    titre = `Section ${idx + 1}`;
                 }
-            }
-            return false;
-        }
-        addToParent();
-        renderSections();
-        renderLeconsContainer();
-        closeModal('leconModal');
-        showToast('Leçon ajoutée avec succès');
-    }
 
-    function renderLeconsContainer() {
-        const container = document.getElementById('leconsContainer');
-        if(sections.length === 0) {
-            container.innerHTML = `<div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                                    <i class="fas fa-book-open text-4xl mb-3"></i>
-                                    <p>Créez d'abord une section et des chapitres</p>
-                                </div>`;
-            return;
-        }
-        let html = '<div class="space-y-4">';
-        sections.forEach(section => {
-            html += `<div class="border border-gray-200 rounded-lg"><div class="bg-gray-50 p-3"><h3 class="font-semibold"><i class="fas fa-folder-open text-blue-500 mr-2"></i>${escapeHtml(section.titre)}</h3></div><div class="p-3">`;
-            section.chapitres.forEach(chapitre => {
-                html += `<div class="mb-3 border-l-4 border-blue-300 pl-3"><div class="font-medium text-blue-700"><i class="fas fa-book mr-2"></i>${escapeHtml(chapitre.titre)}</div>`;
-                html += renderLeconsForParent(chapitre.lecons);
-                chapitre.sousChapitres?.forEach(sous => {
-                    html += `<div class="ml-4 mt-2 border-l-2 border-green-300 pl-3"><div class="text-sm text-green-600"><i class="fas fa-level-down-alt mr-1"></i>${escapeHtml(sous.titre)}</div>`;
-                    html += renderLeconsForParent(sous.lecons);
-                    html += `</div>`;
+                const section = {
+                    titre: titre,
+                    description: $(this).find('.section-description').val() || '',
+                    ordre: idx,
+                    chapitres: []
+                };
+
+                $(this).find('.chapitre-item').each(function(chIdx) {
+                    const chapitre = {
+                        titre: $(this).find('strong').text(),
+                        description: $(this).find('p.text-gray-500').first().text(),
+                        ordre: chIdx,
+                        contenus: []
+                    };
+                    section.chapitres.push(chapitre);
                 });
-                html += `</div>`;
+
+                sectionsData.push(section);
             });
-            html += `</div></div>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-    }
+            updatePreview();
+        }
 
-    function renderLeconsForParent(leconsList) {
-        if(!leconsList || leconsList.length === 0) return '<div class="text-gray-400 text-sm ml-4">Aucune leçon</div>';
-        return leconsList.map(l => `
-            <div class="ml-4 p-2 bg-purple-50 rounded mb-1 flex justify-between items-center">
-                <span><i class="fas ${l.type === 'VIDEO' ? 'fa-video' : l.type === 'TEXTE' ? 'fa-file-alt' : 'fa-file-pdf'} mr-2"></i>${escapeHtml(l.titre)}</span>
-                ${l.apercuGratuit ? '<span class="text-xs bg-green-100 text-green-700 px-1 rounded">Gratuit</span>' : ''}
-            </div>
-        `).join('');
-    }
+        function refreshSectionsDisplay() {
+            const container = $('#sectionsContainer');
+            container.empty();
 
-    // Utilitaires
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
-    function openModal(id) { const modal = document.getElementById(id); if(modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); } }
-    function closeModal(id) { const modal = document.getElementById(id); if(modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); } }
-    function toggleChapitre(id) { const el = document.getElementById(`chapitre-${id}`); if(el) el.classList.toggle('hidden'); }
-    function updateRecap() {
-        let totalChapitres = 0, totalSousChapitres = 0, totalLecons = 0;
-        sections.forEach(s => {
-            s.chapitres.forEach(c => {
-                totalChapitres++;
-                totalLecons += (c.lecons || []).length;
-                if(c.sousChapitres) {
-                    totalSousChapitres += c.sousChapitres.length;
-                    c.sousChapitres.forEach(sc => totalLecons += (sc.lecons || []).length);
+            sectionsData.forEach((section, idx) => {
+                const sectionTitre = section.titre && section.titre.trim() !== '' ? section.titre : `Section ${idx + 1}`;
+
+                let chapitresHtml = '';
+                if (section.chapitres && section.chapitres.length > 0) {
+                    chapitresHtml = '<div class="mt-3 space-y-2">';
+                    section.chapitres.forEach((chapitre, chIdx) => {
+                        chapitresHtml += `
+                            <div class="chapitre-item p-3 rounded-lg" data-chapitre-idx="${chIdx}">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <strong>${escapeHtml(chapitre.titre)}</strong>
+                                        ${chapitre.description ? `<p class="text-sm text-gray-500">${escapeHtml(chapitre.description)}</p>` : ''}
+                                        ${chapitre.contenus && chapitre.contenus.length > 0 ? `<p class="text-xs text-gray-400 mt-1">${chapitre.contenus.length} contenu(s)</p>` : ''}
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" class="edit-chapitre text-blue-500 hover:text-blue-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">✏️</button>
+                                        <button type="button" class="delete-chapitre text-red-500 hover:text-red-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">🗑️</button>
+                                        <button type="button" class="add-contenu text-green-500 hover:text-green-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">+ Contenu</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    chapitresHtml += '</div>';
+                }
+
+                container.append(`
+                    <div class="section-card bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4" data-section-idx="${idx}">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold">Section ${idx + 1}</h3>
+                            <button type="button" class="remove-section text-red-500 hover:text-red-700" data-index="${idx}">
+                                Supprimer
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4">
+                            <input type="text" placeholder="Titre de la section" class="section-title w-full p-3 border rounded-lg" value="${escapeHtml(sectionTitre)}">
+                            <textarea placeholder="Description" class="section-description w-full p-3 border rounded-lg" rows="2">${escapeHtml(section.description || '')}</textarea>
+                            <div class="flex gap-2">
+                                <button type="button" class="add-chapitre-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90" data-section-idx="${idx}">
+                                    + Ajouter un chapitre
+                                </button>
+                            </div>
+                            ${chapitresHtml}
+                        </div>
+                    </div>
+                `);
+            });
+
+            $('.section-title').on('input', function() {
+                const sectionCard = $(this).closest('.section-card');
+                const sectionIdx = sectionCard.data('section-idx');
+                if (sectionIdx !== undefined && sectionsData[sectionIdx]) {
+                    sectionsData[sectionIdx].titre = $(this).val();
                 }
             });
-        });
-        document.getElementById('recapTitre').innerText = document.getElementById('courseTitre').value || '-';
-        document.getElementById('recapSections').innerText = sections.length;
-        document.getElementById('recapChapitres').innerText = totalChapitres;
-        document.getElementById('recapSousChapitres').innerText = totalSousChapitres;
-        document.getElementById('recapLecons').innerText = totalLecons;
-    }
 
-    function saveCourse() {
-        const courseData = {
-            titre: document.getElementById('courseTitre').value,
-            slug: document.getElementById('courseSlug').value,
-            categorieId: document.getElementById('courseCategorie').value,
-            descriptionCourte: document.getElementById('courseDescriptionCourte').value,
-            description: document.getElementById('courseDescription').value,
-            niveau: document.getElementById('courseNiveau').value,
-            dureeEstimee: document.getElementById('courseDuree').value,
-            publie: document.getElementById('publieCheckbox').checked,
-            sections: sections
-        };
-        console.log('Course saved:', courseData);
-        showToast('Cours enregistré avec succès !');
-        setTimeout(() => window.location.href = '/professeur/cours', 1500);
-    }
+            $('.section-description').on('input', function() {
+                const sectionCard = $(this).closest('.section-card');
+                const sectionIdx = sectionCard.data('section-idx');
+                if (sectionIdx !== undefined && sectionsData[sectionIdx]) {
+                    sectionsData[sectionIdx].description = $(this).val();
+                }
+            });
 
-    // Événements
-    document.getElementById('courseTitre').addEventListener('input', function() {
-        const slug = this.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        document.getElementById('courseSlug').value = slug;
-    });
-    document.getElementById('courseDescriptionCourte').addEventListener('input', function() {
-        document.getElementById('charCount').innerText = this.value.length;
-    });
-    document.getElementById('courseImage').addEventListener('change', function(e) {
-        if(e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = ev => { document.getElementById('previewImg').src = ev.target.result; document.getElementById('imagePreview').classList.remove('hidden'); };
-            reader.readAsDataURL(e.target.files[0]);
+            saveSectionsFromDOM();
         }
-    });
-    document.getElementById('leconVideoUrl').addEventListener('input', function() {
-        const preview = document.getElementById('videoPreview');
-        if(this.value.trim()) { preview.classList.remove('hidden'); document.getElementById('videoPreviewText').innerText = this.value; }
-        else preview.classList.add('hidden');
-    });
 
-    updateStepUI();
+        function addSection() {
+            sectionsData.push({
+                titre: `Section ${sectionsData.length + 1}`,
+                description: '',
+                ordre: sectionsData.length,
+                chapitres: []
+            });
+            refreshSectionsDisplay();
+        }
+
+        function removeSection(idx) {
+            if (confirm('Supprimer cette section ?')) {
+                sectionsData.splice(idx, 1);
+                refreshSectionsDisplay();
+            }
+        }
+
+        function openAddChapitreModal(sectionIdx) {
+            $('#modalTitle').text('Ajouter un chapitre');
+            $('#currentSectionId').val(sectionIdx);
+            $('#currentChapitreId').val('');
+            $('#chapitreTitre').val('');
+            $('#chapitreDescription').val('');
+            $('#chapitreModal').css('display', 'flex');
+        }
+
+        function openEditChapitreModal(sectionIdx, chapitreIdx) {
+            const chapitre = sectionsData[sectionIdx].chapitres[chapitreIdx];
+            if (chapitre) {
+                $('#modalTitle').text('Modifier le chapitre');
+                $('#currentSectionId').val(sectionIdx);
+                $('#currentChapitreId').val(chapitreIdx);
+                $('#chapitreTitre').val(chapitre.titre);
+                $('#chapitreDescription').val(chapitre.description || '');
+                $('#chapitreModal').css('display', 'flex');
+            }
+        }
+
+        function saveChapitre() {
+            const sectionIdx = parseInt($('#currentSectionId').val());
+            const chapitreIdx = $('#currentChapitreId').val();
+            const titre = $('#chapitreTitre').val();
+            const description = $('#chapitreDescription').val();
+
+            if (!titre) {
+                alert('Le titre du chapitre est obligatoire');
+                return;
+            }
+
+            if (!sectionsData[sectionIdx]) {
+                sectionsData[sectionIdx] = { titre: '', description: '', chapitres: [] };
+            }
+            if (!sectionsData[sectionIdx].chapitres) {
+                sectionsData[sectionIdx].chapitres = [];
+            }
+
+            const newChapitre = {
+                titre: titre,
+                description: description,
+                ordre: sectionsData[sectionIdx].chapitres.length,
+                contenus: []
+            };
+
+            if (chapitreIdx === '') {
+                sectionsData[sectionIdx].chapitres.push(newChapitre);
+            } else {
+                sectionsData[sectionIdx].chapitres[parseInt(chapitreIdx)] = newChapitre;
+            }
+
+            refreshSectionsDisplay();
+            $('#chapitreModal').css('display', 'none');
+        }
+
+        function deleteChapitre(sectionIdx, chapitreIdx) {
+            if (confirm('Supprimer ce chapitre ?')) {
+                sectionsData[sectionIdx].chapitres.splice(chapitreIdx, 1);
+                refreshSectionsDisplay();
+            }
+        }
+
+        function toggleContenuFields() {
+            const type = $('#contenuType').val();
+            $('#videoFields, #texteFields, #fichierFields, #lienFields').hide();
+            if (type === 'VIDEO') $('#videoFields').show();
+            else if (type === 'TEXTE') $('#texteFields').show();
+            else if (type === 'PDF' || type === 'IMAGE') $('#fichierFields').show();
+            else if (type === 'LIEN') $('#lienFields').show();
+        }
+
+        function openAddContenuModal(sectionIdx, chapitreIdx) {
+            $('#contenuModalTitle').text('Ajouter un contenu');
+            $('#currentContenuSectionId').val(sectionIdx);
+            $('#currentContenuChapitreId').val(chapitreIdx);
+            $('#currentContenuId').val('');
+            $('#contenuTitre').val('');
+            $('#contenuType').val('VIDEO');
+            $('#videoUrl').val('');
+            $('#contenuTexte').val('');
+            $('#lienUrl').val('');
+            $('#lienTexte').val('');
+            $('#fichierFile').val('');
+            $('#apercuGratuit').prop('checked', false);
+            toggleContenuFields();
+            $('#contenuModal').css('display', 'flex');
+        }
+
+        function saveContenu() {
+            const sectionIdx = parseInt($('#currentContenuSectionId').val());
+            const chapitreIdx = parseInt($('#currentContenuChapitreId').val());
+            const contenuIdx = $('#currentContenuId').val();
+            const titre = $('#contenuTitre').val();
+            const type = $('#contenuType').val();
+
+            if (!titre) {
+                alert('Le titre du contenu est obligatoire');
+                return;
+            }
+
+            if (!sectionsData[sectionIdx] || !sectionsData[sectionIdx].chapitres[chapitreIdx]) {
+                alert('Erreur: chapitre non trouvé');
+                return;
+            }
+
+            const contenu = {
+                titre: titre,
+                typeContenu: type,
+                apercuGratuit: $('#apercuGratuit').is(':checked'),
+                ordre: sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.length
+            };
+
+            if (type === 'VIDEO') contenu.videoUrl = $('#videoUrl').val();
+            else if (type === 'TEXTE') contenu.contenuTexte = $('#contenuTexte').val();
+            else if (type === 'LIEN') {
+                contenu.lienExterne = $('#lienUrl').val();
+                contenu.lienTexte = $('#lienTexte').val();
+            }
+
+            if (!sectionsData[sectionIdx].chapitres[chapitreIdx].contenus) {
+                sectionsData[sectionIdx].chapitres[chapitreIdx].contenus = [];
+            }
+
+            if (contenuIdx === '') {
+                sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.push(contenu);
+            } else {
+                sectionsData[sectionIdx].chapitres[chapitreIdx].contenus[parseInt(contenuIdx)] = contenu;
+            }
+
+            refreshSectionsDisplay();
+            $('#contenuModal').css('display', 'none');
+        }
+
+        function validateSections() {
+            for (let i = 0; i < sectionsData.length; i++) {
+                if (!sectionsData[i].titre || sectionsData[i].titre.trim() === '') {
+                    alert(`La section ${i + 1} n'a pas de titre. Veuillez ajouter un titre.`);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function collectFormData() {
+            const formData = new FormData();
+            formData.append('titre', $('#titre').val() || '');
+            formData.append('descriptionCourte', $('#descriptionCourte').val() || '');
+            formData.append('description', $('#description').val() || '');
+            formData.append('dureeEstimee', $('#dureeEstimee').val() || '0');
+
+            const imageFile = $('#imageCouverture')[0].files[0];
+            if (imageFile) {
+                formData.append('imageCouverture', imageFile);
+            }
+
+            saveSectionsFromDOM();
+
+            const cleanedSections = sectionsData.map((section, idx) => {
+                let cleanTitre = section.titre;
+                if (!cleanTitre || cleanTitre.trim() === '') {
+                    cleanTitre = `Section ${idx + 1}`;
+                }
+                return {
+                    titre: cleanTitre,
+                    description: section.description || '',
+                    ordre: idx,
+                    chapitres: section.chapitres || []
+                };
+            });
+
+            formData.append('sections', JSON.stringify(cleanedSections));
+            return formData;
+        }
+
+        function publishCourse() {
+            const titre = $('#titre').val();
+            if (!titre) {
+                alert('Le titre du cours est obligatoire');
+                showStep(1);
+                return;
+            }
+
+            saveSectionsFromDOM();
+            if (!validateSections()) {
+                showStep(2);
+                return;
+            }
+
+            const formData = collectFormData();
+            formData.append('publier', 'true');
+
+            $('#publishBtn').prop('disabled', true).text('Publication en cours...');
+
+            $.ajax({
+                url: '/professeur/cours/api/creer-avec-fichier',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ Cours publié avec succès !');
+                        window.location.href = '/professeur/cours';
+                    } else {
+                        alert('❌ Erreur: ' + (response.message || 'Erreur inconnue'));
+                        $('#publishBtn').prop('disabled', false).text('Publier le cours');
+                    }
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                    let errorMsg = 'Erreur lors de la publication du cours';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg += ': ' + xhr.responseJSON.message;
+                    }
+                    alert(errorMsg);
+                    $('#publishBtn').prop('disabled', false).text('Publier le cours');
+                }
+            });
+        }
+
+        function saveDraft() {
+            const titre = $('#titre').val();
+            if (!titre) {
+                alert('Le titre du cours est obligatoire');
+                showStep(1);
+                return;
+            }
+
+            saveSectionsFromDOM();
+            const formData = collectFormData();
+            formData.append('publier', 'false');
+
+            $('#saveDraftBtn').prop('disabled', true).text('Sauvegarde...');
+
+            $.ajax({
+                url: '/professeur/cours/api/creer-avec-fichier',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ Cours sauvegardé en brouillon !');
+                        window.location.href = '/professeur/cours';
+                    } else {
+                        alert('❌ Erreur: ' + (response.message || 'Erreur inconnue'));
+                        $('#saveDraftBtn').prop('disabled', false).text('Sauvegarder en brouillon');
+                    }
+                },
+                error: function(xhr) {
+                    console.error(xhr);
+                    alert('Erreur lors de la sauvegarde du cours');
+                    $('#saveDraftBtn').prop('disabled', false).text('Sauvegarder en brouillon');
+                }
+            });
+        }
+
+        function showStep(step) {
+            $('.step-content').hide();
+            $(`#step${step}`).show();
+
+            $('.step').removeClass('bg-white shadow-sm border-b-2 border-primary text-primary');
+            $('.step').addClass('text-slate-500');
+            $(`.step-${step}`).addClass('bg-white shadow-sm border-b-2 border-primary');
+            $(`.step-${step}`).removeClass('text-slate-500').addClass('text-primary');
+
+            $('#prevBtn').toggle(step > 1);
+            $('#nextBtn').text(step === 4 ? 'Publier' : 'Étape suivante');
+            currentStep = step;
+
+            if (step === 3) {
+                saveSectionsFromDOM();
+                updatePreview();
+            }
+        }
+
+        // Événements
+        $('#nextBtn').click(function() {
+            if (currentStep === 4) {
+                publishCourse();
+            } else if (currentStep < 4) {
+                showStep(currentStep + 1);
+            }
+        });
+
+        $('#prevBtn').click(function() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        });
+
+        $('#saveDraftBtn').click(saveDraft);
+        $('#publishBtn').click(publishCourse);
+        $('#addSectionBtn').click(addSection);
+
+        $('#sectionsContainer').on('click', '.remove-section', function() {
+            removeSection(parseInt($(this).data('index')));
+        });
+
+        $('#sectionsContainer').on('click', '.add-chapitre-btn', function() {
+            openAddChapitreModal(parseInt($(this).data('section-idx')));
+        });
+
+        $('#sectionsContainer').on('click', '.edit-chapitre', function() {
+            openEditChapitreModal(parseInt($(this).data('section-idx')), parseInt($(this).data('chapitre-idx')));
+        });
+
+        $('#sectionsContainer').on('click', '.delete-chapitre', function() {
+            deleteChapitre(parseInt($(this).data('section-idx')), parseInt($(this).data('chapitre-idx')));
+        });
+
+        $('#sectionsContainer').on('click', '.add-contenu', function() {
+            openAddContenuModal(parseInt($(this).data('section-idx')), parseInt($(this).data('chapitre-idx')));
+        });
+
+        $('#closeModalBtn, #closeContenuModalBtn').click(function() {
+            $('#chapitreModal, #contenuModal').css('display', 'none');
+        });
+
+        $('#saveChapitreBtn').click(saveChapitre);
+        $('#saveContenuBtn').click(saveContenu);
+        $('#contenuType').change(toggleContenuFields);
+
+        $(window).click(function(e) {
+            if ($(e.target).hasClass('modal')) {
+                $('.modal').css('display', 'none');
+            }
+        });
+
+        showStep(1);
+    });
 </script>
+
 </body>
 </html>

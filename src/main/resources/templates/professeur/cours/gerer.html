@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gérer le cours - L'Érudition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .bg-primary { background-color: #003178; }
+    .text-primary { color: #003178; }
+    .border-primary { border-color: #003178; }
+    .glass-nav { backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.8); }
+    .section-card {
+      transition: all 0.2s ease;
+    }
+    .section-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-[Inter]">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
+  <div class="flex items-center gap-8">
+    <span class="text-xl font-black tracking-tighter text-primary">L'Érudition</span>
+    <div class="hidden md:flex gap-6">
+      <a href="/professeur/dashboard" class="text-gray-500 hover:text-primary transition-colors">Dashboard</a>
+      <a href="/professeur/cours" class="text-primary font-bold border-b-2 border-primary">Cours</a>
+      <a href="/professeur/etudiants" class="text-gray-500 hover:text-primary transition-colors">Étudiants</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+      <span th:text="${professeur != null and professeur.utilisateur != null ? #strings.substring(professeur.utilisateur.prenom, 0, 1) : 'P'}">P</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="hidden md:flex h-screen w-64 fixed left-0 top-0 z-40 bg-[#f2f4f6] flex-col p-6 gap-4 pt-20">
+  <nav class="flex-1 space-y-1">
+    <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">Dashboard</a>
+    <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-primary font-bold bg-white rounded-lg shadow-sm">Mes cours</a>
+    <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">Étudiants</a>
+    <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg mt-8">Déconnexion</a>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="md:ml-64 pt-20 min-h-screen">
+  <div class="p-4 md:p-8 max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <a href="/professeur/cours" class="flex items-center gap-2 text-gray-500 hover:text-primary mb-4">
+        <span class="material-symbols-outlined text-sm">arrow_back</span>
+        <span>Retour aux cours</span>
+      </a>
+      <div class="flex justify-between items-start">
+        <div>
+          <h1 class="text-3xl font-black text-gray-900" th:text="${cours.titre}">Titre du cours</h1>
+          <p class="text-gray-500 mt-1" th:text="${cours.descriptionCourte}">Description courte</p>
+        </div>
+        <div class="flex gap-3">
+          <a th:href="'/professeur/cours/' + ${cours.id} + '/modifier'"
+             class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+            Modifier
+          </a>
+          <form th:action="'/professeur/cours/' + ${cours.id} + '/supprimer'" method="post"
+                onsubmit="return confirm('Supprimer définitivement ce cours ?')" class="inline">
+            <button type="submit" class="px-5 py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+              Supprimer
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Statut</p>
+            <p th:if="${cours.publie}" class="text-green-600 font-bold">Publié</p>
+            <p th:unless="${cours.publie}" class="text-orange-600 font-bold">Brouillon</p>
+          </div>
+          <span class="material-symbols-outlined text-2xl text-primary">visibility</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Étudiants inscrits</p>
+            <p class="text-2xl font-bold text-gray-900" th:text="${cours.nombreApprenants}">0</p>
+          </div>
+          <span class="material-symbols-outlined text-2xl text-primary">groups</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Durée estimée</p>
+            <p class="text-2xl font-bold text-gray-900" th:text="${cours.dureeEstimee} + ' min'">0</p>
+          </div>
+          <span class="material-symbols-outlined text-2xl text-primary">schedule</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Date de création</p>
+            <p class="text-sm font-bold text-gray-900" th:text="${#temporals.format(cours.dateCreation, 'dd/MM/yyyy')}">-</p>
+          </div>
+          <span class="material-symbols-outlined text-2xl text-primary">calendar_today</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Structure du cours -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-bold text-gray-900">Structure du cours</h2>
+        <p class="text-gray-500 text-sm mt-1">Aperçu des sections et chapitres</p>
+      </div>
+
+      <div class="p-6" id="structureContainer">
+        <div th:if="${cours.sections != null and not #lists.isEmpty(cours.sections)}">
+          <div th:each="section, secStat : ${cours.sections}" class="section-card mb-6 last:mb-0">
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div class="flex justify-between items-center mb-3">
+                <div>
+                  <span class="text-xs text-gray-400 uppercase tracking-wider">Section ${secStat.index + 1}</span>
+                  <h3 class="font-bold text-lg text-gray-900" th:text="${section.titre}">Titre section</h3>
+                  <p class="text-sm text-gray-500" th:text="${section.description}" th:if="${section.description}">Description</p>
+                </div>
+                <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full"
+                      th:text="${section.chapitres != null ? section.chapitres.size() : 0} + ' chapitre(s)'">0</span>
+              </div>
+
+              <div class="ml-6 space-y-2">
+                <div th:each="chapitre : ${section.chapitres}" class="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0">
+                  <span class="material-symbols-outlined text-primary text-sm mt-0.5">menu_book</span>
+                  <div class="flex-1">
+                    <p class="font-medium text-gray-800" th:text="${chapitre.titre}">Titre chapitre</p>
+                    <p class="text-xs text-gray-400" th:text="${chapitre.description}" th:if="${chapitre.description}">Description</p>
+                    <p class="text-xs text-gray-400 mt-1" th:text="${chapitre.contenus != null ? chapitre.contenus.size() : 0} + ' contenu(s)'">0</p>
+                  </div>
+                </div>
+                <div th:if="${section.chapitres == null or #lists.isEmpty(section.chapitres)}"
+                     class="text-sm text-gray-400 italic py-2">
+                  Aucun chapitre dans cette section
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div th:if="${cours.sections == null or #lists.isEmpty(cours.sections)}"
+             class="text-center py-8 text-gray-500">
+          <span class="material-symbols-outlined text-4xl mb-2">folder_empty</span>
+          <p>Aucune section définie pour ce cours</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="mt-8 flex gap-4 justify-end">
+      <a th:href="'/professeur/cours/' + ${cours.id} + '/modifier'"
+         class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+        <span class="material-symbols-outlined">edit</span>
+        Modifier le cours
+      </a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

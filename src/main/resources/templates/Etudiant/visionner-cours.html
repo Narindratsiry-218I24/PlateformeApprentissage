@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${cours.titre} + ' - Apprentissage'">Apprentissage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    .bg-primary { background-color: #003178; }
+    .text-primary { color: #003178; }
+    .border-primary { border-color: #003178; }
+    .chapter-content { transition: max-height 0.3s ease; }
+    .progress-bar { transition: width 0.5s ease; }
+    .prose { max-width: none; }
+    .prose p { margin-bottom: 1rem; line-height: 1.6; }
+    .video-container video { border-radius: 0.5rem; width: 100%; }
+    .content-item.selected {
+      background-color: rgba(0, 49, 120, 0.1);
+      color: #003178;
+      font-weight: 500;
+      border-left: 3px solid #003178;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-[Inter]">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
+  <div class="flex items-center gap-4">
+    <a href="/etudiant/mes-cours" class="flex items-center gap-2 text-gray-600 hover:text-primary">
+      <span class="material-symbols-outlined">arrow_back</span>
+      <span class="hidden md:inline">Mes cours</span>
+    </a>
+    <span class="text-xl font-black tracking-tighter text-primary">L'Érudition</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+      <span th:text="${etudiant != null ? #strings.substring(etudiant.prenom, 0, 1) : 'E'} + ${etudiant != null ? #strings.substring(etudiant.nom, 0, 1) : 'T'}">ET</span>
+    </div>
+  </div>
+</nav>
+
+<div class="flex pt-16">
+  <!-- Sidebar -->
+  <aside class="w-80 bg-white border-r border-gray-200 h-screen sticky top-16 overflow-y-auto">
+    <div class="p-4 border-b border-gray-200">
+      <h1 class="font-bold text-lg text-gray-900 line-clamp-2" th:text="${cours.titre}">Titre du cours</h1>
+      <div class="mt-3">
+        <div class="flex justify-between text-sm text-gray-600 mb-1">
+          <span>Progression</span>
+          <span id="globalProgression" th:text="${cours.progression} + '%'">0%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div id="globalProgressBar" class="bg-primary h-2 rounded-full progress-bar" th:style="'width: ' + ${cours.progression} + '%'"></div>
+        </div>
+      </div>
+    </div>
+    <div class="p-3" id="sidebarContent"></div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto p-6">
+      <div id="contentArea" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[500px]">
+        <div class="text-center text-gray-400 py-20">
+          <span class="material-symbols-outlined text-5xl mb-3">menu_book</span>
+          <p>Sélectionnez un chapitre pour commencer</p>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button id="markCompleteBtn" class="hidden px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">check_circle</span>
+          Marquer comme terminé
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script th:inline="javascript">
+  var coursData = /*[[${cours}]]*/ null;
+  var coursId = coursData ? coursData.id : null;
+  var currentContenuId = null;
+  var currentContenuComplete = false;
+
+  // Fonction d'échappement HTML
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Déplier tous les chapitres parents d'un élément
+  function expandParentChapters(element) {
+    let parent = element.closest('.chapter-content');
+    while (parent) {
+      const chapterItem = parent.closest('.chapter-item');
+      if (chapterItem) {
+        const button = chapterItem.querySelector('button');
+        const icon = button.querySelector('.material-symbols-outlined:last-child');
+        parent.classList.remove('hidden');
+        if (icon) icon.textContent = 'expand_more';
+      }
+      parent = parent.parentElement?.closest('.chapter-content');
+    }
+  }
+
+  // Initialiser la sidebar
+  function initSidebar() {
+    if (!coursData) return;
+    const sidebar = document.getElementById('sidebarContent');
+    let html = '';
+
+    if (coursData.sections && coursData.sections.length > 0) {
+      coursData.sections.forEach(section => {
+        html += `<div class="mb-4">
+                    <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg mb-2">
+                        <span class="material-symbols-outlined text-gray-500 text-sm">folder</span>
+                        <span class="font-semibold text-gray-700 text-sm">${escapeHtml(section.titre)}</span>
+                    </div>
+                    <div class="ml-4 space-y-1">`;
+
+        if (section.chapitres && section.chapitres.length > 0) {
+          section.chapitres.forEach(chapitre => {
+            html += buildChapitreHTML(chapitre);
+          });
+        }
+        html += `</div></div>`;
+      });
+    } else {
+      html = '<div class="text-center text-gray-500 py-4">Aucun chapitre disponible</div>';
+    }
+    sidebar.innerHTML = html;
+  }
+
+  // Construire le HTML pour un chapitre (récursif pour les sous-chapitres)
+  function buildChapitreHTML(chapitre) {
+    const isComplete = chapitre.estComplete || false;
+    const checkIcon = isComplete ? 'check_circle' : 'play_circle';
+    const checkColor = isComplete ? 'text-green-500' : 'text-gray-400';
+
+    let html = `<div class="chapter-item mb-2">
+                    <button class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between hover:bg-gray-100 transition-colors ${isComplete ? 'border-l-4 border-green-500' : ''}" onclick="toggleChapter(this)">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm ${checkColor}">${checkIcon}</span>
+                            <span class="text-sm text-gray-700">${escapeHtml(chapitre.titre)}</span>
+                        </div>
+                        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
+                    </button>
+                    <div class="chapter-content hidden ml-6 mt-1 space-y-1">`;
+
+    // Ajouter les sous-chapitres
+    if (chapitre.sousChapitres && chapitre.sousChapitres.length > 0) {
+      chapitre.sousChapitres.forEach(sousChapitre => {
+        html += buildChapitreHTML(sousChapitre);
+      });
+    }
+
+    // Ajouter les contenus
+    if (chapitre.contenus && chapitre.contenus.length > 0) {
+      chapitre.contenus.forEach(contenu => {
+        const contenuComplete = contenu.estComplete || false;
+        let iconType = 'description';
+        if (contenu.typeContenu === 'VIDEO') iconType = 'smart_display';
+        else if (contenu.typeContenu === 'PDF') iconType = 'picture_as_pdf';
+        else if (contenu.typeContenu === 'LIEN') iconType = 'link';
+        else if (contenu.typeContenu === 'IMAGE') iconType = 'image';
+
+        let htmlContentAttr = '';
+        if (contenu.htmlContent) {
+          htmlContentAttr = contenu.htmlContent.replace(/'/g, "\\'").replace(/\n/g, ' ');
+        }
+
+        html += `<button class="content-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 text-sm ${contenuComplete ? 'text-green-600' : 'text-gray-600'}"
+                        data-contenu-id="${contenu.id}"
+                        data-contenu-type="${contenu.typeContenu}"
+                        data-contenu-html='${htmlContentAttr}'
+                        onclick="loadContent(this)">
+                    <span class="material-symbols-outlined text-sm ${contenuComplete ? 'text-green-500' : 'text-gray-400'}">${contenuComplete ? 'check_circle' : iconType}</span>
+                    <span>${escapeHtml(contenu.titre)}</span>
+                </button>`;
+      });
+    }
+
+    html += `</div></div>`;
+    return html;
+  }
+
+  // Toggle chapitre (ouvrir/fermer)
+  function toggleChapter(btn) {
+    const parent = btn.closest('.chapter-item');
+    const content = parent.querySelector('.chapter-content');
+    const icon = btn.querySelector('.material-symbols-outlined:last-child');
+
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      if (icon) icon.textContent = 'expand_more';
+
+      // ✅ Charger automatiquement le premier contenu du chapitre
+      const firstContent = content.querySelector('.content-item');
+      if (firstContent) {
+        setTimeout(() => {
+          firstContent.click();
+        }, 50);
+      }
+    } else {
+      content.classList.add('hidden');
+      if (icon) icon.textContent = 'chevron_right';
+    }
+  }
+
+  // Charger le contenu
+  function loadContent(btn) {
+    // ✅ Déplier les chapitres parents
+    expandParentChapters(btn);
+
+    // Retirer la sélection précédente
+    document.querySelectorAll('.content-item').forEach(item =>
+            item.classList.remove('selected', 'bg-primary/10', 'text-primary', 'font-medium')
+    );
+
+    // Ajouter la sélection au contenu actuel
+    btn.classList.add('selected', 'bg-primary/10', 'text-primary', 'font-medium');
+
+    currentContenuId = btn.getAttribute('data-contenu-id');
+    let htmlContent = btn.getAttribute('data-contenu-html');
+    currentContenuComplete = btn.classList.contains('text-green-600');
+
+    const contentArea = document.getElementById('contentArea');
+    if (!htmlContent || htmlContent === 'null' || htmlContent === '') {
+      htmlContent = '<p class="text-gray-500">Contenu non disponible</p>';
+    }
+    contentArea.innerHTML = htmlContent;
+
+    // Afficher ou cacher le bouton "Marquer comme terminé"
+    const markBtn = document.getElementById('markCompleteBtn');
+    if (currentContenuComplete) {
+      markBtn.classList.add('hidden');
+    } else {
+      markBtn.classList.remove('hidden');
+      markBtn.onclick = function() { markContentComplete(); };
+    }
+  }
+
+  // Marquer un contenu comme complété
+  function markContentComplete() {
+    if (!currentContenuId || !coursId) return;
+
+    $.ajax({
+      url: '/etudiant/cours/' + coursId + '/contenu/' + currentContenuId + '/completer',
+      method: 'POST',
+      success: function(response) {
+        if (response.success) {
+          // Mettre à jour l'icône du contenu
+          const contentBtn = document.querySelector(`.content-item[data-contenu-id="${currentContenuId}"]`);
+          if (contentBtn) {
+            contentBtn.classList.add('text-green-600');
+            contentBtn.classList.remove('text-gray-600');
+            const iconSpan = contentBtn.querySelector('.material-symbols-outlined');
+            if (iconSpan) {
+              iconSpan.textContent = 'check_circle';
+              iconSpan.classList.add('text-green-500');
+              iconSpan.classList.remove('text-gray-400');
+            }
+          }
+
+          // Mettre à jour la progression globale
+          document.getElementById('globalProgression').textContent = response.progression + '%';
+          document.getElementById('globalProgressBar').style.width = response.progression + '%';
+
+          // Cacher le bouton
+          document.getElementById('markCompleteBtn').classList.add('hidden');
+          currentContenuComplete = true;
+
+          // Mettre à jour l'état du chapitre parent
+          const parentChapter = contentBtn.closest('.chapter-item');
+          if (parentChapter) {
+            const chapterBtn = parentChapter.querySelector('button');
+            const chapterIcon = chapterBtn.querySelector('.material-symbols-outlined:first-child');
+            // Vérifier si tous les contenus du chapitre sont complétés
+            const allContents = parentChapter.querySelectorAll('.content-item');
+            const allCompleted = Array.from(allContents).every(item =>
+                    item.classList.contains('text-green-600')
+            );
+            if (allCompleted && chapterIcon) {
+              chapterIcon.textContent = 'check_circle';
+              chapterIcon.classList.add('text-green-500');
+            }
+          }
+        }
+      },
+      error: function() {
+        alert('Erreur lors de la mise à jour');
+      }
+    });
+  }
+
+  // ✅ Ouvrir automatiquement le premier chapitre au chargement
+  function openFirstChapter() {
+    setTimeout(() => {
+      const firstChapterBtn = document.querySelector('.chapter-item button');
+      if (firstChapterBtn) {
+        firstChapterBtn.click();
+      }
+    }, 100);
+  }
+
+  // Initialisation au chargement
+  document.addEventListener('DOMContentLoaded', function() {
+    initSidebar();
+    openFirstChapter();
+  });
+</script>
+</body>
+</html>

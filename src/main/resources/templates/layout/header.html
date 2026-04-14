@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200/50">
+  <div class="px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+          <i class="fas fa-bars text-gray-600 text-xl"></i>
+        </button>
+        <div class="relative">
+          <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text"
+                 id="globalSearch"
+                 placeholder="Rechercher un cours, un étudiant..."
+                 class="pl-10 pr-4 py-2 w-64 md:w-96 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Notifications -->
+        <div class="relative">
+          <button id="notificationsBtn" class="p-2 rounded-xl hover:bg-gray-100 relative">
+            <i class="fas fa-bell text-gray-600 text-xl"></i>
+            <span th:if="${notificationsCount != null and notificationsCount > 0}"
+                  class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+        </div>
+
+        <!-- Messages -->
+        <div class="relative">
+          <a th:href="@{/professeur/messages}" class="p-2 rounded-xl hover:bg-gray-100 relative inline-block">
+            <i class="fas fa-envelope text-gray-600 text-xl"></i>
+            <span th:if="${unreadMessagesCount != null and unreadMessagesCount > 0}"
+                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
+                  th:text="${unreadMessagesCount}">0</span>
+          </a>
+        </div>
+
+        <!-- User Menu -->
+        <div class="relative group">
+          <button class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100">
+            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <i class="fas fa-user-graduate text-white text-sm"></i>
+            </div>
+            <div class="hidden md:block text-left">
+              <p class="text-sm font-semibold text-gray-900"
+                 th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">
+                Professeur
+              </p>
+              <p class="text-xs text-gray-500"
+                 th:text="${professeur != null ? professeur.specialite : 'Enseignant'}">
+                Enseignant
+              </p>
+            </div>
+            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+            <a th:href="@{/professeur/profil}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <i class="fas fa-user mr-2"></i>Mon profil
+            </a>
+            <div class="border-t border-gray-200"></div>
+            <a th:href="@{/logout}" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+              <i class="fas fa-sign-out-alt mr-2"></i>Déconnexion
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

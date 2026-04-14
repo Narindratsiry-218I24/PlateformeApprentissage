@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Espace Étudiant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    .bg-primary { background-color: #003178; }
+    .text-primary { color: #003178; }
+    .border-primary { border-color: #003178; }
+    .hover\:bg-primary\/90:hover { background-color: rgba(0, 49, 120, 0.9); }
+    .glass-nav { backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.8); }
+    .progress-bar {
+      transition: width 0.5s ease;
+    }
+    .course-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .course-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
+  <div class="flex items-center gap-4 md:gap-8">
+    <span class="text-lg md:text-xl font-black tracking-tighter text-primary">L'Érudition</span>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="/etudiant/dashboard" class="text-primary font-bold border-b-2 border-primary h-16 flex items-center">Dashboard</a>
+      <a href="/etudiant/mes-cours" class="text-gray-500 hover:text-primary h-16 flex items-center">Mes cours</a>
+      <a href="/etudiant/progression" class="text-gray-500 hover:text-primary h-16 flex items-center">Progression</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-3 md:gap-4">
+    <div class="text-right hidden md:block">
+      <p class="text-sm font-bold text-gray-900" th:text="${etudiant.nomComplet}">Étudiant</p>
+      <p class="text-xs text-gray-500">Niveau: <span th:text="${etudiant.niveau}">Débutant</span></p>
+    </div>
+    <div class="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+      <span th:text="${etudiant != null ? #strings.substring(etudiant.prenom, 0, 1) : 'E'} + ${etudiant != null ? #strings.substring(etudiant.nom, 0, 1) : 'T'}">ET</span>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="hidden md:flex h-screen w-64 fixed left-0 top-0 z-40 bg-[#f2f4f6] flex-col p-6 gap-4 pt-20">
+  <div class="mb-4 px-2">
+    <p class="text-xs uppercase tracking-wider text-gray-500">Mon espace</p>
+    <p class="text-sm font-bold text-primary" th:text="${etudiant.nomComplet}">Étudiant</p>
+  </div>
+  <nav class="flex-1 space-y-1">
+    <a href="/etudiant/dashboard" class="flex items-center gap-3 px-4 py-3 text-primary font-bold bg-white rounded-lg shadow-sm">Dashboard</a>
+    <a href="/etudiant/mes-cours" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">Mes cours</a>
+    <a href="/etudiant/progression" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">Progression</a>
+    <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg mt-8">Déconnexion</a>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="md:ml-64 pt-20 min-h-screen">
+  <div class="p-4 md:p-8 max-w-7xl mx-auto">
+
+    <!-- Welcome Header -->
+    <div class="mb-8">
+      <h1 class="text-2xl md:text-3xl font-black text-gray-900">Bonjour, <span th:text="${etudiant.prenom}">Étudiant</span> !</h1>
+      <p class="text-gray-500 mt-1">Continuez votre apprentissage, votre progression est sauvegardée automatiquement.</p>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Cours suivis</p>
+            <p class="text-2xl font-bold text-gray-900" th:text="${statistiques.totalCours}">0</p>
+          </div>
+          <span class="material-symbols-outlined text-3xl text-primary">menu_book</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Heures étudiées</p>
+            <p class="text-2xl font-bold text-gray-900" th:text="${statistiques.totalHeures}">0</p>
+          </div>
+          <span class="material-symbols-outlined text-3xl text-primary">schedule</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Progression moyenne</p>
+            <p class="text-2xl font-bold text-gray-900" th:text="${statistiques.progressionMoyenne} + '%'">0%</p>
+          </div>
+          <span class="material-symbols-outlined text-3xl text-primary">trending_up</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-500 text-sm">Certificats obtenus</p>
+            <p class="text-2xl font-bold text-gray-900" th:text="${statistiques.certificats}">0</p>
+          </div>
+          <span class="material-symbols-outlined text-3xl text-primary">school</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mes cours en cours -->
+    <div class="mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Mes cours en cours</h2>
+        <a href="/etudiant/mes-cours" class="text-primary text-sm hover:underline">Voir tous</a>
+      </div>
+
+      <div th:if="${not #lists.isEmpty(coursEnCours)}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div th:each="cours : ${coursEnCours}" class="course-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100">
+          <div class="h-36 bg-gradient-to-r from-blue-100 to-blue-200 relative">
+            <img th:src="${cours.imageCouverture}" alt="Cover" class="w-full h-full object-cover" th:if="${cours.imageCouverture != null}">
+            <div class="absolute top-3 right-3">
+              <span class="text-xs text-white bg-green-600 px-2 py-1 rounded-full" th:if="${cours.publie}">Publié</span>
+            </div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-gray-900 mb-2 line-clamp-1" th:text="${cours.titre}">Titre</h3>
+            <p class="text-sm text-gray-500 line-clamp-2 mb-3" th:text="${cours.descriptionCourte}">Description</p>
+            <div class="mb-3">
+              <div class="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Progression</span>
+                <span th:text="${cours.progression} + '%'">0%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="progress-bar bg-primary h-2 rounded-full" th:style="'width: ' + ${cours.progression} + '%'"></div>
+              </div>
+            </div>
+            <a th:href="'/etudiant/cours/' + ${cours.id} + '/continuer'" class="block text-center w-full py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+              Continuer
+            </a>
+          </div>
+        </div>
+      </div>
+      <div th:if="${#lists.isEmpty(coursEnCours)}" class="bg-white rounded-xl p-8 text-center text-gray-500">
+        <span class="material-symbols-outlined text-5xl mb-3">menu_book</span>
+        <p>Vous n'êtes inscrit à aucun cours pour le moment</p>
+        <a href="/etudiant/catalogue" class="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-lg">Découvrir des cours</a>
+      </div>
+    </div>
+
+    <!-- Recommandations -->
+    <div>
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Cours recommandés pour vous</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div th:each="cours : ${recommandations}" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100">
+          <div class="h-36 bg-gray-200">
+            <img th:src="${cours.imageCouverture}" alt="Cover" class="w-full h-full object-cover" th:if="${cours.imageCouverture != null}">
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-gray-900 mb-1" th:text="${cours.titre}">Titre</h3>
+            <p class="text-sm text-gray-500 mb-3" th:text="${cours.descriptionCourte}">Description</p>
+            <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                <span th:text="${cours.dureeEstimee} + ' min'">0 min</span>
+                            </span>
+              <a th:href="'/etudiant/cours/' + ${cours.id} + '/inscrire'" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm">S'inscrire</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

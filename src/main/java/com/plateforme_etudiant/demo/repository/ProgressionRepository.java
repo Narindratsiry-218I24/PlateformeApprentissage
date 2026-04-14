@@ -35,12 +35,26 @@ public interface ProgressionRepository extends JpaRepository<Progression, Long> 
     @Query("SELECT COUNT(p) FROM Progression p WHERE p.apprenant.id = :apprenantId AND p.contenuItem.section.cours.id = :coursId AND p.estComplete = true")
     long countCompletedByApprenantIdAndCoursId(@Param("apprenantId") Long apprenantId, @Param("coursId") Long coursId);
 
+    // Compter les contenus complétés par un étudiant pour un cours
+    @Query("SELECT COUNT(p) FROM Progression p WHERE p.apprenant.id = :apprenantId AND p.contenuItem.section.cours.id = :coursId AND p.estComplete = true")
+    Long countCompletedByApprenantAndCours(@Param("apprenantId") Long apprenantId, @Param("coursId") Long coursId);
+
     // Statistiques
     @Query("SELECT AVG(p.tempsPasse) FROM Progression p WHERE p.contenuItem.id = :contenuItemId AND p.estComplete = true")
     Optional<Double> getTempsMoyenCompletion(@Param("contenuItemId") Long contenuItemId);
 
     @Query("SELECT COUNT(p) FROM Progression p WHERE p.contenuItem.id = :contenuItemId AND p.estComplete = true")
     long countCompletionsByContenuItemId(@Param("contenuItemId") Long contenuItemId);
+
+    // Progression par cours et étudiant
+    @Query("SELECT COALESCE(SUM(CASE WHEN p.estComplete = true THEN 1 ELSE 0 END) * 100 / COUNT(p), 0) FROM Progression p WHERE p.contenuItem.section.cours.id = :coursId AND p.apprenant.id = :etudiantId")
+    int getProgressionByCoursAndEtudiant(@Param("coursId") Long coursId, @Param("etudiantId") Long etudiantId);
+
+    @Query("SELECT COUNT(p) > 0 FROM Progression p WHERE p.contenuItem.chapitre.id = :chapitreId AND p.apprenant.id = :etudiantId AND p.estComplete = true AND p.contenuItem.chapitre IS NOT NULL")
+    boolean isChapitreComplete(@Param("chapitreId") Long chapitreId, @Param("etudiantId") Long etudiantId);
+
+    @Query("SELECT COUNT(p) > 0 FROM Progression p WHERE p.contenuItem.id = :contenuId AND p.apprenant.id = :etudiantId AND p.estComplete = true")
+    boolean isContenuComplete(@Param("contenuId") Long contenuId, @Param("etudiantId") Long etudiantId);
 
     // ==================== MISE À JOUR ====================
 

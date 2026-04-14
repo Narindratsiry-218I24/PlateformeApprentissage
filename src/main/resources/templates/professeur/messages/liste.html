@@ -1,558 +1,348 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/base.html}">
-<head>
-    <title>Messages - Professeur</title>
-    <!-- SockJS and STOMP -->
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<html class="light" lang="fr"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Messagerie | L'Érudition Augmentée</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed-variant": "#00429c",
+                        "inverse-surface": "#2d3133",
+                        "tertiary": "#003d28",
+                        "on-secondary-fixed": "#021f29",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#cbe7f5",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#00573a",
+                        "inverse-primary": "#b0c6ff",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed": "#d9e2ff",
+                        "primary": "#003178",
+                        "on-secondary-fixed-variant": "#304a55",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "background": "#f7f9fb",
+                        "on-primary-fixed": "#001945",
+                        "primary-fixed-dim": "#b0c6ff",
+                        "surface-container": "#eceef0",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#2b5bb5",
+                        "secondary": "#48626e",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface": "#f7f9fb",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-bright": "#f7f9fb",
+                        "on-surface-variant": "#434652",
+                        "on-tertiary-container": "#40d399",
+                        "on-primary-container": "#a1bbff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191c1e",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-variant": "#e0e3e5",
+                        "on-background": "#191c1e",
+                        "on-secondary-container": "#4e6874",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#737783",
+                        "on-tertiary-fixed": "#002113",
+                        "secondary-fixed-dim": "#afcbd8",
+                        "secondary-fixed": "#cbe7f5",
+                        "primary-container": "#0d47a1",
+                        "outline-variant": "#c3c6d4"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
     <style>
-        .message-container { height: calc(100vh - 280px); min-height: 400px; }
-        .message-list { height: 100%; overflow-y: auto; }
-        .chat-area { height: 100%; display: flex; flex-direction: column; }
-        .messages-scroll { flex: 1; overflow-y: auto; padding: 1rem; }
-        .message-bubble { max-width: 70%; margin-bottom: 1rem; }
-        .message-sent { margin-left: auto; }
-        .message-sent .message-bubble { background: #3b82f6; color: white; border-radius: 1rem 1rem 0 1rem; }
-        .message-received .message-bubble { background: #f3f4f6; color: #1f2937; border-radius: 1rem 1rem 1rem 0; }
-        .conversation-item.active { background: #eff6ff; border-left: 4px solid #3b82f6; }
-        .unread-badge { background: #ef4444; color: white; border-radius: 9999px; padding: 0.125rem 0.5rem; font-size: 0.75rem; }
-        .typing-indicator { display: inline-block; padding: 0.5rem 1rem; background: #f3f4f6; border-radius: 1rem; font-size: 0.875rem; color: #6b7280; }
-        .typing-dot { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: #9ca3af; margin: 0 1px; animation: typing 1.4s infinite; }
-        @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<div layout:fragment="content">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Messages</h1>
-        <p class="text-gray-600">Discutez avec vos étudiants</p>
+<body class="bg-background font-body text-on-surface antialiased">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-[#c3c6d4]/15 shadow-sm flex justify-between items-center px-8 h-16">
+    <div class="flex items-center gap-8">
+        <span class="text-xl font-black tracking-tighter text-[#003178] dark:text-blue-400">L'Érudition Augmentée</span>
+        <div class="hidden md:flex gap-6">
+            <a class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="#">Tableau de bord</a>
+            <a class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="#">Cours</a>
+            <a class="text-[#003178] font-bold border-b-2 border-[#003178] px-3 py-2 text-sm" href="#">Messages</a>
+        </div>
     </div>
-
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="grid grid-cols-1 md:grid-cols-3 h-[calc(100vh-200px)] min-h-[500px]">
-            <!-- Conversations List -->
-            <div class="border-r border-gray-200">
-                <div class="p-4 border-b border-gray-200 bg-gray-50">
-                    <h3 class="font-semibold text-gray-900">Conversations</h3>
-                    <p class="text-sm text-gray-500" id="conversationCount">0 conversation</p>
+    <div class="flex items-center gap-4">
+        <button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors active:scale-95 duration-200">
+            <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors active:scale-95 duration-200">
+            <span class="material-symbols-outlined">mail</span>
+        </button>
+        <div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center text-white overflow-hidden">
+            <img class="w-full h-full object-cover" data-alt="portrait de profil professionnel d'un professeur d'université avec un éclairage de studio doux et un arrière-plan flou" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmXNG_YAKW9zZ2UhskEo8YctyKc5EtL0bRCG684Oi-SCdmekpP5yHrOgo0z9CZe04s_5xPnRKFB1lSMG1e8b_Xp5j0PpJY6GnjSmsxJVgvTKPALO3QXl2yaHLAL5gY-xT-wawHZzi1pO4QXYjKKbMyMOruI1vktAMDqffG2vmxt0aga1h00DL-ycLYtn-PGzP7nZGiw3Z1XHQ4KOxetepsi2Z0f5Yoox5EJvmSYQVoDEXvSN_gCls3hnR8tmD-l7Pe4teb5C9a2zKW"/>
+        </div>
+    </div>
+</nav>
+<!-- Sidebar (Shared Component) -->
+<aside class="hidden md:flex flex-col p-6 gap-4 h-screen w-64 fixed left-0 top-0 z-40 bg-[#f2f4f6] dark:bg-slate-900 mt-16">
+    <div class="mb-6 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined">school</span>
+        </div>
+        <div>
+            <div class="text-primary font-bold text-sm">Mon Sanctuaire</div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-widest">Érudit de niveau 4</div>
+        </div>
+    </div>
+    <nav class="flex flex-col gap-1">
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-[#003178] hover:translate-x-1 transition-transform duration-200 text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">dashboard</span>
+            Tableau de bord
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-[#003178] hover:translate-x-1 transition-transform duration-200 text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">menu_book</span>
+            Cours
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-[#003178] hover:translate-x-1 transition-transform duration-200 text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">group</span>
+            Étudiants
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-[#003178] dark:text-blue-400 font-bold bg-white dark:bg-slate-800 rounded-lg shadow-sm text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+            Messages
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-[#003178] hover:translate-x-1 transition-transform duration-200 text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">qr_code_2</span>
+            QR Codes
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-[#003178] hover:translate-x-1 transition-transform duration-200 text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">settings</span>
+            Paramètres
+        </a>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant/15 flex flex-col gap-1">
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-[#003178] text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">help</span>
+            Aide
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-error text-xs font-bold uppercase tracking-widest" href="#">
+            <span class="material-symbols-outlined">logout</span>
+            Déconnexion
+        </a>
+    </div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-16 h-screen overflow-hidden flex flex-col">
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Conversation List -->
+        <div class="w-full md:w-80 lg:w-96 flex flex-col bg-surface-container-low/50 border-r border-outline-variant/15">
+            <div class="p-6">
+                <h1 class="text-headline-md font-bold text-on-surface mb-6 tracking-tight">Messagerie</h1>
+                <div class="relative mb-6">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+                    <input class="w-full bg-surface-container-high border-none rounded-lg pl-10 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-outline transition-all" placeholder="Rechercher un étudiant ou un collègue..." type="text"/>
                 </div>
-                <div id="conversationsList" class="overflow-y-auto h-[calc(100%-70px)]">
-                    <!-- Conversations will be loaded here -->
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-comments text-4xl mb-2"></i>
-                        <p>Aucune conversation</p>
-                    </div>
+                <div class="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-2">
+                    <button class="bg-primary text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Tous</button>
+                    <button class="bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-sm">Étudiants</button>
+                    <button class="bg-white text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shadow-sm">Groupes</button>
                 </div>
             </div>
-
-            <!-- Chat Area -->
-            <div class="col-span-2 flex flex-col">
-                <div id="chatHeader" class="p-4 border-b border-gray-200 bg-gray-50 hidden">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user-graduate text-blue-600"></i>
+            <div class="flex-1 overflow-y-auto hide-scrollbar px-3 space-y-1">
+                <!-- Conversation Item Active -->
+                <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-primary flex gap-4 cursor-pointer">
+                    <div class="relative shrink-0">
+                        <img class="w-12 h-12 rounded-lg object-cover" data-alt="portrait de profil d'un jeune étudiant souriant dans un café en plein jour avec un éclairage naturel et chaleureux" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3ng3tFWfO9_5rr5XRyWCNm5Qf3oeS1HYtDaBeg48eQOIS1I7mSWmiOZWM8UFsYr3YP252KJ3K-CWshzOYfBCMI0dGsJ1Csa4wUtRXZ5casELKuqUZjmdO3RykGKXLw9j61HQ-iXuhMBuu7i21YZbrPh_6joFlmW659mmWcI0Lpkc9JCK750qw-SxKYwvw8OTpNG_hl7sjBEWLYPhEyQP3KdgETjqt_IbgN9w2lpqpjRhiNaYUnq-wPDaUHafb2kTpypGxaTOK_heg"/>
+                        <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-tertiary-fixed-dim border-2 border-white rounded-full"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-on-surface text-sm truncate">Lucas Bernard</h3>
+                            <span class="text-[10px] text-slate-400 font-medium">14:20</span>
                         </div>
-                        <div>
-                            <h3 id="chatUserName" class="font-semibold text-gray-900">-</h3>
-                            <p id="chatUserRole" class="text-xs text-gray-500">-</p>
+                        <p class="text-xs text-primary font-medium truncate mt-0.5">Merci pour les retours sur mon TP !</p>
+                        <div class="mt-2 flex items-center gap-1.5">
+                            <span class="text-[9px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded uppercase font-bold tracking-tighter">L3 Histoire</span>
                         </div>
                     </div>
                 </div>
-
-                <div id="chatMessages" class="messages-scroll flex-1 p-4 space-y-3 overflow-y-auto">
-                    <div class="text-center py-12 text-gray-500">
-                        <i class="fas fa-inbox text-4xl mb-2"></i>
-                        <p>Sélectionnez une conversation pour commencer</p>
+                <!-- Conversation Item -->
+                <div class="hover:bg-white/50 rounded-xl p-4 flex gap-4 cursor-pointer transition-colors">
+                    <div class="relative shrink-0">
+                        <img class="w-12 h-12 rounded-lg object-cover" data-alt="portrait de profil d'une jeune femme étudiante avec des lunettes dans une bibliothèque, lumière tamisée et intellectuelle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDonkHQrNtlK1jGCJOomKFMZjdYhLTPQAQMFgJSBH30Lci3Ke4DIJL9H_ZMKvTrojVuVvcq1yEazO_XHP6CDYtdBakswJZeVzC6AD_pYm_he_zAfXeTdlYaKGQVKYtRVE679RegsiVy__txsiESlcpUv8Z13Ip3W1vcl9Ils-6jSyDJLPochCU4bB-TNrx8-ZenX7g9IArAfzZdyBGu4PxGAJgJeBRyXSJBniM0U4cq4KsnUWC_OB8bP1iWqqp8_WCorOzeI2Eoy8qH"/>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-on-surface text-sm truncate">Sophie Martin</h3>
+                            <span class="text-[10px] text-slate-400 font-medium">11:05</span>
+                        </div>
+                        <p class="text-xs text-slate-500 truncate mt-0.5">Est-ce que le cours de demain est maintenu ?</p>
                     </div>
                 </div>
-
-                <div id="typingIndicator" class="px-4 py-2 hidden">
-                    <div class="typing-indicator">
-                        <span>En train d'écrire</span>
-                        <span class="typing-dot"></span>
-                        <span class="typing-dot"></span>
-                        <span class="typing-dot"></span>
+                <!-- Conversation Item -->
+                <div class="hover:bg-white/50 rounded-xl p-4 flex gap-4 cursor-pointer transition-colors">
+                    <div class="shrink-0 flex items-center justify-center w-12 h-12 bg-tertiary/10 text-tertiary rounded-lg">
+                        <span class="material-symbols-outlined">groups</span>
                     </div>
-                </div>
-
-                <div id="messageInput" class="p-4 border-t border-gray-200 bg-white hidden">
-                    <div class="flex gap-2">
-                        <div class="flex-1 relative">
-                            <textarea id="messageText" rows="2"
-                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      placeholder="Écrivez votre message..."></textarea>
-                            <div class="absolute bottom-2 right-2 text-xs text-gray-400">
-                                <span id="charCount">0</span>/500
-                            </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-on-surface text-sm truncate">Groupe Master 1</h3>
+                            <span class="text-[10px] text-slate-400 font-medium">Hier</span>
                         </div>
-                        <div class="flex flex-col gap-2">
-                            <button id="sendBtn"
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                            <button id="attachBtn"
-                                    class="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                        </div>
+                        <p class="text-xs text-slate-500 truncate mt-0.5">Jean: J'ai ajouté le document partagé.</p>
                     </div>
-                    <input type="file" id="fileInput" class="hidden">
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<th:block layout:fragment="scripts">
-    <script>
-        // ============================================
-        // WebSocket Configuration
-        // ============================================
-        let stompClient = null;
-        let currentConversationId = null;
-        let currentReceiverId = null;
-        let currentReceiverName = null;
-        let typingTimeout = null;
-        let isTyping = false;
-
-        // Current user info (from server)
-        const currentUser = {
-            id: 'prof_1',
-            name: 'Prof. Martin Dupont',
-            role: 'PROFESSEUR'
-        };
-
-        // Mock students list (would come from server)
-        const students = [
-            { id: 'etu_1', name: 'Sophie Martin', role: 'ETUDIANT', class: 'Terminale S' },
-            { id: 'etu_2', name: 'Thomas Bernard', role: 'ETUDIANT', class: 'Première' },
-            { id: 'etu_3', name: 'Emma Dubois', role: 'ETUDIANT', class: 'Terminale ES' },
-            { id: 'etu_4', name: 'Lucas Petit', role: 'ETUDIANT', class: 'Seconde' }
-        ];
-
-        // Conversations data
-        let conversations = [];
-        let messages = [];
-
-        // ============================================
-        // Initialize WebSocket Connection
-        // ============================================
-        function connectWebSocket() {
-            const socket = new SockJS('/ws');
-            stompClient = Stomp.over(socket);
-
-            stompClient.connect({}, function(frame) {
-                console.log('Connected: ' + frame);
-
-                // Subscribe to user-specific queue
-                stompClient.subscribe('/user/queue/messages', function(message) {
-                    const receivedMessage = JSON.parse(message.body);
-                    handleNewMessage(receivedMessage);
-                });
-
-                // Subscribe to typing notifications
-                stompClient.subscribe('/topic/typing', function(message) {
-                    const data = JSON.parse(message.body);
-                    if (data.senderId !== currentUser.id && data.conversationId === currentConversationId) {
-                        showTypingIndicator(data.senderName);
-                    }
-                });
-
-            }, function(error) {
-                console.error('WebSocket connection error:', error);
-                setTimeout(connectWebSocket, 5000);
-            });
-        }
-
-        // ============================================
-        // Send Message via WebSocket
-        // ============================================
-        function sendMessage(content) {
-            if (!content.trim() || !currentReceiverId) return;
-
-            const message = {
-                id: null,
-                content: content,
-                senderId: currentUser.id,
-                senderName: currentUser.name,
-                senderRole: currentUser.role,
-                receiverId: currentReceiverId,
-                receiverName: currentReceiverName,
-                conversationId: currentConversationId,
-                timestamp: new Date(),
-                read: false,
-                type: 'TEXT'
-            };
-
-            stompClient.send("/app/chat.send", {}, JSON.stringify(message));
-
-            // Add message locally
-            addMessageToChat(message);
-
-            // Clear input
-            document.getElementById('messageText').value = '';
-            document.getElementById('charCount').innerText = '0';
-        }
-
-        // ============================================
-        // Send Typing Indicator
-        // ============================================
-        function sendTypingIndicator() {
-            if (!currentReceiverId) return;
-
-            if (typingTimeout) clearTimeout(typingTimeout);
-
-            if (!isTyping) {
-                isTyping = true;
-                stompClient.send("/app/typing", {}, JSON.stringify({
-                    senderId: currentUser.id,
-                    senderName: currentUser.name,
-                    receiverId: currentReceiverId,
-                    conversationId: currentConversationId
-                }));
-            }
-
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-            }, 3000);
-        }
-
-        // ============================================
-        // Handle New Message
-        // ============================================
-        function handleNewMessage(message) {
-            // Update conversation list
-            updateConversationList(message);
-
-            // If this is the current conversation, add message to chat
-            if (message.conversationId === currentConversationId) {
-                addMessageToChat(message);
-            } else {
-                // Show notification
-                showNotification(message);
-            }
-
-            // Update unread count in sidebar
-            updateUnreadCount();
-        }
-
-        // ============================================
-        // Add Message to Chat UI
-        // ============================================
-        function addMessageToChat(message) {
-            const isSent = message.senderId === currentUser.id;
-            const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            const messageHtml = `
-            <div class="flex ${isSent ? 'justify-end' : 'justify-start'} message-${isSent ? 'sent' : 'received'}">
-                <div class="message-bubble max-w-[70%] p-3">
-                    <p class="text-sm">${escapeHtml(message.content)}</p>
-                    <div class="text-xs ${isSent ? 'text-blue-200' : 'text-gray-400'} mt-1 flex items-center gap-1">
-                        <span>${time}</span>
-                        ${isSent && message.read ? '<i class="fas fa-check-double text-xs"></i>' : ''}
+        <!-- Active Chat Area -->
+        <div class="flex-1 flex flex-col bg-white">
+            <!-- Chat Header -->
+            <header class="h-16 px-6 border-b border-outline-variant/15 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                        <img class="w-full h-full object-cover" data-alt="étudiant masculin souriant, plan rapproché pour icône de discussion" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcxAqvJPm8dlDyBJFuiBms2gJ7wE7v6n-4fQKytBzRp6b-sT4RF6EpUMkAv4DDuCKpmG6tP8csd3bp0Ry0i1t1OKBtqhk-GorZ4jsZ-cMKn0wWulNvWjpEdJmzE4aryhZXAP2HLEO6xCPVCDLNU-qJl9CpWxMM5WU64Z3H2eJhtv5bKi_0VI1LCfkIsARIMwheSlPhQv2Crr738ifgffAeOU_pkW7blmn_qiYaG7aSvNP4nQEzO_NSd4yLqAO3ZrageMeAq-k6z9kD"/>
                     </div>
+                    <div>
+                        <h2 class="font-bold text-on-surface text-sm">Lucas Bernard</h2>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></div>
+                            <span class="text-[10px] text-slate-500">En ligne</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="p-2 text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">call</span>
+                    </button>
+                    <button class="p-2 text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">videocam</span>
+                    </button>
+                    <button class="p-2 text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </div>
+            </header>
+            <!-- Messages Canvas -->
+            <div class="flex-1 overflow-y-auto p-8 space-y-8 bg-surface-container-lowest">
+                <div class="flex flex-col items-center">
+                    <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 px-4 py-1 bg-surface-container-low rounded-full">Lundi 24 Mai</span>
+                </div>
+                <!-- Received Message -->
+                <div class="flex items-end gap-3 max-w-[80%]">
+                    <div class="w-8 h-8 rounded-lg overflow-hidden shrink-0 mb-1">
+                        <img class="w-full h-full object-cover" data-alt="avatar étudiant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdB-ulcHvIOgaqsM9Wi5QRO4glr_gCubZxBfBarjWLv2XwT9CLhVezfl7zKEX4bA3WEP2syMHBTbE6pLSAPHC8a3-l-8fuK2S3uB3hDbkX8EtxpNgHVELQn0T3csQjODTo-YAv6cUP08ZloI9DSejWzuqFwYDJmiREUsQRuyU8bB0n-TbclyZzTUoIWwqCO20A2AF7rjJ-jRErK_Je55u0Q0G-epZeKWxFtrj6XqcNoBTQXycVTSs63P-9mU0n0vDni4rznNWEJH0v"/>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="bg-surface-container-low text-on-surface px-4 py-3 rounded-2xl rounded-bl-none text-sm leading-relaxed shadow-sm">
+                            Bonjour Monsieur, j'avais une question concernant la bibliographie du cours de Philologie. Devons-nous lire tous les chapitres du livre de M. Dupont ?
+                        </div>
+                        <span class="text-[9px] text-slate-400 px-1">14:15</span>
+                    </div>
+                </div>
+                <!-- Sent Message -->
+                <div class="flex flex-col items-end gap-1 ml-auto max-w-[80%]">
+                    <div class="bg-primary text-white px-4 py-3 rounded-2xl rounded-br-none text-sm leading-relaxed shadow-md">
+                        Bonjour Lucas. Non, seuls les chapitres 2 et 4 sont obligatoires pour l'examen final. Les autres sont à titre de lecture complémentaire.
+                    </div>
+                    <div class="flex items-center gap-1 px-1">
+                        <span class="text-[9px] text-slate-400">14:18</span>
+                        <span class="material-symbols-outlined text-[12px] text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    </div>
+                </div>
+                <!-- Received Message with Attachment -->
+                <div class="flex items-end gap-3 max-w-[80%]">
+                    <div class="w-8 h-8 rounded-lg overflow-hidden shrink-0 mb-1">
+                        <img class="w-full h-full object-cover" data-alt="avatar étudiant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmikC6AES2qGLiqKE6-JZv8LQ8g-JtdHMZ1D5RGpoYxc1bTGGhUBj5p8msIFHzhAelaQb2CJuhxo3rBxNUGXi4N7l7rGjrhPbiZfIgxnjpMt4gF-J8s-JBozpDgAofTNTwQGzHbl94ra5kICLs7IOd6kuujRx4wIbF-dImn1nCkRa_XVpJBbERDF3Qmw-xFjKFptjt53wozPz68ey14z3YB4EhEpI8f08KvZpShn-bVxzH2jwt1VJbJ1GDL6qFuSjNasr3vy89Ctik"/>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <div class="bg-surface-container-low text-on-surface px-4 py-3 rounded-2xl rounded-bl-none text-sm leading-relaxed shadow-sm">
+                            C'est noté, merci ! J'ai aussi terminé les corrections de mon TP que vous m'aviez demandées. Voici le fichier mis à jour.
+                        </div>
+                        <div class="mt-2 p-3 bg-white border border-outline-variant/30 rounded-xl flex items-center gap-3 shadow-sm hover:border-primary/30 cursor-pointer transition-all">
+                            <div class="w-10 h-10 bg-error/10 text-error rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-outlined">description</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-xs font-bold text-on-surface truncate">TP_Philologie_V2_Lucas.pdf</div>
+                                <div class="text-[9px] text-slate-400 uppercase tracking-wider">2.4 MB • PDF</div>
+                            </div>
+                            <span class="material-symbols-outlined text-slate-400">download</span>
+                        </div>
+                        <div class="mt-2 bg-surface-container-low text-on-surface px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm">
+                            Merci pour les retours sur mon TP !
+                        </div>
+                        <span class="text-[9px] text-slate-400 px-1">14:20</span>
+                    </div>
+                </div>
+                <!-- Typing Indicator -->
+                <div class="flex items-center gap-2 text-slate-400 mt-4">
+                    <div class="flex gap-1 px-3 py-2 bg-surface-container-low rounded-full">
+                        <div class="w-1.5 h-1.5 bg-slate-300 rounded-full"></div>
+                        <div class="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                        <div class="w-1.5 h-1.5 bg-slate-300 rounded-full"></div>
+                    </div>
+                    <span class="text-[10px] font-medium italic">Lucas écrit...</span>
                 </div>
             </div>
-        `;
-
-            const container = document.getElementById('chatMessages');
-            container.insertAdjacentHTML('beforeend', messageHtml);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // ============================================
-        // Load Conversation
-        // ============================================
-        function loadConversation(studentId, studentName) {
-            currentReceiverId = studentId;
-            currentReceiverName = studentName;
-            currentConversationId = [currentUser.id, studentId].sort().join('_');
-
-            // Update header
-            document.getElementById('chatUserName').innerText = studentName;
-            const student = students.find(s => s.id === studentId);
-            document.getElementById('chatUserRole').innerHTML = `<i class="fas fa-graduation-cap mr-1"></i>${student ? student.class : 'Étudiant'}`;
-
-            // Show chat area
-            document.getElementById('chatHeader').classList.remove('hidden');
-            document.getElementById('messageInput').classList.remove('hidden');
-
-            // Clear messages
-            document.getElementById('chatMessages').innerHTML = '<div class="text-center py-8"><div class="spinner"></div><p class="text-gray-500 mt-2">Chargement...</p></div>';
-
-            // Load messages from server
-            fetch(`/professeur/messages/${studentId}`)
-                .then(res => res.json())
-                .then(data => {
-                    messages = data;
-                    renderMessages();
-                })
-                .catch(err => console.error('Error loading messages:', err));
-
-            // Mark conversation as active in list
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.dataset.userId === studentId) {
-                    item.classList.add('active');
-                }
-            });
-        }
-
-        // ============================================
-        // Render Messages
-        // ============================================
-        function renderMessages() {
-            const container = document.getElementById('chatMessages');
-            if (!messages || messages.length === 0) {
-                container.innerHTML = '<div class="text-center py-12 text-gray-500"><i class="fas fa-comment-dots text-4xl mb-2"></i><p>Aucun message. Commencez la conversation !</p></div>';
-                return;
-            }
-
-            container.innerHTML = '';
-            messages.forEach(message => {
-                const isSent = message.senderId === currentUser.id;
-                const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                const messageHtml = `
-                <div class="flex ${isSent ? 'justify-end' : 'justify-start'} message-${isSent ? 'sent' : 'received'}">
-                    <div class="message-bubble max-w-[70%] p-3">
-                        <p class="text-sm">${escapeHtml(message.content)}</p>
-                        <div class="text-xs ${isSent ? 'text-blue-200' : 'text-gray-400'} mt-1 flex items-center gap-1">
-                            <span>${time}</span>
-                            ${isSent && message.read ? '<i class="fas fa-check-double text-xs"></i>' : ''}
-                        </div>
+            <!-- Chat Input -->
+            <footer class="p-6 border-t border-outline-variant/15">
+                <div class="flex items-end gap-4 max-w-5xl mx-auto">
+                    <div class="flex items-center gap-1 pb-1">
+                        <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all">
+                            <span class="material-symbols-outlined">add_circle</span>
+                        </button>
+                        <button class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-all">
+                            <span class="material-symbols-outlined">image</span>
+                        </button>
                     </div>
-                </div>
-            `;
-                container.insertAdjacentHTML('beforeend', messageHtml);
-            });
-
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // ============================================
-        // Update Conversation List
-        // ============================================
-        function updateConversationList(message) {
-            // Find or create conversation
-            let conversation = conversations.find(c => c.id === message.conversationId);
-            const otherId = message.senderId === currentUser.id ? message.receiverId : message.senderId;
-            const otherName = message.senderId === currentUser.id ? message.receiverName : message.senderName;
-            const otherRole = message.senderId === currentUser.id ? message.receiverRole : message.senderRole;
-
-            if (!conversation) {
-                conversation = {
-                    id: message.conversationId,
-                    participant1Id: currentUser.id,
-                    participant1Name: currentUser.name,
-                    participant1Role: currentUser.role,
-                    participant2Id: otherId,
-                    participant2Name: otherName,
-                    participant2Role: otherRole,
-                    lastMessagePreview: message.content.substring(0, 50),
-                    lastMessageTime: new Date(message.timestamp),
-                    unreadCount: message.senderId !== currentUser.id ? 1 : 0
-                };
-                conversations.unshift(conversation);
-            } else {
-                conversation.lastMessagePreview = message.content.substring(0, 50);
-                conversation.lastMessageTime = new Date(message.timestamp);
-                if (message.senderId !== currentUser.id && message.conversationId !== currentConversationId) {
-                    conversation.unreadCount = (conversation.unreadCount || 0) + 1;
-                }
-
-                // Move to top
-                const index = conversations.findIndex(c => c.id === conversation.id);
-                if (index > -1) conversations.splice(index, 1);
-                conversations.unshift(conversation);
-            }
-
-            renderConversations();
-        }
-
-        // ============================================
-        // Render Conversations List
-        // ============================================
-        function renderConversations() {
-            const container = document.getElementById('conversationsList');
-
-            if (conversations.length === 0) {
-                container.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-comments text-4xl mb-2"></i>
-                    <p>Aucune conversation</p>
-                    <p class="text-sm mt-2">Commencez à discuter avec vos étudiants</p>
-                </div>
-            `;
-                document.getElementById('conversationCount').innerText = '0 conversation';
-                return;
-            }
-
-            let html = '';
-            conversations.forEach(conv => {
-                const otherId = conv.participant1Id === currentUser.id ? conv.participant2Id : conv.participant1Id;
-                const otherName = conv.participant1Id === currentUser.id ? conv.participant2Name : conv.participant1Name;
-                const time = conv.lastMessageTime ? new Date(conv.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                const isActive = currentReceiverId === otherId;
-
-                html += `
-                <div class="conversation-item p-3 hover:bg-gray-50 cursor-pointer transition-colors ${isActive ? 'active' : ''}"
-                     data-user-id="${otherId}"
-                     onclick="loadConversation('${otherId}', '${otherName.replace(/'/g, "\\'")}')">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-user-graduate text-blue-600"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-baseline">
-                                <p class="font-medium text-gray-900 truncate">${escapeHtml(otherName)}</p>
-                                <span class="text-xs text-gray-400">${time}</span>
-                            </div>
-                            <p class="text-sm text-gray-500 truncate">${escapeHtml(conv.lastMessagePreview || 'Nouvelle conversation')}</p>
-                        </div>
-                        ${conv.unreadCount > 0 ? `<div class="unread-badge">${conv.unreadCount}</div>` : ''}
+                    <div class="flex-1 relative">
+                        <textarea class="w-full bg-surface-container-high border-none rounded-2xl py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-outline resize-none min-h-[44px] max-h-32" placeholder="Écrivez votre message..." rows="1"></textarea>
                     </div>
+                    <button class="bg-primary text-white w-11 h-11 rounded-xl flex items-center justify-center shadow-lg hover:shadow-primary/30 active:scale-95 transition-all">
+                        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+                    </button>
                 </div>
-            `;
-            });
-
-            container.innerHTML = html;
-            document.getElementById('conversationCount').innerText = conversations.length + ' conversation' + (conversations.length > 1 ? 's' : '');
-        }
-
-        // ============================================
-        // Show Notification
-        // ============================================
-        function showNotification(message) {
-            // Browser notification if permitted
-            if (Notification.permission === 'granted') {
-                new Notification('Nouveau message', {
-                    body: `${message.senderName}: ${message.content.substring(0, 50)}`,
-                    icon: '/favicon.ico'
-                });
-            }
-
-            // Also show a toast
-            showToast(`📩 ${message.senderName}: ${message.content.substring(0, 30)}...`, 'info');
-
-            // Update sidebar unread badge
-            updateUnreadCount();
-        }
-
-        // ============================================
-        // Update Unread Count in Navbar
-        // ============================================
-        function updateUnreadCount() {
-            const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-            const badge = document.querySelector('.notification-badge .unread-count');
-            if (badge) {
-                if (totalUnread > 0) {
-                    badge.textContent = totalUnread > 9 ? '9+' : totalUnread;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
-            }
-        }
-
-        // ============================================
-        // Show Typing Indicator
-        // ============================================
-        function showTypingIndicator(userName) {
-            const indicator = document.getElementById('typingIndicator');
-            indicator.innerHTML = `<div class="typing-indicator"><span>${userName} est en train d'écrire</span><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
-            indicator.classList.remove('hidden');
-
-            setTimeout(() => {
-                indicator.classList.add('hidden');
-            }, 3000);
-        }
-
-        // ============================================
-        // Initialize Demo Conversations
-        // ============================================
-        function initDemoConversations() {
-            students.forEach(student => {
-                const convId = [currentUser.id, student.id].sort().join('_');
-                const existing = conversations.find(c => c.id === convId);
-
-                if (!existing) {
-                    conversations.push({
-                        id: convId,
-                        participant1Id: currentUser.id,
-                        participant1Name: currentUser.name,
-                        participant1Role: currentUser.role,
-                        participant2Id: student.id,
-                        participant2Name: student.name,
-                        participant2Role: student.role,
-                        lastMessagePreview: student.id === 'etu_1' ? 'Bonjour Professeur, j\'ai une question sur le cours...' : null,
-                        lastMessageTime: student.id === 'etu_1' ? new Date(Date.now() - 3600000) : null,
-                        unreadCount: student.id === 'etu_1' ? 1 : 0
-                    });
-                }
-            });
-
-            renderConversations();
-            updateUnreadCount();
-
-            // Request notification permission
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-
-        // ============================================
-        // Event Listeners
-        // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            connectWebSocket();
-            initDemoConversations();
-
-            const messageText = document.getElementById('messageText');
-            const sendBtn = document.getElementById('sendBtn');
-            const attachBtn = document.getElementById('attachBtn');
-            const fileInput = document.getElementById('fileInput');
-
-            sendBtn.addEventListener('click', () => {
-                sendMessage(messageText.value);
-            });
-
-            messageText.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage(messageText.value);
-                }
-            });
-
-            messageText.addEventListener('input', () => {
-                document.getElementById('charCount').innerText = messageText.value.length;
-                if (messageText.value.trim()) {
-                    sendTypingIndicator();
-                }
-            });
-
-            attachBtn.addEventListener('click', () => {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    // Handle file upload
-                    showToast('Fichier envoyé: ' + e.target.files[0].name, 'success');
-                    fileInput.value = '';
-                }
-            });
-        });
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-    </script>
-</th:block>
-</html>
+            </footer>
+        </div>
+    </div>
+</main>
+<!-- Mobile Bottom NavBar (Shared Component Logic) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-outline-variant/15 flex justify-around items-center h-16 px-4 z-50">
+    <button class="flex flex-col items-center gap-1 text-slate-400">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Bord</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 text-slate-400">
+        <span class="material-symbols-outlined">menu_book</span>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Cours</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 text-primary">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Messages</span>
+    </button>
+    <button class="flex flex-col items-center gap-1 text-slate-400">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Plus</span>
+    </button>
+</nav>
+</body></html>

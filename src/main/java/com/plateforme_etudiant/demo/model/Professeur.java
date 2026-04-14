@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.validation.constraints.Size;
@@ -18,6 +20,8 @@ import java.util.List;
 @Table(name = "professeurs")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class Professeur {
 
     @Id

@@ -24,9 +24,7 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
 
     List<Utilisateur> findByActifTrue();
 
-    @Query("SELECT u FROM Utilisateur u WHERE u.role = :role AND u.actif = true")
-    List<Utilisateur> findActifsByRole(@Param("role") Role role);
-
-    @Query("SELECT u FROM Utilisateur u WHERE u.nom LIKE %:keyword% OR u.prenom LIKE %:keyword% OR u.email LIKE %:keyword%")
+    // Recherche par mot-clé dans nom, prénom, email ou nom d'utilisateur
+    @Query("SELECT u FROM Utilisateur u WHERE u.nom LIKE %:keyword% OR u.prenom LIKE %:keyword% OR u.email LIKE %:keyword% OR u.nomUtilisateur LIKE %:keyword%")
     List<Utilisateur> searchByKeyword(@Param("keyword") String keyword);
 }

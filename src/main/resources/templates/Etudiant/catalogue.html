@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalogue - Espace Étudiant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .bg-primary { background-color: #003178; }
+    .text-primary { color: #003178; }
+    .glass-nav { backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.8); }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
+  <div class="flex items-center gap-4 md:gap-8">
+    <span class="text-lg md:text-xl font-black tracking-tighter text-primary">L'Érudition</span>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="/etudiant/dashboard" class="text-gray-500 hover:text-primary h-16 flex items-center">Dashboard</a>
+      <a href="/etudiant/mes-cours" class="text-gray-500 hover:text-primary h-16 flex items-center">Mes cours</a>
+      <a href="/etudiant/progression" class="text-gray-500 hover:text-primary h-16 flex items-center">Progression</a>
+    </div>
+  </div>
+  <div class="flex items-center gap-3 md:gap-4">
+    <div class="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+      <span>ET</span>
+    </div>
+  </div>
+</nav>
+
+<main class="pt-20 min-h-screen">
+  <div class="p-4 md:p-8 max-w-7xl mx-auto">
+    <div class="mb-8">
+      <h1 class="text-2xl md:text-3xl font-black text-gray-900">Catalogue des cours</h1>
+      <p class="text-gray-500 mt-1">Découvrez nos formations et développez vos compétences</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div th:each="c : ${cours}" class="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all">
+        <div class="h-36 bg-gray-200">
+          <img th:src="${c.imageCouverture}" alt="Cover" class="w-full h-full object-cover" th:if="${c.imageCouverture != null}">
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg text-gray-900 mb-1" th:text="${c.titre}">Titre</h3>
+          <p class="text-xs text-gray-500 mb-2" th:text="${c.professeur}">Professeur</p>
+          <p class="text-sm text-gray-500 line-clamp-2 mb-3" th:text="${c.descriptionCourte}">Description</p>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-500 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">schedule</span>
+              <span th:text="${c.dureeEstimee} + ' min'">0 min</span>
+            </span>
+            <form th:action="'/etudiant/cours/' + ${c.id} + '/inscrire'" method="post" class="inline">
+              <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm transition-colors">
+                S'inscrire
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

@@ -1,4 +1,3 @@
-// UtilisateurService.java
 package com.plateforme_etudiant.demo.service;
 
 import com.plateforme_etudiant.demo.model.Utilisateur;
@@ -10,6 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 public class UtilisateurService {
@@ -24,20 +25,15 @@ public class UtilisateurService {
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
-    /**
-     * Créer un utilisateur
-     */
     @Transactional
     public Utilisateur creerUtilisateur(String nomUtilisateur, String email, String motDePasse,
                                         String prenom, String nom, Role role) {
         log.info("Création d'un nouvel utilisateur: {}", email);
 
-        // Vérifier si l'email existe déjà
         if (utilisateurRepository.existsByEmail(email)) {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
         }
 
-        // Vérifier si le nom d'utilisateur existe déjà
         if (utilisateurRepository.existsByNomUtilisateur(nomUtilisateur)) {
             throw new RuntimeException("Ce nom d'utilisateur est déjà pris");
         }
@@ -50,31 +46,25 @@ public class UtilisateurService {
         utilisateur.setNom(nom);
         utilisateur.setRole(role);
         utilisateur.setActif(true);
+        utilisateur.setDateCreation(LocalDateTime.now());
 
         return utilisateurRepository.save(utilisateur);
     }
 
-    /**
-     * Trouver un utilisateur par ID
-     */
-    public Utilisateur findById(Long id) {
-        log.debug("Recherche de l'utilisateur par ID: {}", id);
-        return utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
-    }
-
-    /**
-     * Trouver un utilisateur par email
-     */
     public Utilisateur findByEmail(String email) {
-        log.debug("Recherche de l'utilisateur par email: {}", email);
         return utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'email: " + email));
     }
 
-    /**
-     * Vérifier si un email existe
-     */
+    public boolean verifierMotDePasse(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    public Utilisateur findById(Long id) {
+        return utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+    }
+
     public boolean emailExiste(String email) {
         return utilisateurRepository.existsByEmail(email);
     }

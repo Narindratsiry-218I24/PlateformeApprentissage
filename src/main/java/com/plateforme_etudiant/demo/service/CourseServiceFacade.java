@@ -1,8 +1,9 @@
-// CourseServiceFacade.java
+
 package com.plateforme_etudiant.demo.service;
 
 import com.plateforme_etudiant.demo.dto.CourseRequestDTO;
 import com.plateforme_etudiant.demo.dto.CourseResponseDTO;
+import com.plateforme_etudiant.demo.model.Cours;
 import com.plateforme_etudiant.demo.service.cours.*;
 import org.springframework.stereotype.Service;
 
@@ -39,16 +40,15 @@ public class CourseServiceFacade {
         return readService.getCoursParProfesseur(professeurId);
     }
 
-    public CourseResponseDTO getCoursParId(Long coursId) {
-        return readService.getCoursParId(coursId);
-    }
-
     public List<CourseResponseDTO> getCoursPublies() {
         return readService.getCoursPublies();
     }
 
     public List<CourseResponseDTO> searchCours(String keyword) {
         return readService.searchCours(keyword);
+    }
+    public CourseResponseDTO getCoursParId(Long coursId) {
+        return readService.getCoursParId(coursId);
     }
 
     // ==================== MISE À JOUR ====================

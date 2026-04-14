@@ -1,164 +1,178 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/base.html}">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
-    <title>Tableau de bord - Professeur</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Dashboard Professeur</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link th:href="@{/static/css/style.css}" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script th:src="@{/static/js/professeur.js}" defer></script>
 </head>
-<div layout:fragment="content">
-    <!-- Welcome Section -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
-        <p class="text-gray-600">
-            Bienvenue, <span th:text="${professeur.prenom}">Professeur</span> -
-            Voici un aperçu de votre activité
-        </p>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-book-open text-2xl"></i>
-                </div>
-                <i class="fas fa-chart-line text-white/60"></i>
-            </div>
-            <div class="text-3xl font-bold mb-1" th:text="${stats.totalCours}">0</div>
-            <div class="text-blue-100">Cours créés</div>
-        </div>
-
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-users text-2xl"></i>
-                </div>
-                <i class="fas fa-chart-line text-white/60"></i>
-            </div>
-            <div class="text-3xl font-bold mb-1" th:text="${stats.totalEtudiants}">0</div>
-            <div class="text-purple-100">Étudiants inscrits</div>
-        </div>
-
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-chalkboard-user text-2xl"></i>
-                </div>
-                <i class="fas fa-chart-line text-white/60"></i>
-            </div>
-            <div class="text-3xl font-bold mb-1" th:text="${stats.etudiantsActifs}">0</div>
-            <div class="text-green-100">Étudiants actifs</div>
-        </div>
-
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-chart-simple text-2xl"></i>
-                </div>
-                <i class="fas fa-chart-line text-white/60"></i>
-            </div>
-            <div class="text-3xl font-bold mb-1" th:text="${stats.tauxCompletion} + '%'">0%</div>
-            <div class="text-orange-100">Taux de complétion</div>
+<body class="bg-gray-50">
+<!-- Barre de navigation fixe -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm h-16 flex justify-between items-center px-8">
+    <div class="flex items-center gap-8">
+        <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
+        <div class="hidden md:flex items-center gap-6">
+            <a href="/professeur/dashboard" class="text-primary font-bold border-b-2 border-primary h-16 flex items-center px-1">Dashboard</a>
+            <a href="/professeur/cours" class="text-gray-500 hover:text-primary transition-colors h-16 flex items-center px-1">Mes cours</a>
+            <a href="/professeur/etudiants" class="text-gray-500 hover:text-primary transition-colors h-16 flex items-center px-1">Étudiants</a>
         </div>
     </div>
+    <div class="flex items-center gap-4">
+        <button class="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+            <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <div class="flex items-center gap-3">
+            <div class="text-right hidden md:block">
+                <p class="text-sm font-bold text-gray-900" th:text="${professeur.nomComplet}">Professeur</p>
+                <p class="text-xs text-gray-500" th:text="${professeur.specialite}">Spécialité</p>
+            </div>
+            <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                <span th:text="${#strings.substring(professeur.prenom, 0, 1)} + ${#strings.substring(professeur.nom, 0, 1)}">JD</span>
+            </div>
+        </div>
+    </div>
+</nav>
 
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <a th:href="@{/professeur/cours/ajouter}"
-                   class="flex items-center justify-center gap-2 p-3 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Créer un cours</span>
-                </a>
-                <a th:href="@{/professeur/cours}"
-                   class="flex items-center justify-center gap-2 p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-edit"></i>
-                    <span>Gérer mes cours</span>
-                </a>
-                <a th:href="@{/professeur/etudiants}"
-                   class="flex items-center justify-center gap-2 p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-users"></i>
-                    <span>Voir étudiants</span>
-                </a>
-                <button class="flex items-center justify-center gap-2 p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Statistiques</span>
-                </button>
+<!-- Sidebar (mobile hidden) -->
+<aside class="hidden md:flex h-screen w-64 fixed left-0 top-0 z-40 bg-[#f2f4f6] flex-col p-6 gap-4 pt-20">
+    <div class="mb-6 px-2">
+        <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Menu principal</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+        <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-primary font-bold bg-white rounded-lg shadow-sm transition-all">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="text-sm font-semibold">Tableau de bord</span>
+        </a>
+        <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span class="text-sm font-semibold">Mes cours</span>
+        </a>
+        <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+            <span class="material-symbols-outlined">groups</span>
+            <span class="text-sm font-semibold">Étudiants</span>
+        </a>
+        <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all mt-8">
+            <span class="material-symbols-outlined">logout</span>
+            <span class="text-sm font-semibold">Déconnexion</span>
+        </a>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="md:ml-64 pt-20 min-h-screen">
+    <div class="p-8 max-w-7xl mx-auto">
+        <!-- Message d'erreur -->
+        <div th:if="${error}" class="mb-6 p-4 bg-red-100 text-red-700 rounded-xl">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- En-tête -->
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-black text-gray-900">Bonjour, <span th:text="${professeur.prenom}">Professeur</span></h1>
+            <p class="text-gray-500 mt-2">Voici l'état de votre plateforme aujourd'hui</p>
+        </div>
+
+        <!-- Statistiques en cartes -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">menu_book</span>
+                    </div>
+                    <span class="text-xs font-bold text-primary bg-blue-50 px-2 py-1 rounded">Total</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900" th:text="${totalCours}">0</h3>
+                <p class="text-sm text-gray-500 mt-1">Cours créés</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary">check_circle</span>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900" th:text="${coursPublies}">0</h3>
+                <p class="text-sm text-gray-500 mt-1">Cours publiés</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-purple-600">groups</span>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900" th:text="${totalEtudiants}">0</h3>
+                <p class="text-sm text-gray-500 mt-1">Étudiants inscrits</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-orange-600">trending_up</span>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900" th:text="${progressionMoyenne} + '%'">0%</h3>
+                <p class="text-sm text-gray-500 mt-1">Progression moyenne</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Derniers cours</h3>
-            <div class="space-y-3">
-                <div th:each="cours : ${cours}" class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-file-alt text-blue-600"></i>
+        <!-- Derniers cours -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-900">Mes derniers cours</h2>
+                <a href="/professeur/cours" class="text-primary text-sm font-semibold hover:underline">Voir tous →</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                <div th:each="cours, iterStat : ${cours}" th:if="${iterStat.index < 5}"
+                     class="p-6 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-900" th:text="${cours.titre}">Titre du cours</h3>
+                            <div class="flex items-center gap-4 mt-2">
+                                    <span class="text-xs text-gray-500 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">schedule</span>
+                                        <span th:text="${cours.dureeEstimee} + ' min'">0 min</span>
+                                    </span>
+                                <span class="text-xs text-gray-500 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">groups</span>
+                                        <span th:text="${cours.nombreApprenants} + ' étudiants'">0 étudiants</span>
+                                    </span>
+                                <span th:if="${cours.publie}" class="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">Publié</span>
+                                <span th:unless="${cours.publie}" class="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Brouillon</span>
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-medium text-gray-900" th:text="${cours.titre}">Titre</p>
-                            <p class="text-xs text-gray-500" th:text="${cours.nombreApprenants} + ' étudiants'">0 étudiants</p>
+                        <div class="flex gap-2">
+                            <a th:href="'/professeur/cours/' + ${cours.id} + '/gerer'"
+                               class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                                Gérer
+                            </a>
+                            <div class="w-32">
+                                <div class="progress-bar h-2">
+                                    <div class="progress-fill" th:style="'width: ' + ${#numbers.formatDecimal(progressionMoyenne, 0, 0)} + '%'"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 text-right" th:text="${#numbers.formatDecimal(progressionMoyenne, 0, 0)} + '%'"></p>
+                            </div>
                         </div>
                     </div>
-                    <a th:href="@{/professeur/cours/{id}/gerer(id=${cours.id})}"
-                       class="text-blue-600 hover:text-blue-700 text-sm">
-                        Gérer <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
                 </div>
-                <div th:if="${cours == null or cours.isEmpty()}" class="text-center py-4 text-gray-500">
-                    <i class="fas fa-inbox text-3xl mb-2"></i>
+                <div th:if="${cours.empty}" class="p-12 text-center text-gray-500">
+                    <span class="material-symbols-outlined text-4xl mb-2">menu_book</span>
                     <p>Aucun cours pour le moment</p>
-                    <a th:href="@{/professeur/cours/ajouter}" class="text-blue-600 text-sm mt-2 inline-block">
-                        Créer mon premier cours
-                    </a>
+                    <a href="/professeur/cours/ajouter" class="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm">Créer mon premier cours</a>
                 </div>
             </div>
         </div>
+
+        <!-- Bouton flottant -->
+        <a href="/professeur/cours/ajouter"
+           class="fixed bottom-8 right-8 bg-primary text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform z-50">
+            <span class="material-symbols-outlined">add</span>
+        </a>
     </div>
-
-    <!-- Recent Activity -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Activité récente</h3>
-        <div class="space-y-4">
-            <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg">
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user-plus text-green-600"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm text-gray-900">
-                        <span class="font-semibold">Sophie Martin</span> s'est inscrite au cours
-                        <span class="font-medium text-blue-600">Introduction à la Programmation</span>
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1">Il y a 2 heures</p>
-                </div>
-            </div>
-
-            <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg">
-                <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-check-circle text-yellow-600"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm text-gray-900">
-                        <span class="font-semibold">Thomas Bernard</span> a terminé le cours
-                        <span class="font-medium text-blue-600">Développement Web avec React</span>
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1">Il y a 5 heures</p>
-                </div>
-            </div>
-
-            <div class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg">
-                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-star text-purple-600"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm text-gray-900">
-                        <span class="font-semibold">Emma Dubois</span> a laissé un avis 5 étoiles
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1">Hier</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+</main>
+</body>
 </html>

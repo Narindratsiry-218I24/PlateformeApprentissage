@@ -1,109 +1,171 @@
-// CourseController.java
 package com.plateforme_etudiant.demo.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plateforme_etudiant.demo.dto.CourseRequestDTO;
 import com.plateforme_etudiant.demo.dto.CourseResponseDTO;
+import com.plateforme_etudiant.demo.model.Professeur;
+import com.plateforme_etudiant.demo.repository.ProfesseurRepository;
 import com.plateforme_etudiant.demo.service.CourseServiceFacade;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import com.plateforme_etudiant.demo.service.FileUploadService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@RestController
-@RequestMapping("/api/professeur/cours")
+@Controller
+@RequestMapping("/professeur/cours")
 public class CourseController {
 
-    private final CourseServiceFacade courseService;
+    private static final Logger log = LoggerFactory.getLogger(CourseController.class);
 
-    // Constructeur explicite
-    public CourseController(CourseServiceFacade courseService) {
-        this.courseService = courseService;
-    }
+    @Autowired
+    private CourseServiceFacade courseService;
 
-    // ==================== CRÉATION ====================
+    @Autowired
+    private FileUploadService fileUploadService;
 
-    @PostMapping
-    public ResponseEntity<CourseResponseDTO> creerCours(
-            @Valid @RequestBody CourseRequestDTO request,
-            @RequestParam Long professeurId) {
-        CourseResponseDTO coursCree = courseService.creerCours(request, professeurId);
-        return new ResponseEntity<>(coursCree, HttpStatus.CREATED);
-    }
+    @Autowired
+    private ProfesseurRepository professeurRepository;
 
-    // ==================== LECTURE ====================
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping
-    public ResponseEntity<List<CourseResponseDTO>> getCoursParProfesseur(
-            @RequestParam Long professeurId) {
-        List<CourseResponseDTO> cours = courseService.getCoursParProfesseur(professeurId);
-        return ResponseEntity.ok(cours);
+    public String listerCours(Model model, HttpSession session) {
+        Professeur prof = getProfesseurFromSession(session);
+        if (prof == null) return "redirect:/login";
+
+        model.addAttribute("cours", courseService.getCoursParProfesseur(prof.getId()));
+        model.addAttribute("professeur", prof);
+        return "professeur/cours/liste";
     }
 
-    @GetMapping("/publies")
-    public ResponseEntity<List<CourseResponseDTO>> getCoursPublies() {
-        List<CourseResponseDTO> cours = courseService.getCoursPublies();
-        return ResponseEntity.ok(cours);
+    @GetMapping("/ajouter")
+    public String ajouterCours(Model model, HttpSession session) {
+        Professeur prof = getProfesseurFromSession(session);
+        if (prof == null) return "redirect:/login";
+        model.addAttribute("professeur", prof);
+        return "professeur/cours/ajouter";
     }
 
-    @GetMapping("/{coursId}")
-    public ResponseEntity<CourseResponseDTO> getCoursParId(@PathVariable Long coursId) {
-        CourseResponseDTO cours = courseService.getCoursParId(coursId);
-        return ResponseEntity.ok(cours);
+    @PostMapping("/api/creer-avec-fichier")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> creerCoursAvecFichier(
+            @RequestParam("titre") String titre,
+            @RequestParam(value = "descriptionCourte", required = false) String descriptionCourte,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "dureeEstimee", required = false) Integer dureeEstimee,
+            @RequestParam(value = "imageCouverture", required = false) MultipartFile imageCouverture,
+            @RequestParam(value = "sections", required = false) String sectionsJson,
+            @RequestParam(value = "publier", required = false, defaultValue = "false") boolean publier,
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Professeur professeur = getProfesseurFromSession(session);
+            if (professeur == null) {
+                response.put("success", false);
+                response.put("message", "Session expirée. Veuillez vous reconnecter.");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            log.info("📝 Création de cours - Titre: {}, Publier: {}", titre, publier);
+
+            String imageUrl = null;
+            if (imageCouverture != null && !imageCouverture.isEmpty()) {
+                imageUrl = fileUploadService.uploadCoverImage(imageCouverture);
+            }
+
+            CourseRequestDTO request = new CourseRequestDTO();
+            request.setTitre(titre);
+            request.setDescriptionCourte(descriptionCourte);
+            request.setDescription(description);
+            request.setDureeEstimee(dureeEstimee != null ? dureeEstimee : 0);
+            request.setImageCouverture(imageUrl);
+            request.setPublie(publier);
+
+            if (sectionsJson != null && !sectionsJson.trim().isEmpty()) {
+                try {
+                    List<CourseRequestDTO.SectionDTO> sectionsList = objectMapper.readValue(
+                            sectionsJson,
+                            objectMapper.getTypeFactory().constructCollectionType(List.class, CourseRequestDTO.SectionDTO.class)
+                    );
+                    request.setSections(sectionsList);
+                    log.info("✅ {} sections reçues", sectionsList.size());
+
+                    for (CourseRequestDTO.SectionDTO section : sectionsList) {
+                        log.info("   Section: titre='{}'", section.getTitre());
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Erreur parsing JSON", e);
+                    response.put("success", false);
+                    response.put("message", "Erreur de format des sections: " + e.getMessage());
+                    return ResponseEntity.badRequest().body(response);
+                }
+            }
+
+            CourseResponseDTO coursCree = courseService.creerCours(request, professeur.getId());
+
+            String message = publier ? "Cours publié avec succès !" : "Cours sauvegardé en brouillon";
+            response.put("success", true);
+            response.put("message", message);
+            response.put("coursId", coursCree.getId());
+            response.put("publie", coursCree.getPublie());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Erreur lors de la création du cours", e);
+            response.put("success", false);
+            response.put("message", "Erreur serveur : " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    // Ajouter dans CourseController.java
+
+    @GetMapping("/{coursId}/gerer")
+    public String gererCours(@PathVariable Long coursId, Model model, HttpSession session) {
+        Professeur prof = getProfesseurFromSession(session);
+        if (prof == null) return "redirect:/login";
+
+        try {
+            CourseResponseDTO cours = courseService.getCoursParId(coursId);
+            model.addAttribute("cours", cours);
+            model.addAttribute("professeur", prof);
+            return "professeur/cours/gerer";
+        } catch (Exception e) {
+            log.error("Erreur lors de la récupération du cours: {}", e.getMessage());
+            model.addAttribute("error", "Cours non trouvé");
+            return "redirect:/professeur/cours";
+        }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<CourseResponseDTO>> searchCours(@RequestParam String keyword) {
-        List<CourseResponseDTO> cours = courseService.searchCours(keyword);
-        return ResponseEntity.ok(cours);
+    @PostMapping("/{coursId}/supprimer")
+    public String supprimerCours(@PathVariable Long coursId, HttpSession session) {
+        Professeur prof = getProfesseurFromSession(session);
+        if (prof == null) return "redirect:/login";
+
+        try {
+            courseService.supprimerCours(coursId);
+            log.info("Cours {} supprimé avec succès", coursId);
+        } catch (Exception e) {
+            log.error("Erreur lors de la suppression du cours: {}", e.getMessage());
+        }
+
+        return "redirect:/professeur/cours";
     }
 
-    // ==================== MISE À JOUR ====================
-
-    @PutMapping("/{coursId}")
-    public ResponseEntity<CourseResponseDTO> mettreAJourCours(
-            @PathVariable Long coursId,
-            @Valid @RequestBody CourseRequestDTO request) {
-        CourseResponseDTO coursMisAJour = courseService.mettreAJourCours(coursId, request);
-        return ResponseEntity.ok(coursMisAJour);
-    }
-
-    @PatchMapping("/{coursId}/publier")
-    public ResponseEntity<CourseResponseDTO> publierCours(@PathVariable Long coursId) {
-        CourseResponseDTO coursPublie = courseService.publierCours(coursId);
-        return ResponseEntity.ok(coursPublie);
-    }
-
-    @PatchMapping("/{coursId}/depublier")
-    public ResponseEntity<CourseResponseDTO> depublierCours(@PathVariable Long coursId) {
-        CourseResponseDTO coursDepublie = courseService.depublierCours(coursId);
-        return ResponseEntity.ok(coursDepublie);
-    }
-
-    // ==================== SUPPRESSION ====================
-
-    @DeleteMapping("/{coursId}")
-    public ResponseEntity<Void> supprimerCours(@PathVariable Long coursId) {
-        courseService.supprimerCours(coursId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/sections/{sectionId}")
-    public ResponseEntity<Void> supprimerSection(@PathVariable Long sectionId) {
-        courseService.supprimerSection(sectionId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/chapitres/{chapitreId}")
-    public ResponseEntity<Void> supprimerChapitre(@PathVariable Long chapitreId) {
-        courseService.supprimerChapitre(chapitreId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/contenus/{contenuId}")
-    public ResponseEntity<Void> supprimerContenu(@PathVariable Long contenuId) {
-        courseService.supprimerContenuItem(contenuId);
-        return ResponseEntity.noContent().build();
+    private Professeur getProfesseurFromSession(HttpSession session) {
+        Long professeurId = (Long) session.getAttribute("professeurId");
+        if (professeurId == null) return null;
+        return professeurRepository.findById(professeurId).orElse(null);
     }
 }

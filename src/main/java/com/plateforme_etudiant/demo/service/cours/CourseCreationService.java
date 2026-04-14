@@ -7,173 +7,205 @@ import com.plateforme_etudiant.demo.model.enums.TypeContenu;
 import com.plateforme_etudiant.demo.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 public class CourseCreationService {
 
     private static final Logger log = LoggerFactory.getLogger(CourseCreationService.class);
 
-    private final CoursRepository coursRepository;
-    private final CategoryRepository categoryRepository;
-    private final ProfesseurRepository professeurRepository;
-    private final SectionRepository sectionRepository;
-    private final ChapitreRepository chapitreRepository;
-    private final ContenuItemRepository contenuItemRepository;
-    private final CourseConversionService conversionService;
-    private final SlugGeneratorService slugGeneratorService;
+    @Autowired
+    private CoursRepository coursRepository;
 
-    public CourseCreationService(CoursRepository coursRepository,
-                                 CategoryRepository categoryRepository,
-                                 ProfesseurRepository professeurRepository,
-                                 SectionRepository sectionRepository,
-                                 ChapitreRepository chapitreRepository,
-                                 ContenuItemRepository contenuItemRepository,
-                                 CourseConversionService conversionService,
-                                 SlugGeneratorService slugGeneratorService) {
-        this.coursRepository = coursRepository;
-        this.categoryRepository = categoryRepository;
-        this.professeurRepository = professeurRepository;
-        this.sectionRepository = sectionRepository;
-        this.chapitreRepository = chapitreRepository;
-        this.contenuItemRepository = contenuItemRepository;
-        this.conversionService = conversionService;
-        this.slugGeneratorService = slugGeneratorService;
-    }
+    @Autowired
+    private SectionRepository sectionRepository;
+
+    @Autowired
+    private ChapitreRepository chapitreRepository;
+
+    @Autowired
+    private ContenuItemRepository contenuItemRepository;
+
+    @Autowired
+    private ProfesseurRepository professeurRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private SlugGeneratorService slugGeneratorService;
 
     @Transactional
     public CourseResponseDTO creerCours(CourseRequestDTO request, Long professeurId) {
-        log.info("Création du cours: {}", request.getTitre());
+        log.info("🚀 Création du cours: {}", request.getTitre());
 
-        // 1. Récupérer le professeur
+        // Récupérer le professeur
         Professeur professeur = professeurRepository.findById(professeurId)
-                .orElseThrow(() -> new RuntimeException("Professeur non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Professeur non trouvé avec ID: " + professeurId));
 
-        // 2. Gérer la catégorie (optionnelle)
-        Categorie categorie = null;
-        if (request.getCategorieId() != null) {
-            // Si un ID de catégorie est fourni, on le cherche
-            categorie = categoryRepository.findById(request.getCategorieId()).orElse(null);
-            if (categorie != null) {
-                log.info("Catégorie trouvée: {}", categorie.getNom());
-            } else {
-                log.warn("Catégorie avec ID {} non trouvée, cours sans catégorie", request.getCategorieId());
-            }
-        } else {
-            log.info("Aucune catégorie spécifiée, cours créé sans catégorie");
-        }
+        // Générer le slug à partir du titre
+        String slug = slugGeneratorService.genererSlugCours(request.getTitre());
 
-        // 3. Créer le cours
+        // Créer le cours
         Cours cours = new Cours();
         cours.setTitre(request.getTitre());
-        cours.setSlug(slugGeneratorService.genererSlugCours(request.getTitre()));
+        cours.setSlug(slug);  // ← AJOUT IMPORTANT
         cours.setDescriptionCourte(request.getDescriptionCourte());
         cours.setDescription(request.getDescription());
+        cours.setDureeEstimee(request.getDureeEstimee() != null ? request.getDureeEstimee() : 0);
         cours.setImageCouverture(request.getImageCouverture());
-        cours.setDureeEstimee(request.getDureeEstimee());
-        cours.setCategorie(categorie);  // Peut être null
+        cours.setPublie(request.isPublie());
         cours.setProfesseur(professeur);
-        cours.setPublie(false);
+        cours.setDateCreation(LocalDateTime.now());
         cours.setNombreApprenants(0);
 
-        Cours coursSauvegarde = coursRepository.save(cours);
-        log.info("Cours créé avec ID: {}", coursSauvegarde.getId());
+        // Ajouter la catégorie si spécifiée
+        if (request.getCategorieId() != null) {
+            Categorie categorie = categoryRepository.findById(request.getCategorieId()).orElse(null);
+            cours.setCategorie(categorie);
+        }
 
-        // 4. Créer les sections
-        if (request.getSections() != null) {
+        // Sauvegarder le cours
+        cours = coursRepository.save(cours);
+        log.info("✅ Cours créé avec ID: {} et slug: {}", cours.getId(), cours.getSlug());
+
+        // Créer les sections, chapitres et contenus
+        if (request.getSections() != null && !request.getSections().isEmpty()) {
             for (int i = 0; i < request.getSections().size(); i++) {
-                creerSection(request.getSections().get(i), coursSauvegarde, i);
+                CourseRequestDTO.SectionDTO sectionDTO = request.getSections().get(i);
+                creerSection(cours, sectionDTO, i);
             }
         }
 
-        return conversionService.convertirEnReponse(coursSauvegarde);
+        return convertToResponseDTO(cours);
     }
 
-    private void creerSection(CourseRequestDTO.SectionDTO sectionDTO, Cours cours, int ordre) {
+    private void creerSection(Cours cours, CourseRequestDTO.SectionDTO sectionDTO, int ordre) {
+        log.info("   📁 Création section: {}", sectionDTO.getTitre());
+
         Section section = new Section();
         section.setTitre(sectionDTO.getTitre());
-        section.setDescription(sectionDTO.getDescription());
-        section.setOrdre(sectionDTO.getOrdre() != null ? sectionDTO.getOrdre() : ordre);
+        section.setDescription(sectionDTO.getDescription() != null ? sectionDTO.getDescription() : "");
+        section.setOrdre(ordre);
         section.setCours(cours);
 
-        Section sectionSauvegarde = sectionRepository.save(section);
-        log.debug("Section créée: {}", sectionSauvegarde.getTitre());
+        section = sectionRepository.save(section);
 
-        if (sectionDTO.getChapitres() != null) {
+        // Créer les chapitres de la section
+        if (sectionDTO.getChapitres() != null && !sectionDTO.getChapitres().isEmpty()) {
             for (int i = 0; i < sectionDTO.getChapitres().size(); i++) {
-                creerChapitreRecursif(sectionDTO.getChapitres().get(i), sectionSauvegarde, null, i);
+                CourseRequestDTO.ChapitreDTO chapitreDTO = sectionDTO.getChapitres().get(i);
+                creerChapitre(section, null, chapitreDTO, i);
             }
         }
     }
 
-    private void creerChapitreRecursif(CourseRequestDTO.ChapitreDTO chapitreDTO,
-                                       Section section,
-                                       Chapitre parent,
-                                       int ordre) {
+    private void creerChapitre(Section section, Chapitre parentChapitre, CourseRequestDTO.ChapitreDTO chapitreDTO, int ordre) {
+        log.info("      📖 Création chapitre: {}", chapitreDTO.getTitre());
+
         Chapitre chapitre = new Chapitre();
         chapitre.setTitre(chapitreDTO.getTitre());
-        chapitre.setDescription(chapitreDTO.getDescription());
-        chapitre.setOrdre(chapitreDTO.getOrdre() != null ? chapitreDTO.getOrdre() : ordre);
+        chapitre.setDescription(chapitreDTO.getDescription() != null ? chapitreDTO.getDescription() : "");
+        chapitre.setOrdre(ordre);
         chapitre.setSection(section);
-        chapitre.setParentChapitre(parent);
+        chapitre.setParentChapitre(parentChapitre);
 
-        Chapitre chapitreSauvegarde = chapitreRepository.save(chapitre);
-        log.debug("Chapitre créé: {}", chapitreSauvegarde.getTitre());
+        chapitre = chapitreRepository.save(chapitre);
 
-        if (chapitreDTO.getContenus() != null) {
+        // Créer les contenus du chapitre
+        if (chapitreDTO.getContenus() != null && !chapitreDTO.getContenus().isEmpty()) {
             for (int i = 0; i < chapitreDTO.getContenus().size(); i++) {
-                creerContenuItem(chapitreDTO.getContenus().get(i), chapitreSauvegarde, section, i);
+                CourseRequestDTO.ContenuDTO contenuDTO = chapitreDTO.getContenus().get(i);
+                creerContenu(chapitre, contenuDTO, i);
             }
         }
 
-        if (chapitreDTO.getSousChapitres() != null) {
+        // Créer les sous-chapitres (si existants)
+        if (chapitreDTO.getSousChapitres() != null && !chapitreDTO.getSousChapitres().isEmpty()) {
             for (int i = 0; i < chapitreDTO.getSousChapitres().size(); i++) {
-                creerChapitreRecursif(chapitreDTO.getSousChapitres().get(i), section, chapitreSauvegarde, i);
+                CourseRequestDTO.ChapitreDTO sousChapitreDTO = chapitreDTO.getSousChapitres().get(i);
+                creerChapitre(section, chapitre, sousChapitreDTO, i);
             }
         }
     }
 
-    private void creerContenuItem(CourseRequestDTO.ContenuItemDTO dto,
-                                  Chapitre chapitre,
-                                  Section section,
-                                  int ordre) {
-        ContenuItem contenu = new ContenuItem();
-        contenu.setTitre(dto.getTitre());
-        contenu.setDescription(dto.getDescription());
-        contenu.setChapitre(chapitre);
-        contenu.setSection(section);
-        contenu.setOrdre(dto.getOrdre() != null ? dto.getOrdre() : ordre);
-        contenu.setApercuGratuit(dto.getApercuGratuit() != null ? dto.getApercuGratuit() : false);
-        contenu.setPleineLargeur(dto.getPleineLargeur() != null ? dto.getPleineLargeur() : false);
+    private void creerContenu(Chapitre chapitre, CourseRequestDTO.ContenuDTO contenuDTO, int ordre) {
+        log.info("         📄 Création contenu: {}", contenuDTO.getTitre());
 
-        TypeContenu type = TypeContenu.valueOf(dto.getTypeContenu().toUpperCase());
+        ContenuItem contenu = new ContenuItem();
+        contenu.setTitre(contenuDTO.getTitre());
+        contenu.setOrdre(ordre);
+        contenu.setChapitre(chapitre);
+        contenu.setSection(chapitre.getSection());
+        contenu.setApercuGratuit(contenuDTO.getApercuGratuit() != null && contenuDTO.getApercuGratuit());
+
+        // Définir le type de contenu
+        String typeStr = contenuDTO.getTypeContenu() != null ? contenuDTO.getTypeContenu() : "TEXTE";
+        TypeContenu type = TypeContenu.valueOf(typeStr);
         contenu.setTypeContenu(type);
 
+        // Définir le contenu selon le type
         switch (type) {
-            case TEXTE:
-                contenu.setContenuTexte(dto.getContenuTexte());
-                break;
             case VIDEO:
-                contenu.setVideoUrl(dto.getVideoUrl());
-                contenu.setDureeVideo(dto.getDureeVideo());
+                contenu.setVideoUrl(contenuDTO.getVideoUrl());
                 break;
-            case PDF:
-            case PRESENTATION:
-                contenu.setFichierUrl(dto.getFichierUrl());
-                break;
-            case IMAGE:
-                contenu.setFichierUrl(dto.getFichierUrl());
-                contenu.setImageLegende(dto.getImageLegende());
-                contenu.setImageLargeur(dto.getImageLargeur());
-                contenu.setImageHauteur(dto.getImageHauteur());
+            case TEXTE:
+                contenu.setContenuTexte(contenuDTO.getContenuTexte());
                 break;
             case LIEN:
-                contenu.setLienExterne(dto.getLienExterne());
-                contenu.setLienTexte(dto.getLienTexte());
+                contenu.setLienExterne(contenuDTO.getLienExterne());
+                contenu.setLienTexte(contenuDTO.getLienTexte());
+                break;
+            case PDF:
+            case IMAGE:
+                // Pour les fichiers, le traitement se fait ailleurs
                 break;
         }
 
         contenuItemRepository.save(contenu);
+    }
+
+    private CourseResponseDTO convertToResponseDTO(Cours cours) {
+        CourseResponseDTO dto = new CourseResponseDTO();
+        dto.setId(cours.getId());
+        dto.setTitre(cours.getTitre());
+        dto.setSlug(cours.getSlug());
+        dto.setDescriptionCourte(cours.getDescriptionCourte());
+        dto.setDescription(cours.getDescription());
+        dto.setDureeEstimee(cours.getDureeEstimee());
+        dto.setImageCouverture(cours.getImageCouverture());
+        dto.setPublie(cours.getPublie());
+        dto.setNombreApprenants(cours.getNombreApprenants() != null ? cours.getNombreApprenants() : 0);
+        dto.setDateCreation(cours.getDateCreation());
+
+        // Configurer les informations du professeur
+        if (cours.getProfesseur() != null) {
+            CourseResponseDTO.ProfesseurInfo professeurInfo = new CourseResponseDTO.ProfesseurInfo();
+            professeurInfo.setId(cours.getProfesseur().getId());
+            professeurInfo.setSpecialite(cours.getProfesseur().getSpecialite());
+            professeurInfo.setBiographie(cours.getProfesseur().getBiographie());
+
+            if (cours.getProfesseur().getUtilisateur() != null) {
+                professeurInfo.setNomComplet(cours.getProfesseur().getUtilisateur().getPrenom() + " " +
+                        cours.getProfesseur().getUtilisateur().getNom());
+                professeurInfo.setEmail(cours.getProfesseur().getUtilisateur().getEmail());
+            }
+            dto.setProfesseur(professeurInfo);
+        }
+
+        // Configurer les informations de la catégorie
+        if (cours.getCategorie() != null) {
+            CourseResponseDTO.CategorieInfo categorieInfo = new CourseResponseDTO.CategorieInfo();
+            categorieInfo.setId(cours.getCategorie().getId());
+            categorieInfo.setNom(cours.getCategorie().getNom());
+            categorieInfo.setSlug(cours.getCategorie().getSlug());
+            dto.setCategorie(categorieInfo);
+        }
+
+        return dto;
     }
 }
