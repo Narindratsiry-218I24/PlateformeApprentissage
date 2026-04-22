@@ -66,6 +66,14 @@ public class CourseDeleteService {
     }
 
     @Transactional
+    public void supprimerCoursPourProfesseur(Long coursId, Long professeurId) {
+        Cours cours = coursRepository.findByIdAndProfesseurId(coursId, professeurId)
+                .orElseThrow(() -> new RuntimeException("Cours introuvable pour ce professeur"));
+
+        supprimerCours(cours.getId());
+    }
+
+    @Transactional
     public void supprimerSection(Long sectionId) {
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new RuntimeException("Section non trouvée avec l'ID: " + sectionId));

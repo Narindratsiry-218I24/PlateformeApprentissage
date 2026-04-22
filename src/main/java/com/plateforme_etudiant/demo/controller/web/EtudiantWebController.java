@@ -4,6 +4,7 @@ package com.plateforme_etudiant.demo.controller.web;
 import com.plateforme_etudiant.demo.dto.*;
 import com.plateforme_etudiant.demo.service.EtudiantService;
 import com.plateforme_etudiant.demo.service.EtudiantCoursDetailService;
+import com.plateforme_etudiant.demo.service.ProgressionService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +25,14 @@ public class EtudiantWebController {
 
     private final EtudiantService etudiantService;
     private final EtudiantCoursDetailService coursDetailService;
+    private final ProgressionService progressionService;
 
     public EtudiantWebController(EtudiantService etudiantService,
-                                 EtudiantCoursDetailService coursDetailService) {
+                                 EtudiantCoursDetailService coursDetailService,
+                                 ProgressionService progressionService) {
         this.etudiantService = etudiantService;
         this.coursDetailService = coursDetailService;
+        this.progressionService = progressionService;
     }
 
     @GetMapping("/dashboard")
@@ -54,7 +58,7 @@ public class EtudiantWebController {
             model.addAttribute("statistiques", statistiques);
 
             log.info("✅ Dashboard étudiant affiché pour: {}", etudiant.getEmail());
-            return "etudiant/dashboard";
+            return "Etudiant/dashboard";
 
         } catch (Exception e) {
             log.error("❌ Erreur dashboard étudiant: {}", e.getMessage(), e);
@@ -80,7 +84,7 @@ public class EtudiantWebController {
             model.addAttribute("etudiant", etudiant);
             model.addAttribute("cours", coursInscrits);
 
-            return "etudiant/mes-cours";
+            return "Etudiant/mes-cours";
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
@@ -103,12 +107,23 @@ public class EtudiantWebController {
             EtudiantResponseDTO etudiant = etudiantService.getEtudiantById(utilisateurId);
             List<CoursEtudiantDTO> coursInscrits = etudiantService.getCoursInscrits(utilisateurId);
             List<ProgressionMatiereDTO> progressionsParMatiere = etudiantService.getProgressionsParMatiere(utilisateurId);
+            List<ProgressionCoursDTO> progressionCours = progressionService.getProgressionParCours(utilisateurId);
+
+            List<String> chartLabels = progressionCours.stream()
+                    .map(ProgressionCoursDTO::getCoursTitre)
+                    .toList();
+            List<Integer> chartValues = progressionCours.stream()
+                    .map(ProgressionCoursDTO::getProgression)
+                    .toList();
 
             model.addAttribute("etudiant", etudiant);
             model.addAttribute("cours", coursInscrits);
             model.addAttribute("progressionsParMatiere", progressionsParMatiere);
+            model.addAttribute("progressionCours", progressionCours);
+            model.addAttribute("chartLabels", chartLabels);
+            model.addAttribute("chartValues", chartValues);
 
-            return "etudiant/progression";
+            return "Etudiant/progression";
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
@@ -127,11 +142,11 @@ public class EtudiantWebController {
             List<CoursEtudiantDTO> coursDisponibles = etudiantService.getCoursRecommandes(utilisateurId);
             model.addAttribute("cours", coursDisponibles);
 
-            return "etudiant/catalogue";
+            return "Etudiant/catalogue";
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
-            return "etudiant/catalogue";
+            return "Etudiant/catalogue";
         }
     }
 
@@ -198,10 +213,12 @@ public class EtudiantWebController {
                 return "redirect:/etudiant/mes-cours";
             }
 
+            EtudiantResponseDTO etudiant = etudiantService.getEtudiantById(utilisateurId);
             model.addAttribute("cours", coursDetail);
+            model.addAttribute("etudiant", etudiant);
             log.info("✅ Cours chargé avec {} sections", coursDetail.getSections() != null ? coursDetail.getSections().size() : 0);
 
-            return "etudiant/visionner-cours";
+            return "Etudiant/visionner-cours";
 
         } catch (Exception e) {
             log.error("❌ Erreur visionnage cours: {}", e.getMessage(), e);
@@ -209,6 +226,40 @@ public class EtudiantWebController {
         }
     }
 
+
+
+    // Ajouter dans EtudiantWebController.java
+
+    @GetMapping("/cours/{coursId}/progression")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getProgressionCours(
+            @PathVariable Long coursId,
+            HttpSession session) {
+
+        Long utilisateurId = (Long) session.getAttribute("userId");
+        Map<String, Object> response = new HashMap<>();
+
+        if (utilisateurId == null) {
+            response.put("success", false);
+            response.put("message", "Non authentifié");
+            return ResponseEntity.status(401).body(response);
+        }
+
+        try {
+            progressionService.verifierInscription(utilisateurId, coursId);
+            int progression = progressionService.calculerProgressionCours(utilisateurId, coursId);
+            response.put("success", true);
+            response.put("progression", progression);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    //
+    //
+    //
     // Ajouter l'endpoint pour marquer un contenu comme complété
     @PostMapping("/cours/{coursId}/contenu/{contenuId}/completer")
     @ResponseBody
@@ -227,8 +278,7 @@ public class EtudiantWebController {
         }
 
         try {
-            etudiantService.completerContenu(utilisateurId, contenuId);
-            int nouvelleProgression = etudiantService.calculerProgressionCours(utilisateurId, coursId);
+            int nouvelleProgression = progressionService.completerContenu(utilisateurId, coursId, contenuId);
 
             response.put("success", true);
             response.put("progression", nouvelleProgression);

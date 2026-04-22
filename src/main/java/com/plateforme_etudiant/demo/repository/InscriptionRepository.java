@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 import java.util.List;
 
 @Repository
@@ -23,6 +25,8 @@ public interface InscriptionRepository extends JpaRepository<Inscription, Long> 
     // Récupérer les IDs des cours auxquels un étudiant est inscrit
     @Query("SELECT i.cours.id FROM Inscription i WHERE i.apprenant.id = :apprenantId")
     List<Long> findCoursIdsByApprenantId(@Param("apprenantId") Long apprenantId);
+
+    Optional<Inscription> findByApprenantIdAndCoursId(Long apprenantId, Long coursId);
 
     // Compter le nombre d'inscriptions d'un étudiant
     @Query("SELECT COUNT(i) FROM Inscription i WHERE i.apprenant.id = :apprenantId")

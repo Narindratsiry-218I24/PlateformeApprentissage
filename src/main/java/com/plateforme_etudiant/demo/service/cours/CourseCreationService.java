@@ -134,7 +134,7 @@ public class CourseCreationService {
     }
 
     private void creerContenu(Chapitre chapitre, CourseRequestDTO.ContenuDTO contenuDTO, int ordre) {
-        log.info("         📄 Création contenu: {}", contenuDTO.getTitre());
+        log.info("         📄 Création contenu: titre={}, type={}", contenuDTO.getTitre(), contenuDTO.getTypeContenu());
 
         ContenuItem contenu = new ContenuItem();
         contenu.setTitre(contenuDTO.getTitre());
@@ -143,32 +143,36 @@ public class CourseCreationService {
         contenu.setSection(chapitre.getSection());
         contenu.setApercuGratuit(contenuDTO.getApercuGratuit() != null && contenuDTO.getApercuGratuit());
 
-        // Définir le type de contenu
         String typeStr = contenuDTO.getTypeContenu() != null ? contenuDTO.getTypeContenu() : "TEXTE";
         TypeContenu type = TypeContenu.valueOf(typeStr);
         contenu.setTypeContenu(type);
 
-        // Définir le contenu selon le type
         switch (type) {
             case VIDEO:
                 contenu.setVideoUrl(contenuDTO.getVideoUrl());
+                log.info("            Vidéo URL: {}", contenuDTO.getVideoUrl());
                 break;
             case TEXTE:
                 contenu.setContenuTexte(contenuDTO.getContenuTexte());
+                log.info("            Texte sauvegardé");
                 break;
             case LIEN:
                 contenu.setLienExterne(contenuDTO.getLienExterne());
                 contenu.setLienTexte(contenuDTO.getLienTexte());
+                log.info("            Lien: {}", contenuDTO.getLienExterne());
                 break;
             case PDF:
             case IMAGE:
-                // Pour les fichiers, le traitement se fait ailleurs
+                contenu.setFichierUrl(contenuDTO.getFichierUrl());
+                log.info("            Fichier: {}", contenuDTO.getFichierUrl());
+                break;
+            default:
                 break;
         }
 
         contenuItemRepository.save(contenu);
+        log.info("         ✅ Contenu sauvegardé");
     }
-
     private CourseResponseDTO convertToResponseDTO(Cours cours) {
         CourseResponseDTO dto = new CourseResponseDTO();
         dto.setId(cours.getId());

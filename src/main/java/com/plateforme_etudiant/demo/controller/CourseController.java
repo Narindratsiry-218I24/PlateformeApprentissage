@@ -20,6 +20,8 @@ import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @Controller
 @RequestMapping("/professeur/cours")
@@ -42,7 +44,6 @@ public class CourseController {
     public String listerCours(Model model, HttpSession session) {
         Professeur prof = getProfesseurFromSession(session);
         if (prof == null) return "redirect:/login";
-
         model.addAttribute("cours", courseService.getCoursParProfesseur(prof.getId()));
         model.addAttribute("professeur", prof);
         return "professeur/cours/liste";
@@ -66,6 +67,7 @@ public class CourseController {
             @RequestParam(value = "imageCouverture", required = false) MultipartFile imageCouverture,
             @RequestParam(value = "sections", required = false) String sectionsJson,
             @RequestParam(value = "publier", required = false, defaultValue = "false") boolean publier,
+            @RequestParam(value = "fichiers", required = false) List<MultipartFile> fichiers,
             HttpSession session) {
 
         Map<String, Object> response = new HashMap<>();
@@ -97,14 +99,17 @@ public class CourseController {
                 try {
                     List<CourseRequestDTO.SectionDTO> sectionsList = objectMapper.readValue(
                             sectionsJson,
-                            objectMapper.getTypeFactory().constructCollectionType(List.class, CourseRequestDTO.SectionDTO.class)
+                            new TypeReference<List<CourseRequestDTO.SectionDTO>>() {}
                     );
                     request.setSections(sectionsList);
                     log.info("✅ {} sections reçues", sectionsList.size());
 
-                    for (CourseRequestDTO.SectionDTO section : sectionsList) {
-                        log.info("   Section: titre='{}'", section.getTitre());
+                    // Traiter les fichiers uploadés et mettre à jour les URLs
+                    if (fichiers != null && !fichiers.isEmpty()) {
+                        log.info("📁 {} fichiers reçus", fichiers.size());
+                        request = processUploadedFiles(request, fichiers);
                     }
+
                 } catch (Exception e) {
                     log.error("❌ Erreur parsing JSON", e);
                     response.put("success", false);
@@ -129,7 +134,39 @@ public class CourseController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
-    // Ajouter dans CourseController.java
+
+    private CourseRequestDTO processUploadedFiles(CourseRequestDTO request, List<MultipartFile> fichiers) {
+        int fileIndex = 0;
+
+        for (CourseRequestDTO.SectionDTO section : request.getSections()) {
+            if (section.getChapitres() != null) {
+                for (CourseRequestDTO.ChapitreDTO chapitre : section.getChapitres()) {
+                    if (chapitre.getContenus() != null) {
+                        for (CourseRequestDTO.ContenuDTO contenu : chapitre.getContenus()) {
+                            String type = contenu.getTypeContenu();
+                            if (("PDF".equals(type) || "IMAGE".equals(type)) &&
+                                    contenu.getFichierUrl() != null &&
+                                    !contenu.getFichierUrl().isEmpty() &&
+                                    fileIndex < fichiers.size()) {
+
+                                MultipartFile file = fichiers.get(fileIndex);
+                                try {
+                                    String uploadedUrl = fileUploadService.uploadContentFile(file);
+                                    contenu.setFichierUrl(uploadedUrl);
+                                    log.info("✅ Fichier uploadé pour '{}': {}", contenu.getTitre(), uploadedUrl);
+                                } catch (Exception e) {
+                                    log.error("❌ Erreur upload fichier: {}", e.getMessage());
+                                }
+                                fileIndex++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return request;
+    }
 
     @GetMapping("/{coursId}/gerer")
     public String gererCours(@PathVariable Long coursId, Model model, HttpSession session) {
@@ -137,7 +174,7 @@ public class CourseController {
         if (prof == null) return "redirect:/login";
 
         try {
-            CourseResponseDTO cours = courseService.getCoursParId(coursId);
+            CourseResponseDTO cours = courseService.getCoursParIdPourProfesseur(coursId, prof.getId());
             model.addAttribute("cours", cours);
             model.addAttribute("professeur", prof);
             return "professeur/cours/gerer";
@@ -154,7 +191,7 @@ public class CourseController {
         if (prof == null) return "redirect:/login";
 
         try {
-            courseService.supprimerCours(coursId);
+            courseService.supprimerCoursPourProfesseur(coursId, prof.getId());
             log.info("Cours {} supprimé avec succès", coursId);
         } catch (Exception e) {
             log.error("Erreur lors de la suppression du cours: {}", e.getMessage());

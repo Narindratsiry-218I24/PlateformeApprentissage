@@ -8,62 +8,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
     <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .step-active {
-            color: #003178;
-            font-weight: 700;
-            border-bottom: 2px solid #003178;
-            background-color: white;
-        }
-        .glass-nav {
-            backdrop-filter: blur(12px);
-            background-color: rgba(255, 255, 255, 0.8);
-        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .step-active { color: #003178; font-weight: 700; border-bottom: 2px solid #003178; background-color: white; }
+        .glass-nav { backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.8); }
         .bg-primary { background-color: #003178; }
         .text-primary { color: #003178; }
-        .border-primary { border-color: #003178; }
-        .bg-surface-container-low { background-color: #f2f4f6; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: white;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .chapitre-item, .contenu-item {
-            background-color: #f8fafc;
-            border-left: 3px solid #003178;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background-color: white; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+        .section-card, .chapitre-item, .contenu-item { transition: all 0.2s ease; }
     </style>
 </head>
 <body class="bg-gray-50 font-body">
 
-<!-- Navigation -->
 <nav class="fixed top-0 w-full z-50 glass-nav border-b border-gray-200 shadow-sm px-8 h-16 flex justify-between items-center">
     <div class="flex items-center gap-8">
         <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
         <div class="hidden md:flex gap-6">
-            <a href="/professeur/dashboard" class="text-slate-500 hover:text-primary transition-colors">Tableau de bord</a>
+            <a href="/professeur/dashboard" class="text-slate-500 hover:text-primary">Tableau de bord</a>
             <a href="/professeur/cours" class="text-primary font-bold border-b-2 border-primary">Cours</a>
-            <a href="/professeur/etudiants" class="text-slate-500 hover:text-primary transition-colors">Étudiants</a>
+            <a href="/professeur/etudiants" class="text-slate-500 hover:text-primary">Étudiants</a>
         </div>
     </div>
     <div class="flex items-center gap-4">
@@ -73,107 +37,61 @@
     </div>
 </nav>
 
-<!-- Sidebar -->
-<aside class="hidden lg:flex flex-col p-6 gap-4 h-screen w-64 fixed left-0 top-0 z-40 bg-surface-container-low pt-24">
+<aside class="hidden lg:flex flex-col p-6 gap-4 h-screen w-64 fixed left-0 top-0 z-40 bg-[#f2f4f6] pt-24">
     <nav class="flex flex-col gap-2">
-        <a href="/professeur/dashboard" class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary transition-all">Tableau de bord</a>
+        <a href="/professeur/dashboard" class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary">Tableau de bord</a>
         <a href="/professeur/cours" class="flex items-center gap-3 p-3 text-primary font-bold bg-white rounded-lg shadow-sm">Mes cours</a>
-        <a href="/professeur/etudiants" class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary transition-all">Étudiants</a>
+        <a href="/professeur/etudiants" class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary">Étudiants</a>
     </nav>
-    <div class="mt-auto pt-8">
-        <a href="/logout" class="flex items-center gap-3 p-3 text-red-600 hover:opacity-80 transition-all">
-            <span class="material-symbols-outlined">logout</span>
-            <span>Déconnexion</span>
-        </a>
-    </div>
+    <div class="mt-auto pt-8"><a href="/logout" class="flex items-center gap-3 p-3 text-red-600 hover:opacity-80"><span class="material-symbols-outlined">logout</span><span>Déconnexion</span></a></div>
 </aside>
 
-<!-- Main Content -->
 <main class="lg:ml-64 pt-24 pb-12 px-4 md:px-8 max-w-6xl mx-auto">
     <form id="courseForm">
         <header class="mb-12">
-            <a href="/professeur/cours" class="flex items-center gap-2 text-sm uppercase tracking-widest text-secondary mb-2 hover:text-primary">
-                <span class="material-symbols-outlined text-[1rem]">arrow_back</span>
-                <span>Retour aux cours</span>
+            <a href="/professeur/cours" class="flex items-center gap-2 text-sm uppercase tracking-widest mb-2 hover:text-primary">
+                <span class="material-symbols-outlined text-[1rem]">arrow_back</span><span>Retour aux cours</span>
             </a>
             <h1 class="text-4xl md:text-5xl font-black tracking-tighter mb-4">Ajouter un Nouveau Cours</h1>
         </header>
 
-        <!-- Stepper -->
-        <div class="bg-surface-container-low rounded-xl p-2 mb-8 flex flex-wrap md:flex-nowrap gap-2">
-            <div class="step step-1 flex-1 text-center py-3 px-6 rounded-lg bg-white shadow-sm border-b-2 border-primary cursor-pointer">
-                <span class="text-label-sm font-bold uppercase tracking-wider">1. Infos Générales</span>
-            </div>
-            <div class="step step-2 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer">
-                <span class="text-label-sm font-medium uppercase tracking-wider">2. Structure</span>
-            </div>
-            <div class="step step-3 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer">
-                <span class="text-label-sm font-medium uppercase tracking-wider">3. Contenu</span>
-            </div>
-            <div class="step step-4 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer">
-                <span class="text-label-sm font-medium uppercase tracking-wider">4. Publication</span>
-            </div>
+        <div class="bg-[#f2f4f6] rounded-xl p-2 mb-8 flex flex-wrap md:flex-nowrap gap-2">
+            <div class="step step-1 flex-1 text-center py-3 px-6 rounded-lg bg-white shadow-sm border-b-2 border-primary cursor-pointer"><span class="font-bold uppercase">1. Infos Générales</span></div>
+            <div class="step step-2 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer"><span class="font-medium uppercase">2. Structure</span></div>
+            <div class="step step-3 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer"><span class="font-medium uppercase">3. Aperçu</span></div>
+            <div class="step step-4 flex-1 text-center py-3 px-6 rounded-lg text-slate-500 cursor-pointer"><span class="font-medium uppercase">4. Publication</span></div>
         </div>
 
-        <!-- Étape 1 -->
         <div id="step1" class="step-content">
             <div class="bg-white rounded-xl p-8 shadow-sm">
                 <h2 class="text-xl font-bold mb-6">Identité du Cours</h2>
                 <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Titre du cours *</label>
-                        <input type="text" id="titre" name="titre" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Ex: Fondamentaux du Design" required/>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Description courte</label>
-                        <input type="text" id="descriptionCourte" name="descriptionCourte" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Brève description"/>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Description complète</label>
-                        <textarea id="description" name="description" rows="6" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Décrivez les objectifs pédagogiques..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Durée estimée (minutes)</label>
-                        <input type="number" id="dureeEstimee" name="dureeEstimee" class="w-full bg-gray-50 border rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Ex: 120"/>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Image de couverture</label>
-                        <input type="file" id="imageCouverture" name="imageCouverture" accept="image/jpeg,image/png,image/gif" class="w-full bg-gray-50 border rounded-lg p-4"/>
-                    </div>
+                    <div><label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Titre *</label><input type="text" id="titre" class="w-full bg-gray-50 border rounded-lg p-4" placeholder="Ex: Développement Web Moderne"/></div>
+                    <div><label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Description courte</label><input type="text" id="descriptionCourte" class="w-full bg-gray-50 border rounded-lg p-4" placeholder="Apprenez à créer des sites web professionnels"/></div>
+                    <div><label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Description complète</label><textarea id="description" rows="6" class="w-full bg-gray-50 border rounded-lg p-4" placeholder="Ce cours complet vous apprendra les bases du HTML, CSS, JavaScript..."></textarea></div>
+                    <div><label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Durée (minutes)</label><input type="number" id="dureeEstimee" class="w-full bg-gray-50 border rounded-lg p-4" placeholder="480"/></div>
+                    <div><label class="block text-sm font-bold uppercase tracking-widest text-slate-600 mb-2">Image couverture</label><input type="file" id="imageCouverture" accept="image/*" class="w-full bg-gray-50 border rounded-lg p-4"/></div>
                 </div>
             </div>
         </div>
 
-        <!-- Étape 2 -->
         <div id="step2" class="step-content" style="display:none;">
             <div class="bg-white rounded-xl p-8 shadow-sm">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold">Sections du cours</h2>
-                    <button type="button" id="addSectionBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
-                        + Ajouter une section
-                    </button>
-                </div>
+                <div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold">Structure du cours</h2><button type="button" id="addSectionBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">+ Ajouter une section</button></div>
                 <div id="sectionsContainer" class="space-y-4"></div>
             </div>
         </div>
 
-        <!-- Étape 3 -->
         <div id="step3" class="step-content" style="display:none;">
-            <div class="bg-white rounded-xl p-8 shadow-sm">
-                <h2 class="text-xl font-bold mb-6">Aperçu du contenu</h2>
-                <div id="previewContainer">
-                    <p class="text-slate-500">Aucune section créée pour le moment.</p>
-                </div>
-            </div>
+            <div class="bg-white rounded-xl p-8 shadow-sm"><h2 class="text-xl font-bold mb-6">Aperçu du contenu</h2><div id="previewContainer" class="max-h-96 overflow-y-auto"></div></div>
         </div>
 
-        <!-- Étape 4 -->
         <div id="step4" class="step-content" style="display:none;">
             <div class="bg-white rounded-xl p-8 shadow-sm">
                 <h2 class="text-xl font-bold mb-6">Publication</h2>
                 <div class="bg-primary/5 p-6 rounded-xl">
                     <h3 class="font-bold text-lg mb-2">Prêt à publier ?</h3>
-                    <p class="text-slate-600 mb-4">Votre cours sera visible par tous les apprenants après publication.</p>
+                    <p class="text-slate-600 mb-4">Le cours sera visible par tous les apprenants.</p>
                     <div class="flex gap-4">
                         <button type="button" id="saveDraftBtn" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300">Sauvegarder en brouillon</button>
                         <button type="button" id="publishBtn" class="px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary/90">Publier le cours</button>
@@ -182,92 +100,44 @@
             </div>
         </div>
 
-        <!-- Navigation -->
         <div class="flex justify-between pt-8 mt-8 border-t">
-            <button type="button" id="prevBtn" class="px-8 py-4 text-primary font-bold hover:bg-white rounded-lg" style="display:none;">Précédent</button>
-            <div class="flex gap-4 ml-auto">
-                <button type="button" id="nextBtn" class="px-10 py-4 bg-primary text-white font-bold rounded-lg shadow-lg">Étape suivante</button>
-            </div>
+            <button type="button" id="prevBtn" class="px-8 py-4 text-primary font-bold hover:bg-white rounded-lg" style="display:none;">← Précédent</button>
+            <button type="button" id="nextBtn" class="px-10 py-4 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary/90">Étape suivante →</button>
         </div>
     </form>
 </main>
 
-<!-- Modal pour ajouter/modifier un chapitre -->
 <div id="chapitreModal" class="modal">
     <div class="modal-content p-6">
-        <h3 class="text-xl font-bold mb-4" id="modalTitle">Ajouter un chapitre</h3>
-        <input type="hidden" id="currentSectionId">
-        <input type="hidden" id="currentChapitreId">
+        <h3 class="text-xl font-bold mb-4">Ajouter un chapitre</h3>
+        <input type="hidden" id="currentSectionId"><input type="hidden" id="currentChapitreId">
         <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold mb-2">Titre du chapitre *</label>
-                <input type="text" id="chapitreTitre" class="w-full border rounded-lg p-3" placeholder="Ex: Introduction">
-            </div>
-            <div>
-                <label class="block text-sm font-bold mb-2">Description</label>
-                <textarea id="chapitreDescription" rows="3" class="w-full border rounded-lg p-3" placeholder="Description du chapitre"></textarea>
-            </div>
+            <div><label class="block text-sm font-bold mb-2">Titre *</label><input type="text" id="chapitreTitre" class="w-full border rounded-lg p-3" placeholder="Ex: Introduction"></div>
+            <div><label class="block text-sm font-bold mb-2">Description</label><textarea id="chapitreDescription" rows="3" class="w-full border rounded-lg p-3" placeholder="Description du chapitre"></textarea></div>
         </div>
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" id="closeModalBtn" class="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button>
-            <button type="button" id="saveChapitreBtn" class="px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button>
-        </div>
+        <div class="flex justify-end gap-3 mt-6"><button type="button" id="closeModalBtn" class="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button><button type="button" id="saveChapitreBtn" class="px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button></div>
     </div>
 </div>
 
-<!-- Modal pour ajouter/modifier un contenu -->
 <div id="contenuModal" class="modal">
     <div class="modal-content p-6">
-        <h3 class="text-xl font-bold mb-4" id="contenuModalTitle">Ajouter un contenu</h3>
-        <input type="hidden" id="currentContenuSectionId">
-        <input type="hidden" id="currentContenuChapitreId">
-        <input type="hidden" id="currentContenuId">
+        <h3 class="text-xl font-bold mb-4">Ajouter un contenu</h3>
+        <input type="hidden" id="currentContenuSectionId"><input type="hidden" id="currentContenuChapitreId"><input type="hidden" id="currentContenuId">
         <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold mb-2">Titre du contenu *</label>
-                <input type="text" id="contenuTitre" class="w-full border rounded-lg p-3" placeholder="Ex: Vidéo d'introduction">
-            </div>
-            <div>
-                <label class="block text-sm font-bold mb-2">Type de contenu</label>
+            <div><label class="block text-sm font-bold mb-2">Titre *</label><input type="text" id="contenuTitre" class="w-full border rounded-lg p-3" placeholder="Ex: Vidéo d'introduction"></div>
+            <div><label class="block text-sm font-bold mb-2">Type</label>
                 <select id="contenuType" class="w-full border rounded-lg p-3">
-                    <option value="VIDEO">Vidéo</option>
-                    <option value="TEXTE">Texte</option>
-                    <option value="PDF">PDF</option>
-                    <option value="IMAGE">Image</option>
-                    <option value="LIEN">Lien externe</option>
+                    <option value="VIDEO">🎬 Vidéo</option><option value="TEXTE">📝 Texte</option>
+                    <option value="PDF">📑 PDF</option><option value="IMAGE">🖼️ Image</option><option value="LIEN">🔗 Lien</option>
                 </select>
             </div>
-            <div id="contenuSpecificFields">
-                <div id="videoFields">
-                    <label class="block text-sm font-bold mb-2">URL de la vidéo</label>
-                    <input type="text" id="videoUrl" class="w-full border rounded-lg p-3" placeholder="https://...">
-                </div>
-                <div id="texteFields" style="display:none;">
-                    <label class="block text-sm font-bold mb-2">Contenu texte</label>
-                    <textarea id="contenuTexte" rows="5" class="w-full border rounded-lg p-3" placeholder="Écrivez votre contenu..."></textarea>
-                </div>
-                <div id="fichierFields" style="display:none;">
-                    <label class="block text-sm font-bold mb-2">Fichier (PDF/Image)</label>
-                    <input type="file" id="fichierFile" class="w-full border rounded-lg p-3">
-                </div>
-                <div id="lienFields" style="display:none;">
-                    <label class="block text-sm font-bold mb-2">URL externe</label>
-                    <input type="text" id="lienUrl" class="w-full border rounded-lg p-3" placeholder="https://...">
-                    <label class="block text-sm font-bold mt-2 mb-2">Texte du lien</label>
-                    <input type="text" id="lienTexte" class="w-full border rounded-lg p-3" placeholder="Cliquez ici">
-                </div>
-            </div>
-            <div>
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" id="apercuGratuit">
-                    <span class="text-sm">Aperçu gratuit</span>
-                </label>
-            </div>
+            <div id="videoFields"><label class="block text-sm font-bold mb-2">URL Vidéo</label><input type="text" id="videoUrl" class="w-full border rounded-lg p-3" placeholder="https://www.youtube.com/embed/..."></div>
+            <div id="texteFields" style="display:none;"><label class="block text-sm font-bold mb-2">Contenu texte</label><textarea id="contenuTexte" rows="5" class="w-full border rounded-lg p-3" placeholder="Écrivez votre contenu..."></textarea></div>
+            <div id="fichierFields" style="display:none;"><label class="block text-sm font-bold mb-2">Fichier</label><input type="file" id="fichierFile" class="w-full border rounded-lg p-3" accept=".pdf,image/*"></div>
+            <div id="lienFields" style="display:none;"><label class="block text-sm font-bold mb-2">URL Lien</label><input type="text" id="lienUrl" class="w-full border rounded-lg p-3" placeholder="https://..."><label class="block text-sm font-bold mt-2 mb-2">Texte du lien</label><input type="text" id="lienTexte" class="w-full border rounded-lg p-3" placeholder="Cliquez ici"></div>
+            <div><label class="flex items-center gap-2"><input type="checkbox" id="apercuGratuit"><span>Aperçu gratuit</span></label></div>
         </div>
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" id="closeContenuModalBtn" class="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button>
-            <button type="button" id="saveContenuBtn" class="px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button>
-        </div>
+        <div class="flex justify-end gap-3 mt-6"><button type="button" id="closeContenuModalBtn" class="px-4 py-2 bg-gray-200 rounded-lg">Annuler</button><button type="button" id="saveContenuBtn" class="px-4 py-2 bg-primary text-white rounded-lg">Enregistrer</button></div>
     </div>
 </div>
 
@@ -279,148 +149,202 @@
         function escapeHtml(text) {
             if (!text) return '';
             return String(text).replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+                return m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;');
             });
         }
 
-        function updatePreview() {
-            const container = $('#previewContainer');
-            if (sectionsData.length === 0) {
-                container.html('<p class="text-slate-500">Aucune section créée pour le moment.</p>');
-                return;
-            }
-
-            let html = '<div class="space-y-6">';
-            sectionsData.forEach((section, sIdx) => {
-                const sectionTitre = section.titre && section.titre.trim() !== '' ? section.titre : `Section ${sIdx + 1}`;
-                html += `
-                    <div class="border-l-4 border-primary pl-4">
-                        <h3 class="font-bold text-lg">${escapeHtml(sectionTitre)}</h3>
-                        ${section.description ? `<p class="text-gray-500 text-sm">${escapeHtml(section.description)}</p>` : ''}
-                `;
-
-                if (section.chapitres && section.chapitres.length > 0) {
-                    html += '<div class="mt-2 space-y-2 ml-4">';
-                    section.chapitres.forEach(chapitre => {
-                        html += `
-                            <div>
-                                <strong class="text-primary">📖 ${escapeHtml(chapitre.titre)}</strong>
-                                ${chapitre.description ? `<p class="text-sm text-gray-500">${escapeHtml(chapitre.description)}</p>` : ''}
-                                ${chapitre.contenus && chapitre.contenus.length > 0 ? `<p class="text-xs text-gray-400">${chapitre.contenus.length} élément(s) de contenu</p>` : ''}
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                }
-                html += '</div>';
-            });
-            html += '</div>';
-            container.html(html);
-        }
-
-        function saveSectionsFromDOM() {
-            sectionsData = [];
-            $('.section-card').each(function(idx) {
-                let titre = $(this).find('.section-title').val() || '';
-                if (titre.trim() === '') {
-                    titre = `Section ${idx + 1}`;
-                }
-
-                const section = {
-                    titre: titre,
-                    description: $(this).find('.section-description').val() || '',
-                    ordre: idx,
-                    chapitres: []
-                };
-
-                $(this).find('.chapitre-item').each(function(chIdx) {
-                    const chapitre = {
-                        titre: $(this).find('strong').text(),
-                        description: $(this).find('p.text-gray-500').first().text(),
-                        ordre: chIdx,
-                        contenus: []
-                    };
-                    section.chapitres.push(chapitre);
-                });
-
-                sectionsData.push(section);
-            });
-            updatePreview();
+        function toggleContenuFields() {
+            let type = $('#contenuType').val();
+            $('#videoFields, #texteFields, #fichierFields, #lienFields').hide();
+            if (type === 'VIDEO') $('#videoFields').show();
+            else if (type === 'TEXTE') $('#texteFields').show();
+            else if (type === 'PDF' || type === 'IMAGE') $('#fichierFields').show();
+            else if (type === 'LIEN') $('#lienFields').show();
         }
 
         function refreshSectionsDisplay() {
             const container = $('#sectionsContainer');
             container.empty();
 
-            sectionsData.forEach((section, idx) => {
-                const sectionTitre = section.titre && section.titre.trim() !== '' ? section.titre : `Section ${idx + 1}`;
+            if (sectionsData.length === 0) {
+                container.html('<div class="text-center py-8 text-gray-400"><span class="material-symbols-outlined text-4xl mb-2">folder_empty</span><p>Aucune section. Cliquez sur "Ajouter une section"</p></div>');
+                return;
+            }
 
+            for (let idx = 0; idx < sectionsData.length; idx++) {
+                const section = sectionsData[idx];
                 let chapitresHtml = '';
+
                 if (section.chapitres && section.chapitres.length > 0) {
                     chapitresHtml = '<div class="mt-3 space-y-2">';
-                    section.chapitres.forEach((chapitre, chIdx) => {
-                        chapitresHtml += `
-                            <div class="chapitre-item p-3 rounded-lg" data-chapitre-idx="${chIdx}">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <strong>${escapeHtml(chapitre.titre)}</strong>
-                                        ${chapitre.description ? `<p class="text-sm text-gray-500">${escapeHtml(chapitre.description)}</p>` : ''}
-                                        ${chapitre.contenus && chapitre.contenus.length > 0 ? `<p class="text-xs text-gray-400 mt-1">${chapitre.contenus.length} contenu(s)</p>` : ''}
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button type="button" class="edit-chapitre text-blue-500 hover:text-blue-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">✏️</button>
-                                        <button type="button" class="delete-chapitre text-red-500 hover:text-red-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">🗑️</button>
-                                        <button type="button" class="add-contenu text-green-500 hover:text-green-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">+ Contenu</button>
-                                    </div>
+                    for (let chIdx = 0; chIdx < section.chapitres.length; chIdx++) {
+                        const chapitre = section.chapitres[chIdx];
+                        let contenusHtml = '';
+
+                        if (chapitre.contenus && chapitre.contenus.length > 0) {
+                            contenusHtml = '<div class="ml-6 mt-2 space-y-1">';
+                            for (let cIdx = 0; cIdx < chapitre.contenus.length; cIdx++) {
+                                const contenu = chapitre.contenus[cIdx];
+                                let typeIcon = '📄';
+                                if (contenu.typeContenu === 'VIDEO') typeIcon = '🎬';
+                                else if (contenu.typeContenu === 'TEXTE') typeIcon = '📝';
+                                else if (contenu.typeContenu === 'PDF') typeIcon = '📑';
+                                else if (contenu.typeContenu === 'IMAGE') typeIcon = '🖼️';
+                                else if (contenu.typeContenu === 'LIEN') typeIcon = '🔗';
+
+                                contenusHtml += `<div class="contenu-item flex justify-between items-center p-2 bg-white rounded border border-gray-200" data-contenu-idx="${cIdx}" data-type="${contenu.typeContenu}" data-titre="${escapeHtml(contenu.titre)}" data-video-url="${escapeHtml(contenu.videoUrl || '')}" data-texte="${escapeHtml(contenu.contenuTexte || '')}" data-lien-url="${escapeHtml(contenu.lienExterne || '')}" data-lien-texte="${escapeHtml(contenu.lienTexte || '')}" data-fichier-url="${escapeHtml(contenu.fichierUrl || '')}">
+                                <div class="flex-1"><span class="font-medium">${typeIcon} ${escapeHtml(contenu.titre)}</span></div>
+                                <div class="flex gap-2">
+                                    <button type="button" class="edit-contenu text-blue-500 hover:text-blue-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}" data-contenu-idx="${cIdx}">✏️</button>
+                                    <button type="button" class="delete-contenu text-red-500 hover:text-red-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}" data-contenu-idx="${cIdx}">🗑️</button>
                                 </div>
+                            </div>`;
+                            }
+                            contenusHtml += '</div>';
+                        }
+
+                        chapitresHtml += `<div class="chapitre-item p-3 rounded-lg bg-gray-100" data-chapitre-idx="${chIdx}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <strong class="chapitre-title">📖 ${escapeHtml(chapitre.titre)}</strong>
+                                ${chapitre.description ? `<p class="text-sm text-gray-500 chapitre-description">${escapeHtml(chapitre.description)}</p>` : ''}
+                                <p class="text-xs text-gray-400 mt-1">${chapitre.contenus ? chapitre.contenus.length : 0} contenu(s)</p>
+                                ${contenusHtml}
                             </div>
-                        `;
-                    });
+                            <div class="flex gap-2 ml-2">
+                                <button type="button" class="edit-chapitre text-blue-500 hover:text-blue-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">✏️</button>
+                                <button type="button" class="delete-chapitre text-red-500 hover:text-red-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">🗑️</button>
+                                <button type="button" class="add-contenu text-green-500 hover:text-green-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">+ Contenu</button>
+                            </div>
+                        </div>
+                    </div>`;
+                    }
                     chapitresHtml += '</div>';
                 }
 
-                container.append(`
-                    <div class="section-card bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4" data-section-idx="${idx}">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold">Section ${idx + 1}</h3>
-                            <button type="button" class="remove-section text-red-500 hover:text-red-700" data-index="${idx}">
-                                Supprimer
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-1 gap-4">
-                            <input type="text" placeholder="Titre de la section" class="section-title w-full p-3 border rounded-lg" value="${escapeHtml(sectionTitre)}">
-                            <textarea placeholder="Description" class="section-description w-full p-3 border rounded-lg" rows="2">${escapeHtml(section.description || '')}</textarea>
-                            <div class="flex gap-2">
-                                <button type="button" class="add-chapitre-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90" data-section-idx="${idx}">
-                                    + Ajouter un chapitre
-                                </button>
-                            </div>
-                            ${chapitresHtml}
-                        </div>
+                const sectionCard = $(`
+                <div class="section-card bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4" data-section-idx="${idx}">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold">Section ${idx + 1}</h3>
+                        <button type="button" class="remove-section text-red-500 hover:text-red-700" data-index="${idx}">Supprimer</button>
                     </div>
-                `);
-            });
+                    <div class="grid grid-cols-1 gap-4">
+                        <input type="text" placeholder="Titre de la section" class="section-title w-full p-3 border rounded-lg" value="${escapeHtml(section.titre)}">
+                        <textarea placeholder="Description de la section" class="section-description w-full p-3 border rounded-lg" rows="2">${escapeHtml(section.description || '')}</textarea>
+                        <div class="flex gap-2">
+                            <button type="button" class="add-chapitre-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90" data-section-idx="${idx}">+ Ajouter un chapitre</button>
+                        </div>
+                        ${chapitresHtml}
+                    </div>
+                </div>
+            `);
 
-            $('.section-title').on('input', function() {
+                container.append(sectionCard);
+            }
+
+            attachEvents();
+        }
+
+        function attachEvents() {
+            $('.section-title').off('input').on('input', function() {
                 const sectionCard = $(this).closest('.section-card');
-                const sectionIdx = sectionCard.data('section-idx');
-                if (sectionIdx !== undefined && sectionsData[sectionIdx]) {
-                    sectionsData[sectionIdx].titre = $(this).val();
+                const idx = sectionCard.data('section-idx');
+                if (idx !== undefined && sectionsData[idx]) {
+                    sectionsData[idx].titre = $(this).val();
                 }
             });
 
-            $('.section-description').on('input', function() {
+            $('.section-description').off('input').on('input', function() {
                 const sectionCard = $(this).closest('.section-card');
-                const sectionIdx = sectionCard.data('section-idx');
-                if (sectionIdx !== undefined && sectionsData[sectionIdx]) {
-                    sectionsData[sectionIdx].description = $(this).val();
+                const idx = sectionCard.data('section-idx');
+                if (idx !== undefined && sectionsData[idx]) {
+                    sectionsData[idx].description = $(this).val();
                 }
             });
 
-            saveSectionsFromDOM();
+            $('.remove-section').off('click').on('click', function() {
+                const idx = $(this).data('index');
+                if (confirm('Supprimer cette section ?')) {
+                    sectionsData.splice(idx, 1);
+                    refreshSectionsDisplay();
+                }
+            });
+
+            $('.add-chapitre-btn').off('click').on('click', function() {
+                const sectionIdx = $(this).data('section-idx');
+                $('#currentSectionId').val(sectionIdx);
+                $('#currentChapitreId').val('');
+                $('#chapitreTitre').val('');
+                $('#chapitreDescription').val('');
+                $('#chapitreModal').css('display', 'flex');
+            });
+
+            $('.edit-chapitre').off('click').on('click', function() {
+                const sectionIdx = $(this).data('section-idx');
+                const chapitreIdx = $(this).data('chapitre-idx');
+                const chapitre = sectionsData[sectionIdx].chapitres[chapitreIdx];
+                $('#currentSectionId').val(sectionIdx);
+                $('#currentChapitreId').val(chapitreIdx);
+                $('#chapitreTitre').val(chapitre.titre);
+                $('#chapitreDescription').val(chapitre.description || '');
+                $('#chapitreModal').css('display', 'flex');
+            });
+
+            $('.delete-chapitre').off('click').on('click', function() {
+                const sectionIdx = $(this).data('section-idx');
+                const chapitreIdx = $(this).data('chapitre-idx');
+                if (confirm('Supprimer ce chapitre ?')) {
+                    sectionsData[sectionIdx].chapitres.splice(chapitreIdx, 1);
+                    refreshSectionsDisplay();
+                }
+            });
+
+            $('.add-contenu').off('click').on('click', function() {
+                const sectionIdx = $(this).data('section-idx');
+                const chapitreIdx = $(this).data('chapitre-idx');
+                $('#currentContenuSectionId').val(sectionIdx);
+                $('#currentContenuChapitreId').val(chapitreIdx);
+                $('#currentContenuId').val('');
+                $('#contenuTitre').val('');
+                $('#contenuType').val('VIDEO');
+                $('#videoUrl').val('');
+                $('#contenuTexte').val('');
+                $('#lienUrl').val('');
+                $('#lienTexte').val('');
+                $('#fichierFile').val('');
+                $('#apercuGratuit').prop('checked', false);
+                toggleContenuFields();
+                $('#contenuModal').css('display', 'flex');
+            });
+
+            $('.edit-contenu').off('click').on('click', function() {
+                const sectionIdx = $(this).data('section-idx');
+                const chapitreIdx = $(this).data('chapitre-idx');
+                const contenuIdx = $(this).data('contenu-idx');
+                const contenu = sectionsData[sectionIdx].chapitres[chapitreIdx].contenus[contenuIdx];
+                $('#currentContenuSectionId').val(sectionIdx);
+                $('#currentContenuChapitreId').val(chapitreIdx);
+                $('#currentContenuId').val(contenuIdx);
+                $('#contenuTitre').val(contenu.titre);
+                $('#contenuType').val(contenu.typeContenu);
+                $('#videoUrl').val(contenu.videoUrl || '');
+                $('#contenuTexte').val(contenu.contenuTexte || '');
+                $('#lienUrl').val(contenu.lienExterne || '');
+                $('#lienTexte').val(contenu.lienTexte || '');
+                $('#apercuGratuit').prop('checked', contenu.apercuGratuit || false);
+                toggleContenuFields();
+                $('#contenuModal').css('display', 'flex');
+            });
+
+            $('.delete-contenu').off('click').on('click', function() {
+                const sectionIdx = $(this).data('section-idx');
+                const chapitreIdx = $(this).data('chapitre-idx');
+                const contenuIdx = $(this).data('contenu-idx');
+                if (confirm('Supprimer ce contenu ?')) {
+                    sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.splice(contenuIdx, 1);
+                    refreshSectionsDisplay();
+                }
+            });
         }
 
         function addSection() {
@@ -433,42 +357,15 @@
             refreshSectionsDisplay();
         }
 
-        function removeSection(idx) {
-            if (confirm('Supprimer cette section ?')) {
-                sectionsData.splice(idx, 1);
-                refreshSectionsDisplay();
-            }
-        }
-
-        function openAddChapitreModal(sectionIdx) {
-            $('#modalTitle').text('Ajouter un chapitre');
-            $('#currentSectionId').val(sectionIdx);
-            $('#currentChapitreId').val('');
-            $('#chapitreTitre').val('');
-            $('#chapitreDescription').val('');
-            $('#chapitreModal').css('display', 'flex');
-        }
-
-        function openEditChapitreModal(sectionIdx, chapitreIdx) {
-            const chapitre = sectionsData[sectionIdx].chapitres[chapitreIdx];
-            if (chapitre) {
-                $('#modalTitle').text('Modifier le chapitre');
-                $('#currentSectionId').val(sectionIdx);
-                $('#currentChapitreId').val(chapitreIdx);
-                $('#chapitreTitre').val(chapitre.titre);
-                $('#chapitreDescription').val(chapitre.description || '');
-                $('#chapitreModal').css('display', 'flex');
-            }
-        }
-
-        function saveChapitre() {
+        $('#saveChapitreBtn').off('click').on('click', function() {
             const sectionIdx = parseInt($('#currentSectionId').val());
             const chapitreIdx = $('#currentChapitreId').val();
-            const titre = $('#chapitreTitre').val();
+            const titre = $('#chapitreTitre').val().trim();
             const description = $('#chapitreDescription').val();
 
             if (!titre) {
                 alert('Le titre du chapitre est obligatoire');
+                $('#chapitreTitre').focus();
                 return;
             }
 
@@ -479,11 +376,14 @@
                 sectionsData[sectionIdx].chapitres = [];
             }
 
+            const existingContenus = (chapitreIdx !== '' && sectionsData[sectionIdx].chapitres[parseInt(chapitreIdx)]) ?
+                sectionsData[sectionIdx].chapitres[parseInt(chapitreIdx)].contenus : [];
+
             const newChapitre = {
                 titre: titre,
                 description: description,
                 ordre: sectionsData[sectionIdx].chapitres.length,
-                contenus: []
+                contenus: existingContenus
             };
 
             if (chapitreIdx === '') {
@@ -494,55 +394,23 @@
 
             refreshSectionsDisplay();
             $('#chapitreModal').css('display', 'none');
-        }
+        });
 
-        function deleteChapitre(sectionIdx, chapitreIdx) {
-            if (confirm('Supprimer ce chapitre ?')) {
-                sectionsData[sectionIdx].chapitres.splice(chapitreIdx, 1);
-                refreshSectionsDisplay();
-            }
-        }
-
-        function toggleContenuFields() {
-            const type = $('#contenuType').val();
-            $('#videoFields, #texteFields, #fichierFields, #lienFields').hide();
-            if (type === 'VIDEO') $('#videoFields').show();
-            else if (type === 'TEXTE') $('#texteFields').show();
-            else if (type === 'PDF' || type === 'IMAGE') $('#fichierFields').show();
-            else if (type === 'LIEN') $('#lienFields').show();
-        }
-
-        function openAddContenuModal(sectionIdx, chapitreIdx) {
-            $('#contenuModalTitle').text('Ajouter un contenu');
-            $('#currentContenuSectionId').val(sectionIdx);
-            $('#currentContenuChapitreId').val(chapitreIdx);
-            $('#currentContenuId').val('');
-            $('#contenuTitre').val('');
-            $('#contenuType').val('VIDEO');
-            $('#videoUrl').val('');
-            $('#contenuTexte').val('');
-            $('#lienUrl').val('');
-            $('#lienTexte').val('');
-            $('#fichierFile').val('');
-            $('#apercuGratuit').prop('checked', false);
-            toggleContenuFields();
-            $('#contenuModal').css('display', 'flex');
-        }
-
-        function saveContenu() {
+        $('#saveContenuBtn').off('click').on('click', function() {
             const sectionIdx = parseInt($('#currentContenuSectionId').val());
             const chapitreIdx = parseInt($('#currentContenuChapitreId').val());
             const contenuIdx = $('#currentContenuId').val();
-            const titre = $('#contenuTitre').val();
+            const titre = $('#contenuTitre').val().trim();
             const type = $('#contenuType').val();
 
             if (!titre) {
                 alert('Le titre du contenu est obligatoire');
+                $('#contenuTitre').focus();
                 return;
             }
 
             if (!sectionsData[sectionIdx] || !sectionsData[sectionIdx].chapitres[chapitreIdx]) {
-                alert('Erreur: chapitre non trouvé');
+                alert('Chapitre non trouvé');
                 return;
             }
 
@@ -550,14 +418,42 @@
                 titre: titre,
                 typeContenu: type,
                 apercuGratuit: $('#apercuGratuit').is(':checked'),
-                ordre: sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.length
+                ordre: sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.length,
+                videoUrl: null,
+                contenuTexte: null,
+                lienExterne: null,
+                lienTexte: null,
+                fichierUrl: null
             };
 
-            if (type === 'VIDEO') contenu.videoUrl = $('#videoUrl').val();
-            else if (type === 'TEXTE') contenu.contenuTexte = $('#contenuTexte').val();
-            else if (type === 'LIEN') {
-                contenu.lienExterne = $('#lienUrl').val();
-                contenu.lienTexte = $('#lienTexte').val();
+            if (type === 'VIDEO') {
+                const url = $('#videoUrl').val().trim();
+                if (!url) {
+                    alert('L\'URL de la vidéo est obligatoire');
+                    return;
+                }
+                contenu.videoUrl = url;
+            } else if (type === 'TEXTE') {
+                const texte = $('#contenuTexte').val();
+                if (!texte) {
+                    alert('Le contenu texte est obligatoire');
+                    return;
+                }
+                contenu.contenuTexte = texte;
+            } else if (type === 'LIEN') {
+                const url = $('#lienUrl').val().trim();
+                if (!url) {
+                    alert('L\'URL du lien est obligatoire');
+                    return;
+                }
+                contenu.lienExterne = url;
+                contenu.lienTexte = $('#lienTexte').val().trim() || titre;
+            } else if (type === 'PDF' || type === 'IMAGE') {
+                const fichier = $('#fichierFile')[0].files[0];
+                if (fichier) {
+                    contenu.fichierUrl = fichier.name;
+                    contenu.fichierBlob = fichier;
+                }
             }
 
             if (!sectionsData[sectionIdx].chapitres[chapitreIdx].contenus) {
@@ -572,67 +468,108 @@
 
             refreshSectionsDisplay();
             $('#contenuModal').css('display', 'none');
-        }
+        });
 
-        function validateSections() {
-            for (let i = 0; i < sectionsData.length; i++) {
-                if (!sectionsData[i].titre || sectionsData[i].titre.trim() === '') {
-                    alert(`La section ${i + 1} n'a pas de titre. Veuillez ajouter un titre.`);
-                    return false;
+        function updatePreview() {
+            let html = '<div class="space-y-4">';
+            for (const section of sectionsData) {
+                html += `<div class="border-l-4 border-primary pl-3"><h3 class="font-bold">${escapeHtml(section.titre)}</h3>`;
+                if (section.chapitres) {
+                    for (const ch of section.chapitres) {
+                        html += `<div class="ml-4 mt-2"><strong>📖 ${escapeHtml(ch.titre)}</strong>`;
+                        if (ch.contenus) {
+                            for (const c of ch.contenus) {
+                                let icon = '📄';
+                                if (c.typeContenu === 'VIDEO') icon = '🎬';
+                                else if (c.typeContenu === 'TEXTE') icon = '📝';
+                                else if (c.typeContenu === 'PDF') icon = '📑';
+                                else if (c.typeContenu === 'IMAGE') icon = '🖼️';
+                                else if (c.typeContenu === 'LIEN') icon = '🔗';
+                                html += `<div class="ml-4 text-sm text-gray-600">${icon} ${escapeHtml(c.titre)}</div>`;
+                            }
+                        }
+                        html += `</div>`;
+                    }
                 }
+                html += `</div>`;
             }
-            return true;
+            $('#previewContainer').html(html || '<p class="text-gray-400 text-center">Aucun contenu</p>');
         }
 
-        function collectFormData() {
+        function collectFormData(publier) {
             const formData = new FormData();
             formData.append('titre', $('#titre').val() || '');
             formData.append('descriptionCourte', $('#descriptionCourte').val() || '');
             formData.append('description', $('#description').val() || '');
             formData.append('dureeEstimee', $('#dureeEstimee').val() || '0');
+            formData.append('publier', publier);
 
-            const imageFile = $('#imageCouverture')[0].files[0];
-            if (imageFile) {
-                formData.append('imageCouverture', imageFile);
-            }
+            const img = $('#imageCouverture')[0].files[0];
+            if (img) formData.append('imageCouverture', img);
 
-            saveSectionsFromDOM();
+            let fichiers = [];
 
-            const cleanedSections = sectionsData.map((section, idx) => {
-                let cleanTitre = section.titre;
-                if (!cleanTitre || cleanTitre.trim() === '') {
-                    cleanTitre = `Section ${idx + 1}`;
-                }
-                return {
-                    titre: cleanTitre,
-                    description: section.description || '',
-                    ordre: idx,
-                    chapitres: section.chapitres || []
-                };
-            });
+            const cleanedSections = sectionsData.map((s, i) => ({
+                titre: s.titre || `Section ${i+1}`,
+                description: s.description || '',
+                ordre: i,
+                chapitres: (s.chapitres || []).map((c, ci) => ({
+                    titre: c.titre,
+                    description: c.description || '',
+                    ordre: ci,
+                    contenus: (c.contenus || []).map((ct, cti) => {
+                        if ((ct.typeContenu === 'PDF' || ct.typeContenu === 'IMAGE') && ct.fichierBlob) {
+                            fichiers.push(ct.fichierBlob);
+                            return {
+                                titre: ct.titre,
+                                typeContenu: ct.typeContenu,
+                                apercuGratuit: ct.apercuGratuit || false,
+                                ordre: cti,
+                                videoUrl: null,
+                                contenuTexte: null,
+                                lienExterne: null,
+                                lienTexte: null,
+                                fichierUrl: ct.fichierBlob.name
+                            };
+                        } else {
+                            return {
+                                titre: ct.titre,
+                                typeContenu: ct.typeContenu,
+                                apercuGratuit: ct.apercuGratuit || false,
+                                ordre: cti,
+                                videoUrl: ct.videoUrl || null,
+                                contenuTexte: ct.contenuTexte || null,
+                                lienExterne: ct.lienExterne || null,
+                                lienTexte: ct.lienTexte || null,
+                                fichierUrl: ct.fichierUrl || null
+                            };
+                        }
+                    })
+                }))
+            }));
 
             formData.append('sections', JSON.stringify(cleanedSections));
+
+            for (let i = 0; i < fichiers.length; i++) {
+                formData.append('fichiers', fichiers[i]);
+            }
+
             return formData;
         }
 
-        function publishCourse() {
-            const titre = $('#titre').val();
+        function publish(publier) {
+            const titre = $('#titre').val().trim();
             if (!titre) {
                 alert('Le titre du cours est obligatoire');
                 showStep(1);
                 return;
             }
 
-            saveSectionsFromDOM();
-            if (!validateSections()) {
-                showStep(2);
-                return;
-            }
+            const formData = collectFormData(publier);
+            const btn = publier ? $('#publishBtn') : $('#saveDraftBtn');
+            const originalText = btn.text();
 
-            const formData = collectFormData();
-            formData.append('publier', 'true');
-
-            $('#publishBtn').prop('disabled', true).text('Publication en cours...');
+            btn.prop('disabled', true).text(publier ? 'Publication...' : 'Sauvegarde...');
 
             $.ajax({
                 url: '/professeur/cours/api/creer-avec-fichier',
@@ -642,58 +579,17 @@
                 contentType: false,
                 success: function(response) {
                     if (response.success) {
-                        alert('✅ Cours publié avec succès !');
+                        alert(publier ? '✅ Cours publié avec succès !' : '✅ Cours sauvegardé en brouillon !');
                         window.location.href = '/professeur/cours';
                     } else {
                         alert('❌ Erreur: ' + (response.message || 'Erreur inconnue'));
-                        $('#publishBtn').prop('disabled', false).text('Publier le cours');
+                        btn.prop('disabled', false).text(originalText);
                     }
                 },
                 error: function(xhr) {
                     console.error(xhr);
-                    let errorMsg = 'Erreur lors de la publication du cours';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMsg += ': ' + xhr.responseJSON.message;
-                    }
-                    alert(errorMsg);
-                    $('#publishBtn').prop('disabled', false).text('Publier le cours');
-                }
-            });
-        }
-
-        function saveDraft() {
-            const titre = $('#titre').val();
-            if (!titre) {
-                alert('Le titre du cours est obligatoire');
-                showStep(1);
-                return;
-            }
-
-            saveSectionsFromDOM();
-            const formData = collectFormData();
-            formData.append('publier', 'false');
-
-            $('#saveDraftBtn').prop('disabled', true).text('Sauvegarde...');
-
-            $.ajax({
-                url: '/professeur/cours/api/creer-avec-fichier',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        alert('✅ Cours sauvegardé en brouillon !');
-                        window.location.href = '/professeur/cours';
-                    } else {
-                        alert('❌ Erreur: ' + (response.message || 'Erreur inconnue'));
-                        $('#saveDraftBtn').prop('disabled', false).text('Sauvegarder en brouillon');
-                    }
-                },
-                error: function(xhr) {
-                    console.error(xhr);
-                    alert('Erreur lors de la sauvegarde du cours');
-                    $('#saveDraftBtn').prop('disabled', false).text('Sauvegarder en brouillon');
+                    alert('❌ Erreur serveur');
+                    btn.prop('disabled', false).text(originalText);
                 }
             });
         }
@@ -702,77 +598,36 @@
             $('.step-content').hide();
             $(`#step${step}`).show();
 
-            $('.step').removeClass('bg-white shadow-sm border-b-2 border-primary text-primary');
-            $('.step').addClass('text-slate-500');
-            $(`.step-${step}`).addClass('bg-white shadow-sm border-b-2 border-primary');
-            $(`.step-${step}`).removeClass('text-slate-500').addClass('text-primary');
+            $('.step').removeClass('bg-white shadow-sm border-b-2 border-primary text-primary').addClass('text-slate-500');
+            $(`.step-${step}`).addClass('bg-white shadow-sm border-b-2 border-primary text-primary');
 
             $('#prevBtn').toggle(step > 1);
-            $('#nextBtn').text(step === 4 ? 'Publier' : 'Étape suivante');
+            $('#nextBtn').text(step === 4 ? 'Publier' : 'Étape suivante →');
             currentStep = step;
 
             if (step === 3) {
-                saveSectionsFromDOM();
                 updatePreview();
             }
         }
 
-        // Événements
-        $('#nextBtn').click(function() {
-            if (currentStep === 4) {
-                publishCourse();
-            } else if (currentStep < 4) {
-                showStep(currentStep + 1);
-            }
+        $('#addSectionBtn').off('click').on('click', addSection);
+        $('#nextBtn').off('click').on('click', function() { if (currentStep === 4) publish(true); else if (currentStep < 4) showStep(currentStep + 1); });
+        $('#prevBtn').off('click').on('click', function() { if (currentStep > 1) showStep(currentStep - 1); });
+        $('#publishBtn').off('click').on('click', function() { publish(true); });
+        $('#saveDraftBtn').off('click').on('click', function() { publish(false); });
+        $('.step').off('click').on('click', function() {
+            if ($(this).hasClass('step-1')) showStep(1);
+            else if ($(this).hasClass('step-2')) showStep(2);
+            else if ($(this).hasClass('step-3')) showStep(3);
+            else if ($(this).hasClass('step-4')) showStep(4);
         });
-
-        $('#prevBtn').click(function() {
-            if (currentStep > 1) {
-                showStep(currentStep - 1);
-            }
-        });
-
-        $('#saveDraftBtn').click(saveDraft);
-        $('#publishBtn').click(publishCourse);
-        $('#addSectionBtn').click(addSection);
-
-        $('#sectionsContainer').on('click', '.remove-section', function() {
-            removeSection(parseInt($(this).data('index')));
-        });
-
-        $('#sectionsContainer').on('click', '.add-chapitre-btn', function() {
-            openAddChapitreModal(parseInt($(this).data('section-idx')));
-        });
-
-        $('#sectionsContainer').on('click', '.edit-chapitre', function() {
-            openEditChapitreModal(parseInt($(this).data('section-idx')), parseInt($(this).data('chapitre-idx')));
-        });
-
-        $('#sectionsContainer').on('click', '.delete-chapitre', function() {
-            deleteChapitre(parseInt($(this).data('section-idx')), parseInt($(this).data('chapitre-idx')));
-        });
-
-        $('#sectionsContainer').on('click', '.add-contenu', function() {
-            openAddContenuModal(parseInt($(this).data('section-idx')), parseInt($(this).data('chapitre-idx')));
-        });
-
-        $('#closeModalBtn, #closeContenuModalBtn').click(function() {
-            $('#chapitreModal, #contenuModal').css('display', 'none');
-        });
-
-        $('#saveChapitreBtn').click(saveChapitre);
-        $('#saveContenuBtn').click(saveContenu);
-        $('#contenuType').change(toggleContenuFields);
-
-        $(window).click(function(e) {
-            if ($(e.target).hasClass('modal')) {
-                $('.modal').css('display', 'none');
-            }
-        });
+        $('#closeModalBtn, #closeContenuModalBtn').off('click').on('click', function() { $('#chapitreModal, #contenuModal').css('display', 'none'); });
+        $('#contenuType').off('change').on('change', toggleContenuFields);
+        $(window).off('click').on('click', function(e) { if ($(e.target).hasClass('modal')) $('.modal').css('display', 'none'); });
 
         showStep(1);
+        refreshSectionsDisplay();
     });
 </script>
-
 </body>
 </html>

@@ -54,6 +54,15 @@ public class CourseReadService {
     }
 
     @Transactional(readOnly = true)
+    public CourseResponseDTO getCoursParIdPourProfesseur(Long coursId, Long professeurId) {
+        log.debug("Recuperation du cours {} pour le professeur {}", coursId, professeurId);
+
+        Cours cours = coursRepository.findByIdAndProfesseurId(coursId, professeurId)
+                .orElseThrow(() -> new RuntimeException("Cours introuvable pour ce professeur"));
+        return conversionService.convertirEnReponse(cours);
+    }
+
+    @Transactional(readOnly = true)
     public List<CourseResponseDTO> getCoursPublies() {
         log.debug("Récupération de tous les cours publiés");
 

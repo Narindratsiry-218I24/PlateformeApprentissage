@@ -47,6 +47,11 @@ public class CourseServiceFacade {
     public List<CourseResponseDTO> searchCours(String keyword) {
         return readService.searchCours(keyword);
     }
+
+    public CourseResponseDTO getCoursParIdPourProfesseur(Long coursId, Long professeurId) {
+        return readService.getCoursParIdPourProfesseur(coursId, professeurId);
+    }
+
     public CourseResponseDTO getCoursParId(Long coursId) {
         return readService.getCoursParId(coursId);
     }
@@ -69,6 +74,10 @@ public class CourseServiceFacade {
 
     public void supprimerCours(Long coursId) {
         deleteService.supprimerCours(coursId);
+    }
+
+    public void supprimerCoursPourProfesseur(Long coursId, Long professeurId) {
+        deleteService.supprimerCoursPourProfesseur(coursId, professeurId);
     }
 
     public void supprimerSection(Long sectionId) {

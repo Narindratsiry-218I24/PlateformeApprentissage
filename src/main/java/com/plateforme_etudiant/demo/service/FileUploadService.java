@@ -12,8 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -115,6 +117,33 @@ public class FileUploadService {
      */
     public String uploadLessonVideo(MultipartFile file) throws IOException {
         return uploadVideo(file);
+    }
+    public String uploadContentFile(MultipartFile file) {
+        try {
+            String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String filename = timestamp + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
+
+            Path uploadPath = Paths.get(uploadDir, "contents");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String fileUrl = "/uploads/contents/" + filename;
+            log.info("Fichier contenu uploadé: {}", fileUrl);
+            return fileUrl;
+
+        } catch (Exception e) {
+            log.error("Erreur lors de l'upload du fichier: {}", e.getMessage());
+            throw new RuntimeException("Impossible d'uploader le fichier: " + e.getMessage());
+        }
     }
 
     /**

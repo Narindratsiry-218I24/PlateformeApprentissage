@@ -17,6 +17,8 @@ public interface CoursRepository extends JpaRepository<Cours, Long> {
     // Recherche
     Optional<Cours> findBySlug(String slug);
 
+    Optional<Cours> findByIdAndProfesseurId(Long id, Long professeurId);
+
     List<Cours> findByProfesseur(Professeur professeur);
 
     List<Cours> findByProfesseurIdOrderByDateCreationDesc(Long professeurId);

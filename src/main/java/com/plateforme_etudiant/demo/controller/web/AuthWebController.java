@@ -9,12 +9,17 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Collections;
 
 @Controller
 public class AuthWebController {
@@ -81,6 +86,19 @@ public class AuthWebController {
                 return "login";
             }
 
+            // ===== AJOUTER L'UTILISATEUR DANS SECURITY CONTEXT =====
+            org.springframework.security.core.userdetails.User securityUser = new org.springframework.security.core.userdetails.User(
+                    utilisateur.getEmail(),
+                    utilisateur.getMotDePasse(),
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + utilisateur.getRole().name()))
+            );
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    securityUser, null, securityUser.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            // ===== FIN AJOUT =====
+
             session.setAttribute("userId", utilisateur.getId());
             session.setAttribute("userEmail", utilisateur.getEmail());
             session.setAttribute("userNom", utilisateur.getPrenom() + " " + utilisateur.getNom());
@@ -119,6 +137,7 @@ public class AuthWebController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
+        SecurityContextHolder.clearContext(); // Nettoyer le contexte de sécurité
         return "redirect:/login?logout=true";
     }
 }

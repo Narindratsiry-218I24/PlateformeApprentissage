@@ -12,16 +12,44 @@
     .bg-primary { background-color: #003178; }
     .text-primary { color: #003178; }
     .border-primary { border-color: #003178; }
-    .chapter-content { transition: max-height 0.3s ease; }
     .progress-bar { transition: width 0.5s ease; }
-    .prose { max-width: none; }
-    .prose p { margin-bottom: 1rem; line-height: 1.6; }
-    .video-container video { border-radius: 0.5rem; width: 100%; }
-    .content-item.selected {
+    .content-item.active {
       background-color: rgba(0, 49, 120, 0.1);
-      color: #003178;
-      font-weight: 500;
       border-left: 3px solid #003178;
+    }
+    .nav-button {
+      transition: all 0.2s ease;
+    }
+    .nav-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .nav-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .chapitre-sidebar-item {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .chapitre-sidebar-item:hover {
+      background-color: #f3f4f6;
+    }
+    .prose {
+      max-width: none;
+    }
+    .prose p {
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+    .prose h1, .prose h2, .prose h3 {
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .prose ul, .prose ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -50,7 +78,7 @@
       <h1 class="font-bold text-lg text-gray-900 line-clamp-2" th:text="${cours.titre}">Titre du cours</h1>
       <div class="mt-3">
         <div class="flex justify-between text-sm text-gray-600 mb-1">
-          <span>Progression</span>
+          <span>Progression globale</span>
           <span id="globalProgression" th:text="${cours.progression} + '%'">0%</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-2">
@@ -64,259 +92,515 @@
   <!-- Main Content -->
   <main class="flex-1 min-h-screen bg-gray-50">
     <div class="max-w-4xl mx-auto p-6">
+      <!-- En-tête -->
+      <div id="currentContentHeader" class="mb-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <span id="currentSectionName"></span>
+          <span class="material-symbols-outlined text-sm">chevron_right</span>
+          <span id="currentChapitreName"></span>
+        </div>
+        <h2 id="currentContentTitle" class="text-2xl font-bold text-gray-900"></h2>
+        <div class="flex items-center gap-2 mt-2">
+          <span id="currentContentType" class="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600"></span>
+          <span id="contentCounter" class="text-xs text-gray-400"></span>
+        </div>
+      </div>
+
+      <!-- Zone de contenu -->
       <div id="contentArea" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[500px]">
         <div class="text-center text-gray-400 py-20">
           <span class="material-symbols-outlined text-5xl mb-3">menu_book</span>
-          <p>Sélectionnez un chapitre pour commencer</p>
+          <p>Chargement du cours...</p>
         </div>
       </div>
-      <div class="mt-6 flex justify-end">
-        <button id="markCompleteBtn" class="hidden px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
-          <span class="material-symbols-outlined">check_circle</span>
-          Marquer comme terminé
+
+      <!-- Boutons de navigation -->
+      <div class="mt-6 flex justify-between items-center">
+        <button id="prevContentBtn" class="nav-button px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">chevron_left</span>
+          Précédent
         </button>
+        <div class="flex gap-3">
+          <button id="markCompleteBtn" class="nav-button px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined">check_circle</span>
+            Marquer comme terminé
+          </button>
+          <button id="nextContentBtn" class="nav-button px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+            Suivant
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
       </div>
     </div>
   </main>
 </div>
 
 <script th:inline="javascript">
+  // Récupérer les données du cours
   var coursData = /*[[${cours}]]*/ null;
   var coursId = coursData ? coursData.id : null;
+
+  console.log('=== DONNÉES REÇUES ===');
+  console.log('Cours:', coursData);
+
+  // Structure des données
+  var sections = [];
+  var chapitresListe = [];
+  var allContentsFlat = [];
+
+  var currentChapitreIndex = 0;
+  var currentContenuIndex = 0;
   var currentContenuId = null;
   var currentContenuComplete = false;
 
-  // Fonction d'échappement HTML
   function escapeHtml(text) {
     if (!text) return '';
     return String(text).replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
+      return m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;');
     });
   }
 
-  // Déplier tous les chapitres parents d'un élément
-  function expandParentChapters(element) {
-    let parent = element.closest('.chapter-content');
-    while (parent) {
-      const chapterItem = parent.closest('.chapter-item');
-      if (chapterItem) {
-        const button = chapterItem.querySelector('button');
-        const icon = button.querySelector('.material-symbols-outlined:last-child');
-        parent.classList.remove('hidden');
-        if (icon) icon.textContent = 'expand_more';
-      }
-      parent = parent.parentElement?.closest('.chapter-content');
+  // Générer le HTML du contenu en fonction du type
+  function genererHtmlContenu(contenu) {
+    console.log('Génération HTML pour:', contenu);
+
+    const type = contenu.typeContenu;
+    const titre = contenu.titre || '';
+
+    switch(type) {
+      case 'VIDEO':
+        const videoUrl = contenu.videoUrl || '';
+        console.log('VIDEO URL:', videoUrl);
+        if (!videoUrl) {
+          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">warning</span><p>URL de la vidéo non disponible</p></div>`;
+        }
+        return `
+                    <div class="video-container">
+                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
+                        <video controls class="w-full rounded-lg" controlsList="nodownload">
+                            <source src="${videoUrl}" type="video/mp4">
+                            Votre navigateur ne supporte pas la vidéo.
+                        </video>
+                    </div>
+                `;
+
+      case 'TEXTE':
+        let texte = contenu.contenuTexte || contenu.htmlContent || '';
+        console.log('TEXTE longueur:', texte.length);
+        if (!texte) {
+          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">edit_note</span><p>Contenu texte non disponible</p></div>`;
+        }
+        return `
+                    <div class="prose max-w-none">
+                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
+                        <div class="mt-2">${texte}</div>
+                    </div>
+                `;
+
+      case 'PDF':
+        const pdfUrl = contenu.fichierUrl || '';
+        console.log('PDF URL:', pdfUrl);
+        if (!pdfUrl) {
+          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">picture_as_pdf</span><p>Fichier PDF non disponible</p></div>`;
+        }
+        return `
+                    <div class="pdf-container">
+                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
+                        <iframe src="${pdfUrl}" class="w-full h-[600px] rounded-lg"></iframe>
+                        <a href="${pdfUrl}" download class="mt-4 inline-block bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                            Télécharger le PDF
+                        </a>
+                    </div>
+                `;
+
+      case 'IMAGE':
+        const imageUrl = contenu.fichierUrl || '';
+        console.log('IMAGE URL:', imageUrl);
+        if (!imageUrl) {
+          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">image</span><p>Image non disponible</p></div>`;
+        }
+        return `
+                    <div class="image-container">
+                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
+                        <img src="${imageUrl}" alt="${escapeHtml(titre)}" class="w-full rounded-lg">
+                    </div>
+                `;
+
+      case 'LIEN':
+        const lienUrl = contenu.lienExterne || '';
+        const lienTexte = contenu.lienTexte || titre;
+        console.log('LIEN URL:', lienUrl);
+        if (!lienUrl) {
+          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">link_off</span><p>Lien non disponible</p></div>`;
+        }
+        return `
+                    <div class="link-container">
+                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
+                        <a href="${lienUrl}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline flex items-center gap-2">
+                            <span class="material-symbols-outlined">open_in_new</span>
+                            ${escapeHtml(lienTexte)}
+                        </a>
+                    </div>
+                `;
+
+      default:
+        return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">help</span><p>Type de contenu: ${type}</p></div>`;
     }
+  }
+
+  // Organiser les données par chapitre
+  function organiserDonnees() {
+    if (!coursData || !coursData.sections) {
+      console.error('Pas de données de cours');
+      return false;
+    }
+
+    sections = coursData.sections;
+    chapitresListe = [];
+    allContentsFlat = [];
+
+    for (let sIdx = 0; sIdx < sections.length; sIdx++) {
+      const section = sections[sIdx];
+      if (section.chapitres && section.chapitres.length > 0) {
+        for (let cIdx = 0; cIdx < section.chapitres.length; cIdx++) {
+          const chapitre = section.chapitres[cIdx];
+          const chapitreData = {
+            id: chapitre.id,
+            titre: chapitre.titre,
+            sectionId: section.id,
+            sectionNom: section.titre,
+            sectionIdx: sIdx,
+            chapitreIdx: cIdx,
+            contenus: []
+          };
+
+          if (chapitre.contenus && chapitre.contenus.length > 0) {
+            for (let ctIdx = 0; ctIdx < chapitre.contenus.length; ctIdx++) {
+              const contenu = chapitre.contenus[ctIdx];
+              const contenuData = {
+                id: contenu.id,
+                titre: contenu.titre,
+                typeContenu: contenu.typeContenu,
+                estComplete: contenu.estComplete || false,
+                videoUrl: contenu.videoUrl,
+                contenuTexte: contenu.contenuTexte,
+                fichierUrl: contenu.fichierUrl,
+                lienExterne: contenu.lienExterne,
+                lienTexte: contenu.lienTexte,
+                htmlContent: contenu.htmlContent
+              };
+              chapitreData.contenus.push(contenuData);
+              allContentsFlat.push(contenuData);
+            }
+          }
+
+          if (chapitreData.contenus.length > 0) {
+            chapitresListe.push(chapitreData);
+          }
+        }
+      }
+    }
+
+    console.log('=== ORGANISATION DES DONNÉES ===');
+    console.log('Sections:', sections.length);
+    console.log('Chapitres avec contenu:', chapitresListe.length);
+    console.log('Contenus totaux:', allContentsFlat.length);
+    console.log('Détail chapitres:', chapitresListe.map(c => ({ titre: c.titre, nbContenus: c.contenus.length })));
+
+    return chapitresListe.length > 0;
   }
 
   // Initialiser la sidebar
   function initSidebar() {
-    if (!coursData) return;
     const sidebar = document.getElementById('sidebarContent');
-    let html = '';
-
-    if (coursData.sections && coursData.sections.length > 0) {
-      coursData.sections.forEach(section => {
-        html += `<div class="mb-4">
-                    <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg mb-2">
-                        <span class="material-symbols-outlined text-gray-500 text-sm">folder</span>
-                        <span class="font-semibold text-gray-700 text-sm">${escapeHtml(section.titre)}</span>
-                    </div>
-                    <div class="ml-4 space-y-1">`;
-
-        if (section.chapitres && section.chapitres.length > 0) {
-          section.chapitres.forEach(chapitre => {
-            html += buildChapitreHTML(chapitre);
-          });
-        }
-        html += `</div></div>`;
-      });
-    } else {
-      html = '<div class="text-center text-gray-500 py-4">Aucun chapitre disponible</div>';
+    if (!sections || sections.length === 0) {
+      sidebar.innerHTML = '<div class="text-center text-gray-500 py-4">Aucune section disponible</div>';
+      return;
     }
+
+    let html = '';
+    for (let sIdx = 0; sIdx < sections.length; sIdx++) {
+      const section = sections[sIdx];
+      html += `<div class="mb-4">
+                        <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg mb-2">
+                            <span class="material-symbols-outlined text-gray-500 text-sm">folder</span>
+                            <span class="font-semibold text-gray-700 text-sm">${escapeHtml(section.titre)}</span>
+                        </div>
+                        <div class="ml-2 space-y-1">`;
+
+      if (section.chapitres && section.chapitres.length > 0) {
+        for (let cIdx = 0; cIdx < section.chapitres.length; cIdx++) {
+          const chapitre = section.chapitres[cIdx];
+          // Trouver l'index global de ce chapitre
+          let globalIdx = -1;
+          for (let i = 0; i < chapitresListe.length; i++) {
+            if (chapitresListe[i].sectionIdx === sIdx && chapitresListe[i].chapitreIdx === cIdx) {
+              globalIdx = i;
+              break;
+            }
+          }
+
+          if (globalIdx === -1) continue;
+
+          const isActive = (globalIdx === currentChapitreIndex);
+          const chapitreData = chapitresListe[globalIdx];
+          const completedCount = chapitreData.contenus.filter(c => c.estComplete).length;
+          const totalCount = chapitreData.contenus.length;
+          const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+          html += `<div class="chapitre-sidebar-item mb-2 p-2 rounded-lg ${isActive ? 'bg-primary/10 border-l-3 border-primary' : ''}"
+                                   data-global-idx="${globalIdx}">
+                                <div class="flex items-center justify-between" onclick="goToChapitre(${globalIdx})">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-sm ${completedCount === totalCount && totalCount > 0 ? 'text-green-500' : 'text-gray-400'}">
+                                            ${completedCount === totalCount && totalCount > 0 ? 'check_circle' : 'menu_book'}
+                                        </span>
+                                        <span class="text-sm font-medium ${isActive ? 'text-primary' : 'text-gray-700'}">${escapeHtml(chapitre.titre)}</span>
+                                    </div>
+                                    <span class="text-xs text-gray-400">${completedCount}/${totalCount}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                    <div class="bg-primary h-1 rounded-full" style="width: ${progressPercent}%"></div>
+                                </div>
+                            </div>`;
+        }
+      } else {
+        html += `<div class="text-center text-gray-400 text-sm py-2 italic">Aucun chapitre</div>`;
+      }
+      html += `</div></div>`;
+    }
+
     sidebar.innerHTML = html;
   }
 
-  // Construire le HTML pour un chapitre (récursif pour les sous-chapitres)
-  function buildChapitreHTML(chapitre) {
-    const isComplete = chapitre.estComplete || false;
-    const checkIcon = isComplete ? 'check_circle' : 'play_circle';
-    const checkColor = isComplete ? 'text-green-500' : 'text-gray-400';
-
-    let html = `<div class="chapter-item mb-2">
-                    <button class="w-full text-left px-3 py-2 rounded-lg flex items-center justify-between hover:bg-gray-100 transition-colors ${isComplete ? 'border-l-4 border-green-500' : ''}" onclick="toggleChapter(this)">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm ${checkColor}">${checkIcon}</span>
-                            <span class="text-sm text-gray-700">${escapeHtml(chapitre.titre)}</span>
-                        </div>
-                        <span class="material-symbols-outlined text-gray-400 text-sm">chevron_right</span>
-                    </button>
-                    <div class="chapter-content hidden ml-6 mt-1 space-y-1">`;
-
-    // Ajouter les sous-chapitres
-    if (chapitre.sousChapitres && chapitre.sousChapitres.length > 0) {
-      chapitre.sousChapitres.forEach(sousChapitre => {
-        html += buildChapitreHTML(sousChapitre);
-      });
-    }
-
-    // Ajouter les contenus
-    if (chapitre.contenus && chapitre.contenus.length > 0) {
-      chapitre.contenus.forEach(contenu => {
-        const contenuComplete = contenu.estComplete || false;
-        let iconType = 'description';
-        if (contenu.typeContenu === 'VIDEO') iconType = 'smart_display';
-        else if (contenu.typeContenu === 'PDF') iconType = 'picture_as_pdf';
-        else if (contenu.typeContenu === 'LIEN') iconType = 'link';
-        else if (contenu.typeContenu === 'IMAGE') iconType = 'image';
-
-        let htmlContentAttr = '';
-        if (contenu.htmlContent) {
-          htmlContentAttr = contenu.htmlContent.replace(/'/g, "\\'").replace(/\n/g, ' ');
-        }
-
-        html += `<button class="content-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 text-sm ${contenuComplete ? 'text-green-600' : 'text-gray-600'}"
-                        data-contenu-id="${contenu.id}"
-                        data-contenu-type="${contenu.typeContenu}"
-                        data-contenu-html='${htmlContentAttr}'
-                        onclick="loadContent(this)">
-                    <span class="material-symbols-outlined text-sm ${contenuComplete ? 'text-green-500' : 'text-gray-400'}">${contenuComplete ? 'check_circle' : iconType}</span>
-                    <span>${escapeHtml(contenu.titre)}</span>
-                </button>`;
-      });
-    }
-
-    html += `</div></div>`;
-    return html;
-  }
-
-  // Toggle chapitre (ouvrir/fermer)
-  function toggleChapter(btn) {
-    const parent = btn.closest('.chapter-item');
-    const content = parent.querySelector('.chapter-content');
-    const icon = btn.querySelector('.material-symbols-outlined:last-child');
-
-    if (content.classList.contains('hidden')) {
-      content.classList.remove('hidden');
-      if (icon) icon.textContent = 'expand_more';
-
-      // ✅ Charger automatiquement le premier contenu du chapitre
-      const firstContent = content.querySelector('.content-item');
-      if (firstContent) {
-        setTimeout(() => {
-          firstContent.click();
-        }, 50);
-      }
-    } else {
-      content.classList.add('hidden');
-      if (icon) icon.textContent = 'chevron_right';
+  // Naviguer vers un chapitre spécifique
+  function goToChapitre(globalIdx) {
+    if (globalIdx >= 0 && globalIdx < chapitresListe.length) {
+      currentChapitreIndex = globalIdx;
+      currentContenuIndex = 0;
+      chargerContenuCourant();
+      initSidebar();
     }
   }
 
-  // Charger le contenu
-  function loadContent(btn) {
-    // ✅ Déplier les chapitres parents
-    expandParentChapters(btn);
-
-    // Retirer la sélection précédente
-    document.querySelectorAll('.content-item').forEach(item =>
-            item.classList.remove('selected', 'bg-primary/10', 'text-primary', 'font-medium')
-    );
-
-    // Ajouter la sélection au contenu actuel
-    btn.classList.add('selected', 'bg-primary/10', 'text-primary', 'font-medium');
-
-    currentContenuId = btn.getAttribute('data-contenu-id');
-    let htmlContent = btn.getAttribute('data-contenu-html');
-    currentContenuComplete = btn.classList.contains('text-green-600');
-
-    const contentArea = document.getElementById('contentArea');
-    if (!htmlContent || htmlContent === 'null' || htmlContent === '') {
-      htmlContent = '<p class="text-gray-500">Contenu non disponible</p>';
+  // Charger le contenu courant
+  function chargerContenuCourant() {
+    if (!chapitresListe.length || currentChapitreIndex >= chapitresListe.length) {
+      console.error('Chapitre non trouvé');
+      return;
     }
-    contentArea.innerHTML = htmlContent;
 
-    // Afficher ou cacher le bouton "Marquer comme terminé"
+    const chapitre = chapitresListe[currentChapitreIndex];
+    if (!chapitre.contenus.length || currentContenuIndex >= chapitre.contenus.length) {
+      console.error('Contenu non trouvé');
+      return;
+    }
+
+    const contenu = chapitre.contenus[currentContenuIndex];
+    currentContenuId = contenu.id;
+    currentContenuComplete = contenu.estComplete || false;
+
+    console.log('Chargement contenu:', {
+      chapitre: chapitre.titre,
+      contenu: contenu.titre,
+      type: contenu.typeContenu,
+      complete: currentContenuComplete,
+      videoUrl: contenu.videoUrl,
+      fichierUrl: contenu.fichierUrl
+    });
+
+    // Mettre à jour l'en-tête
+    document.getElementById('currentSectionName').textContent = chapitre.sectionNom;
+    document.getElementById('currentChapitreName').textContent = chapitre.titre;
+    document.getElementById('currentContentTitle').textContent = contenu.titre;
+
+    let typeLabel = '';
+    switch(contenu.typeContenu) {
+      case 'VIDEO': typeLabel = '🎬 Vidéo'; break;
+      case 'TEXTE': typeLabel = '📝 Texte'; break;
+      case 'PDF': typeLabel = '📄 PDF'; break;
+      case 'LIEN': typeLabel = '🔗 Lien externe'; break;
+      case 'IMAGE': typeLabel = '🖼️ Image'; break;
+      default: typeLabel = '📚 Contenu';
+    }
+    document.getElementById('currentContentType').textContent = typeLabel;
+    document.getElementById('contentCounter').textContent = `Contenu ${currentContenuIndex + 1} / ${chapitre.contenus.length}`;
+
+    // Générer et afficher le contenu
+    const htmlContent = genererHtmlContenu(contenu);
+    document.getElementById('contentArea').innerHTML = htmlContent;
+
+    // Mettre à jour les boutons
+    updateButtonsState();
+
+    // Mettre à jour la sidebar
+    initSidebar();
+
+    // Scroll
+    document.getElementById('contentArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function updateButtonsState() {
     const markBtn = document.getElementById('markCompleteBtn');
+    const nextBtn = document.getElementById('nextContentBtn');
+    const prevBtn = document.getElementById('prevContentBtn');
+
+    // Bouton marquer comme terminé
     if (currentContenuComplete) {
-      markBtn.classList.add('hidden');
+      markBtn.disabled = true;
+      markBtn.classList.add('opacity-50', 'cursor-not-allowed');
     } else {
-      markBtn.classList.remove('hidden');
-      markBtn.onclick = function() { markContentComplete(); };
+      markBtn.disabled = false;
+      markBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Bouton précédent
+    if (currentChapitreIndex === 0 && currentContenuIndex === 0) {
+      prevBtn.disabled = true;
+      prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+      prevBtn.disabled = false;
+      prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // Bouton suivant
+    const chapitre = chapitresListe[currentChapitreIndex];
+    const isLastContent = (currentContenuIndex === chapitre.contenus.length - 1);
+    const isLastChapitre = (currentChapitreIndex === chapitresListe.length - 1);
+
+    if (isLastContent && isLastChapitre) {
+      nextBtn.disabled = true;
+      nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      nextBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Terminé';
+    } else {
+      nextBtn.disabled = false;
+      nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      nextBtn.innerHTML = 'Suivant <span class="material-symbols-outlined">chevron_right</span>';
     }
   }
 
-  // Marquer un contenu comme complété
+  function goToPrevious() {
+    if (currentContenuIndex > 0) {
+      currentContenuIndex--;
+      chargerContenuCourant();
+    } else if (currentChapitreIndex > 0) {
+      currentChapitreIndex--;
+      const prevChapitre = chapitresListe[currentChapitreIndex];
+      currentContenuIndex = prevChapitre.contenus.length - 1;
+      chargerContenuCourant();
+    }
+  }
+
+  function goToNext() {
+    const chapitre = chapitresListe[currentChapitreIndex];
+
+    if (currentContenuIndex < chapitre.contenus.length - 1) {
+      if (!currentContenuComplete) {
+        alert('Veuillez d\'abord marquer ce contenu comme terminé');
+        return;
+      }
+      currentContenuIndex++;
+      chargerContenuCourant();
+    } else if (currentChapitreIndex < chapitresListe.length - 1) {
+      if (!currentContenuComplete) {
+        alert('Veuillez d\'abord marquer ce contenu comme terminé');
+        return;
+      }
+      currentChapitreIndex++;
+      currentContenuIndex = 0;
+      chargerContenuCourant();
+    }
+  }
+
   function markContentComplete() {
-    if (!currentContenuId || !coursId) return;
+    if (!currentContenuId || !coursId || currentContenuComplete) return;
 
     $.ajax({
       url: '/etudiant/cours/' + coursId + '/contenu/' + currentContenuId + '/completer',
       method: 'POST',
       success: function(response) {
         if (response.success) {
-          // Mettre à jour l'icône du contenu
-          const contentBtn = document.querySelector(`.content-item[data-contenu-id="${currentContenuId}"]`);
-          if (contentBtn) {
-            contentBtn.classList.add('text-green-600');
-            contentBtn.classList.remove('text-gray-600');
-            const iconSpan = contentBtn.querySelector('.material-symbols-outlined');
-            if (iconSpan) {
-              iconSpan.textContent = 'check_circle';
-              iconSpan.classList.add('text-green-500');
-              iconSpan.classList.remove('text-gray-400');
-            }
-          }
+          currentContenuComplete = true;
+          chapitresListe[currentChapitreIndex].contenus[currentContenuIndex].estComplete = true;
 
-          // Mettre à jour la progression globale
           document.getElementById('globalProgression').textContent = response.progression + '%';
           document.getElementById('globalProgressBar').style.width = response.progression + '%';
 
-          // Cacher le bouton
-          document.getElementById('markCompleteBtn').classList.add('hidden');
-          currentContenuComplete = true;
+          updateButtonsState();
+          initSidebar();
 
-          // Mettre à jour l'état du chapitre parent
-          const parentChapter = contentBtn.closest('.chapter-item');
-          if (parentChapter) {
-            const chapterBtn = parentChapter.querySelector('button');
-            const chapterIcon = chapterBtn.querySelector('.material-symbols-outlined:first-child');
-            // Vérifier si tous les contenus du chapitre sont complétés
-            const allContents = parentChapter.querySelectorAll('.content-item');
-            const allCompleted = Array.from(allContents).every(item =>
-                    item.classList.contains('text-green-600')
-            );
-            if (allCompleted && chapterIcon) {
-              chapterIcon.textContent = 'check_circle';
-              chapterIcon.classList.add('text-green-500');
+          const markBtn = document.getElementById('markCompleteBtn');
+          markBtn.innerHTML = '<span class="material-symbols-outlined">done_all</span> Terminé !';
+          setTimeout(() => {
+            markBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Marquer comme terminé';
+          }, 2000);
+
+          // Auto passage au suivant
+          setTimeout(() => {
+            const nextBtn = document.getElementById('nextContentBtn');
+            if (!nextBtn.disabled) {
+              goToNext();
             }
-          }
+          }, 800);
+
+        } else {
+          alert('Erreur: ' + (response.message || 'Impossible de marquer comme terminé'));
         }
       },
-      error: function() {
+      error: function(xhr) {
+        console.error(xhr);
         alert('Erreur lors de la mise à jour');
       }
     });
   }
 
-  // ✅ Ouvrir automatiquement le premier chapitre au chargement
-  function openFirstChapter() {
-    setTimeout(() => {
-      const firstChapterBtn = document.querySelector('.chapter-item button');
-      if (firstChapterBtn) {
-        firstChapterBtn.click();
+  // Trouver le premier contenu non complété
+  function trouverPremierContenuNonComplete() {
+    for (let i = 0; i < chapitresListe.length; i++) {
+      for (let j = 0; j < chapitresListe[i].contenus.length; j++) {
+        if (!chapitresListe[i].contenus[j].estComplete) {
+          return { chapitreIdx: i, contenuIdx: j };
+        }
       }
-    }, 100);
+    }
+    return { chapitreIdx: 0, contenuIdx: 0 };
   }
 
-  // Initialisation au chargement
-  document.addEventListener('DOMContentLoaded', function() {
+  // Initialisation
+  function init() {
+    console.log('=== INITIALISATION ===');
+    const hasData = organiserDonnees();
+
+    if (!hasData) {
+      document.getElementById('contentArea').innerHTML = `
+                <div class="text-center text-gray-500 py-20">
+                    <span class="material-symbols-outlined text-5xl mb-3">error</span>
+                    <p>Aucun contenu disponible pour ce cours</p>
+                    <p class="text-sm mt-2">Le professeur n'a pas encore ajouté de contenu.</p>
+                </div>
+            `;
+      document.getElementById('sidebarContent').innerHTML = '<div class="text-center text-gray-500 py-4">Aucun contenu disponible</div>';
+      return;
+    }
+
+    const { chapitreIdx, contenuIdx } = trouverPremierContenuNonComplete();
+    currentChapitreIndex = chapitreIdx;
+    currentContenuIndex = contenuIdx;
+
     initSidebar();
-    openFirstChapter();
-  });
+    chargerContenuCourant();
+  }
+
+  // Attacher les événements
+  document.getElementById('prevContentBtn').addEventListener('click', goToPrevious);
+  document.getElementById('nextContentBtn').addEventListener('click', goToNext);
+  document.getElementById('markCompleteBtn').addEventListener('click', markContentComplete);
+
+  // Exposer goToChapitre globalement
+  window.goToChapitre = goToChapitre;
+
+  // Démarrer
+  init();
 </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ public class CourseRequestDTO {
     private Integer dureeEstimee;
     private String imageCouverture;
     private boolean publie;
-    private Long categorieId;  // ← AJOUTER cette propriété
+    private Long categorieId;
     private List<SectionDTO> sections;
 
     // Getters et Setters
@@ -31,8 +31,8 @@ public class CourseRequestDTO {
     public boolean isPublie() { return publie; }
     public void setPublie(boolean publie) { this.publie = publie; }
 
-    public Long getCategorieId() { return categorieId; }  // ← AJOUTER
-    public void setCategorieId(Long categorieId) { this.categorieId = categorieId; }  // ← AJOUTER
+    public Long getCategorieId() { return categorieId; }
+    public void setCategorieId(Long categorieId) { this.categorieId = categorieId; }
 
     public List<SectionDTO> getSections() { return sections; }
     public void setSections(List<SectionDTO> sections) { this.sections = sections; }
@@ -47,13 +47,10 @@ public class CourseRequestDTO {
 
         public String getTitre() { return titre; }
         public void setTitre(String titre) { this.titre = titre; }
-
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-
         public Integer getOrdre() { return ordre; }
         public void setOrdre(Integer ordre) { this.ordre = ordre; }
-
         public List<ChapitreDTO> getChapitres() { return chapitres; }
         public void setChapitres(List<ChapitreDTO> chapitres) { this.chapitres = chapitres; }
     }
@@ -63,22 +60,18 @@ public class CourseRequestDTO {
         private String description;
         private Integer ordre;
         private List<ContenuDTO> contenus;
-        private List<ChapitreDTO> sousChapitres;  // ← AJOUTER pour les sous-chapitres
+        private List<ChapitreDTO> sousChapitres;
 
         public String getTitre() { return titre; }
         public void setTitre(String titre) { this.titre = titre; }
-
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-
         public Integer getOrdre() { return ordre; }
         public void setOrdre(Integer ordre) { this.ordre = ordre; }
-
         public List<ContenuDTO> getContenus() { return contenus; }
         public void setContenus(List<ContenuDTO> contenus) { this.contenus = contenus; }
-
-        public List<ChapitreDTO> getSousChapitres() { return sousChapitres; }  // ← AJOUTER
-        public void setSousChapitres(List<ChapitreDTO> sousChapitres) { this.sousChapitres = sousChapitres; }  // ← AJOUTER
+        public List<ChapitreDTO> getSousChapitres() { return sousChapitres; }
+        public void setSousChapitres(List<ChapitreDTO> sousChapitres) { this.sousChapitres = sousChapitres; }
     }
 
     public static class ContenuDTO {
@@ -90,29 +83,28 @@ public class CourseRequestDTO {
         private String contenuTexte;
         private String lienExterne;
         private String lienTexte;
+        private String fichierUrl;  // ← AJOUTÉ
 
+        // Getters
         public String getTitre() { return titre; }
-        public void setTitre(String titre) { this.titre = titre; }
-
         public String getTypeContenu() { return typeContenu; }
-        public void setTypeContenu(String typeContenu) { this.typeContenu = typeContenu; }
-
         public Boolean getApercuGratuit() { return apercuGratuit; }
-        public void setApercuGratuit(Boolean apercuGratuit) { this.apercuGratuit = apercuGratuit; }
-
         public Integer getOrdre() { return ordre; }
-        public void setOrdre(Integer ordre) { this.ordre = ordre; }
-
         public String getVideoUrl() { return videoUrl; }
-        public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
-
         public String getContenuTexte() { return contenuTexte; }
-        public void setContenuTexte(String contenuTexte) { this.contenuTexte = contenuTexte; }
-
         public String getLienExterne() { return lienExterne; }
-        public void setLienExterne(String lienExterne) { this.lienExterne = lienExterne; }
-
         public String getLienTexte() { return lienTexte; }
+        public String getFichierUrl() { return fichierUrl; }
+
+        // Setters
+        public void setTitre(String titre) { this.titre = titre; }
+        public void setTypeContenu(String typeContenu) { this.typeContenu = typeContenu; }
+        public void setApercuGratuit(Boolean apercuGratuit) { this.apercuGratuit = apercuGratuit; }
+        public void setOrdre(Integer ordre) { this.ordre = ordre; }
+        public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
+        public void setContenuTexte(String contenuTexte) { this.contenuTexte = contenuTexte; }
+        public void setLienExterne(String lienExterne) { this.lienExterne = lienExterne; }
         public void setLienTexte(String lienTexte) { this.lienTexte = lienTexte; }
+        public void setFichierUrl(String fichierUrl) { this.fichierUrl = fichierUrl; }
     }
 }

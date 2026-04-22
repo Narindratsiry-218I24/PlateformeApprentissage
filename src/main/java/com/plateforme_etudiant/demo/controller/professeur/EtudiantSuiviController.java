@@ -1,13 +1,12 @@
-// EtudiantSuiviController.java
 package com.plateforme_etudiant.demo.controller.professeur;
 
 import com.plateforme_etudiant.demo.dto.*;
 import com.plateforme_etudiant.demo.model.*;
 import com.plateforme_etudiant.demo.repository.*;
-import com.plateforme_etudiant.demo.service.ProgressionService;
+import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +17,8 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/professeur/etudiants")
 public class EtudiantSuiviController {
+
+    private static final Logger log = LoggerFactory.getLogger(EtudiantSuiviController.class);
 
     @Autowired
     private UtilisateurRepository utilisateurRepository;
@@ -37,26 +38,49 @@ public class EtudiantSuiviController {
     @Autowired
     private ContenuItemRepository contenuItemRepository;
 
+    // Méthode utilitaire pour récupérer le professeur depuis la session
+    private Professeur getProfesseurFromSession(HttpSession session) {
+        Long professeurId = (Long) session.getAttribute("professeurId");
+        if (professeurId == null) {
+            log.warn("❌ Aucun professeurId en session");
+            return null;
+        }
+        return professeurRepository.findById(professeurId).orElse(null);
+    }
+
     // Liste des étudiants du professeur
     @GetMapping
-    public String listeEtudiants(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        try {
-            Utilisateur utilisateur = utilisateurRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    public String listeEtudiants(Model model, HttpSession session) {
+        log.info("=== LISTE ÉTUDIANTS ===");
 
-            Professeur professeur = professeurRepository.findByUtilisateur(utilisateur)
-                    .orElseThrow(() -> new RuntimeException("Professeur non trouvé"));
+        try {
+            Professeur professeur = getProfesseurFromSession(session);
+            if (professeur == null) {
+                log.warn("❌ Professeur non authentifié, redirection login");
+                return "redirect:/login";
+            }
 
             // Récupérer tous les cours du professeur
             List<Cours> coursList = coursRepository.findByProfesseur(professeur);
             List<Long> coursIds = coursList.stream().map(Cours::getId).collect(Collectors.toList());
+
+            if (coursIds.isEmpty()) {
+                model.addAttribute("professeur", professeur);
+                model.addAttribute("etudiants", new ArrayList<>());
+                model.addAttribute("coursList", coursList);
+                model.addAttribute("pageTitle", "Suivi des étudiants");
+                model.addAttribute("info", "Vous n'avez pas encore créé de cours.");
+                return "professeur/etudiants/liste";
+            }
 
             // Récupérer tous les étudiants inscrits à ces cours (sans doublons)
             Set<Utilisateur> etudiantsSet = new HashSet<>();
             for (Cours cours : coursList) {
                 List<Inscription> inscriptions = inscriptionRepository.findByCoursIdWithApprenant(cours.getId());
                 for (Inscription inscription : inscriptions) {
-                    etudiantsSet.add(inscription.getApprenant());
+                    if (inscription.getApprenant() != null) {
+                        etudiantsSet.add(inscription.getApprenant());
+                    }
                 }
             }
 
@@ -71,8 +95,13 @@ public class EtudiantSuiviController {
                 dto.setEmail(etudiant.getEmail());
                 dto.setNomUtilisateur(etudiant.getNomUtilisateur());
 
-                // Calculer le nombre de cours suivis
-                long nbCours = inscriptionRepository.countByApprenantId(etudiant.getId());
+                // Calculer le nombre de cours suivis pour ce professeur
+                long nbCours = 0;
+                for (Long coursId : coursIds) {
+                    if (inscriptionRepository.existsByApprenantIdAndCoursId(etudiant.getId(), coursId)) {
+                        nbCours++;
+                    }
+                }
                 dto.setNombreCours((int) nbCours);
 
                 // Calculer la progression moyenne sur tous les cours
@@ -81,18 +110,25 @@ public class EtudiantSuiviController {
 
                 // Dernière activité
                 Optional<Inscription> derniereInscription = inscriptionRepository.findByApprenantIdWithCours(etudiant.getId())
-                        .stream().max(Comparator.comparing(Inscription::getDateDernierAcces));
+                        .stream()
+                        .filter(i -> coursIds.contains(i.getCours().getId()))
+                        .max(Comparator.comparing(Inscription::getDateDernierAcces));
                 dto.setDerniereActivite(derniereInscription.map(Inscription::getDateDernierAcces).orElse(null));
 
                 etudiantsDTO.add(dto);
             }
 
+            // Trier par nom
+            etudiantsDTO.sort(Comparator.comparing(EtudiantSuiviDTO::getNomComplet));
+
             model.addAttribute("professeur", professeur);
             model.addAttribute("etudiants", etudiantsDTO);
             model.addAttribute("coursList", coursList);
             model.addAttribute("pageTitle", "Suivi des étudiants");
+            log.info("✅ {} étudiants trouvés", etudiantsDTO.size());
 
         } catch (Exception e) {
+            log.error("❌ Erreur lors du chargement des étudiants: {}", e.getMessage(), e);
             model.addAttribute("error", "Erreur lors du chargement des étudiants: " + e.getMessage());
         }
 
@@ -101,12 +137,14 @@ public class EtudiantSuiviController {
 
     // Détail d'un étudiant avec sa progression par cours
     @GetMapping("/{etudiantId}")
-    public String detailEtudiant(@PathVariable Long etudiantId,
-                                 @AuthenticationPrincipal UserDetails userDetails,
-                                 Model model) {
+    public String detailEtudiant(@PathVariable Long etudiantId, Model model, HttpSession session) {
+        log.info("=== DÉTAIL ÉTUDIANT {} ===", etudiantId);
+
         try {
-            Utilisateur professeurUser = utilisateurRepository.findByEmail(userDetails.getUsername()).orElseThrow();
-            Professeur professeur = professeurRepository.findByUtilisateur(professeurUser).orElseThrow();
+            Professeur professeur = getProfesseurFromSession(session);
+            if (professeur == null) {
+                return "redirect:/login";
+            }
 
             Utilisateur etudiant = utilisateurRepository.findById(etudiantId)
                     .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
@@ -116,10 +154,17 @@ public class EtudiantSuiviController {
             List<Long> coursIdsProfesseur = coursProfesseur.stream().map(Cours::getId).collect(Collectors.toList());
 
             // Récupérer les inscriptions de l'étudiant uniquement pour les cours du professeur
-            List<Inscription> inscriptions = inscriptionRepository.findByApprenantIdWithCours(etudiantId)
-                    .stream()
-                    .filter(i -> coursIdsProfesseur.contains(i.getCours().getId()))
-                    .collect(Collectors.toList());
+            List<Inscription> inscriptions = inscriptionRepository.findByApprenantIdAndProfesseurId(etudiantId, professeur.getId());
+
+            if (inscriptions.isEmpty()) {
+                log.warn("Acces refuse au detail etudiant {} pour le professeur {}", etudiantId, professeur.getId());
+                model.addAttribute("professeur", professeur);
+                model.addAttribute("error", "Cet etudiant n'est inscrit a aucun de vos cours.");
+                model.addAttribute("progressionCours", new ArrayList<>());
+                model.addAttribute("statistiques", new StatistiquesEtudiantDTO());
+                model.addAttribute("pageTitle", "Detail etudiant");
+                return "professeur/etudiants/detail";
+            }
 
             // Construire les DTOs de progression par cours
             List<ProgressionCoursDTO> progressionCours = new ArrayList<>();
@@ -135,13 +180,13 @@ public class EtudiantSuiviController {
                 dto.setProgression(progression);
 
                 // Nombre de contenus complétés / total
-                long totalContenus = contenuItemRepository.countByCoursId(inscription.getCours().getId());
-                long contenusCompletes = progressionRepository.countCompletedByApprenantAndCours(etudiantId, inscription.getCours().getId());
-                dto.setContenusCompletes((int) contenusCompletes);
-                dto.setContenusTotal((int) totalContenus);
+                Long totalContenus = contenuItemRepository.countByCoursId(inscription.getCours().getId());
+                Long contenusCompletes = progressionRepository.countCompletedByApprenantAndCours(etudiantId, inscription.getCours().getId());
+                dto.setContenusCompletes(contenusCompletes != null ? contenusCompletes.intValue() : 0);
+                dto.setContenusTotal(totalContenus != null ? totalContenus.intValue() : 0);
 
                 dto.setDateDernierAcces(inscription.getDateDernierAcces());
-                dto.setEstTermine(inscription.getTermine());
+                dto.setEstTermine(inscription.getTermine() != null ? inscription.getTermine() : false);
 
                 progressionCours.add(dto);
             }
@@ -150,9 +195,12 @@ public class EtudiantSuiviController {
             StatistiquesEtudiantDTO statistiques = new StatistiquesEtudiantDTO();
             statistiques.setTotalCours(inscriptions.size());
 
-            int progressionMoyenne = progressionCours.stream()
-                    .mapToInt(ProgressionCoursDTO::getProgression)
-                    .sum() / (inscriptions.isEmpty() ? 1 : inscriptions.size());
+            int progressionMoyenne = 0;
+            if (!progressionCours.isEmpty()) {
+                progressionMoyenne = progressionCours.stream()
+                        .mapToInt(ProgressionCoursDTO::getProgression)
+                        .sum() / progressionCours.size();
+            }
             statistiques.setProgressionMoyenne(progressionMoyenne);
 
             // Calculer les heures totales étudiées
@@ -165,37 +213,49 @@ public class EtudiantSuiviController {
             model.addAttribute("statistiques", statistiques);
             model.addAttribute("pageTitle", "Détail - " + etudiant.getNomComplet());
 
+            log.info("✅ Détail affiché pour {}", etudiant.getNomComplet());
+
         } catch (Exception e) {
+            log.error("❌ Erreur: {}", e.getMessage(), e);
             model.addAttribute("error", "Erreur: " + e.getMessage());
         }
 
         return "professeur/etudiants/detail";
     }
 
-    // Recherche d'étudiants - CORRIGÉ
+    // Recherche d'étudiants
     @GetMapping("/recherche")
     @ResponseBody
-    public List<EtudiantSuiviDTO> rechercherEtudiants(@RequestParam String keyword,
-                                                      @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            Utilisateur utilisateur = utilisateurRepository.findByEmail(userDetails.getUsername()).orElse(null);
-            if (utilisateur == null) return new ArrayList<>();
+    public List<EtudiantSuiviDTO> rechercherEtudiants(@RequestParam String keyword, HttpSession session) {
+        log.info("=== RECHERCHE ÉTUDIANTS: {} ===", keyword);
 
-            Professeur professeur = professeurRepository.findByUtilisateur(utilisateur).orElse(null);
-            if (professeur == null) return new ArrayList<>();
+        try {
+            Professeur professeur = getProfesseurFromSession(session);
+            if (professeur == null) {
+                return new ArrayList<>();
+            }
 
             // Récupérer les cours du professeur
             List<Cours> coursList = coursRepository.findByProfesseur(professeur);
             List<Long> coursIds = coursList.stream().map(Cours::getId).collect(Collectors.toList());
 
-            // ✅ CORRECTION ICI - Utiliser searchByKeyword au lieu de findByNomContainingOrEmailContaining
+            if (coursIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            // Rechercher les étudiants par mot-clé
             List<Utilisateur> etudiants = utilisateurRepository.searchByKeyword(keyword);
 
             List<EtudiantSuiviDTO> resultats = new ArrayList<>();
             for (Utilisateur etudiant : etudiants) {
                 // Vérifier si l'étudiant est inscrit à au moins un cours du professeur
-                List<Long> coursEtudiant = inscriptionRepository.findCoursIdsByApprenantId(etudiant.getId());
-                boolean hasCommonCours = coursEtudiant.stream().anyMatch(coursIds::contains);
+                boolean hasCommonCours = false;
+                for (Long coursId : coursIds) {
+                    if (inscriptionRepository.existsByApprenantIdAndCoursId(etudiant.getId(), coursId)) {
+                        hasCommonCours = true;
+                        break;
+                    }
+                }
 
                 if (hasCommonCours) {
                     EtudiantSuiviDTO dto = new EtudiantSuiviDTO();
@@ -204,7 +264,12 @@ public class EtudiantSuiviController {
                     dto.setEmail(etudiant.getEmail());
                     dto.setNomUtilisateur(etudiant.getNomUtilisateur());
 
-                    long nbCours = coursEtudiant.stream().filter(coursIds::contains).count();
+                    long nbCours = 0;
+                    for (Long coursId : coursIds) {
+                        if (inscriptionRepository.existsByApprenantIdAndCoursId(etudiant.getId(), coursId)) {
+                            nbCours++;
+                        }
+                    }
                     dto.setNombreCours((int) nbCours);
 
                     double progressionMoyenne = calculerProgressionMoyenne(etudiant.getId(), coursIds);
@@ -217,50 +282,14 @@ public class EtudiantSuiviController {
             return resultats;
 
         } catch (Exception e) {
+            log.error("❌ Erreur recherche: {}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }
 
-    // Progression détaillée par matière pour un étudiant
-    @GetMapping("/{etudiantId}/progression-matieres")
-    @ResponseBody
-    public List<ProgressionMatiereDTO> getProgressionParMatiere(@PathVariable Long etudiantId,
-                                                                @AuthenticationPrincipal UserDetails userDetails) {
-        List<ProgressionMatiereDTO> resultats = new ArrayList<>();
-
-        try {
-            Utilisateur professeurUser = utilisateurRepository.findByEmail(userDetails.getUsername()).orElse(null);
-            if (professeurUser == null) return resultats;
-
-            Professeur professeur = professeurRepository.findByUtilisateur(professeurUser).orElse(null);
-            if (professeur == null) return resultats;
-
-            // Récupérer les cours du professeur
-            List<Cours> coursList = coursRepository.findByProfesseur(professeur);
-
-            for (Cours cours : coursList) {
-                // Vérifier si l'étudiant est inscrit
-                boolean estInscrit = inscriptionRepository.existsByApprenantIdAndCoursId(etudiantId, cours.getId());
-                if (estInscrit) {
-                    int progression = calculerProgressionEtudiantCours(etudiantId, cours.getId());
-                    ProgressionMatiereDTO dto = new ProgressionMatiereDTO();
-                    dto.setNom(cours.getTitre());
-                    dto.setDescription(cours.getDescriptionCourte());
-                    dto.setProgression(progression);
-                    resultats.add(dto);
-                }
-            }
-
-        } catch (Exception e) {
-            // Log error
-        }
-
-        return resultats;
-    }
-
     // Méthodes utilitaires privées
     private double calculerProgressionMoyenne(Long etudiantId, List<Long> coursIds) {
-        if (coursIds.isEmpty()) return 0;
+        if (coursIds == null || coursIds.isEmpty()) return 0;
 
         int totalProgression = 0;
         int count = 0;
@@ -292,8 +321,9 @@ public class EtudiantSuiviController {
                         p.getContenuItem().getSection() != null &&
                         p.getContenuItem().getSection().getCours() != null &&
                         coursIds.contains(p.getContenuItem().getSection().getCours().getId()))
-                .mapToInt(p -> p.getTempsPasse() != null ? p.getTempsPasse() : 0)
+                .filter(p -> p.getTempsPasse() != null)
+                .mapToInt(Progression::getTempsPasse)
                 .sum();
-        return totalSecondes / 3600; // Convertir en heures
+        return totalSecondes / 3600;
     }
 }
