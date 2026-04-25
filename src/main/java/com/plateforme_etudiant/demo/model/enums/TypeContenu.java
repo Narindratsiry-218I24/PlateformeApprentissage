@@ -7,7 +7,8 @@ public enum TypeContenu {
     PDF("Document PDF", "Fichier PDF à télécharger"),
     PRESENTATION("Présentation", "Présentation PowerPoint/Google Slides"),
     LIEN("Lien externe", "Lien vers une ressource externe"),
-    IMAGE("Image", "Image illustrative (schéma, diagramme, illustration)");
+    IMAGE("Image", "Image illustrative (schéma, diagramme, illustration)"),
+    QUIZ("Quiz", "Quiz pour tester les connaissances de l'étudiant");
 
     private final String libelle;
     private final String description;

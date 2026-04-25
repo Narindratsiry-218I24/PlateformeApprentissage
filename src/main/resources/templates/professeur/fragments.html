@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        :root {
+            --primary: #003178;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+            --text-dark: #1e293b;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--bg-white);
+            border-radius: 0.75rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Form inputs */
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 49, 120, 0.1);
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 🔥 SIDEBAR - Utilisé sur toutes les pages 🔥 -->
+<div th:fragment="sidebar">
+    <aside class="sidebar-fixed hidden md:block pt-5">
+        <div class="p-6">
+            <div class="mb-8">
+                <p class="text-xs font-bold uppercase tracking-wider text-text-muted mb-3">Menu Principal</p>
+                <div class="h-px bg-border-color"></div>
+            </div>
+            <nav class="space-y-1">
+                <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">dashboard</span>
+                    <span class="text-sm font-semibold">Tableau de bord</span>
+                </a>
+                <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">menu_book</span>
+                    <span class="text-sm font-semibold">Mes cours</span>
+                </a>
+                <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">groups</span>
+                    <span class="text-sm font-semibold">Étudiants</span>
+                </a>
+                <a href="/messages" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">chat</span>
+                    <span class="text-sm font-semibold">Messagerie</span>
+                </a>
+                <div class="pt-8 mt-8 border-t border-border-color">
+                    <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                        <span class="material-symbols-outlined" style="font-size: 1.25rem;">logout</span>
+                        <span class="text-sm font-semibold">Déconnexion</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </aside>
+</div>
+
+<!-- 🔥 NAVBAR - Utilisée sur toutes les pages 🔥 -->
+<div th:fragment="navbar">
+    <nav class="navbar-fixed flex justify-between items-center px-4 md:px-8" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); height: 64px;">
+        <div class="flex items-center gap-8 flex-1">
+            <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="/professeur/dashboard" class="text-text-muted hover:text-primary transition-colors text-sm font-medium">Tableau de bord</a>
+                <a href="/professeur/cours" class="text-text-muted hover:text-primary transition-colors text-sm font-medium">Mes cours</a>
+                <a href="/professeur/etudiants" class="text-text-muted hover:text-primary transition-colors text-sm font-medium">Étudiants</a>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="p-2 text-text-muted hover:bg-bg-light rounded-full transition-colors hidden md:flex">
+                <span class="material-symbols-outlined" style="font-size: 1.25rem;">notifications</span>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-bold text-text-dark" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
+                    <p class="text-xs text-text-muted" th:text="${professeur != null ? professeur.specialite : 'Formateur'}">Formateur</p>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    <span th:text="${professeur != null ? #strings.substring(professeur.prenom, 0, 1) + #strings.substring(professeur.nom, 0, 1) : 'P'}">P</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+
+<!-- 🔥 STYLES - Styles communs utilisés partout 🔥 -->
+<div th:fragment="styles">
+    <style>
+        :root {
+            --primary: #003178;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+            --text-dark: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        /* Navigation fixe */
+        .navbar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            height: 64px;
+        }
+
+        /* Sidebar fixe */
+        .sidebar-fixed {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            width: 280px;
+            background-color: var(--bg-light);
+            border-right: 1px solid var(--border-color);
+            z-index: 900;
+            overflow-y: auto;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 280px;
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar-fixed {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 100%;
+            }
+            .sidebar-fixed.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</div>
+
+<!-- 🔥 MODALS - Modales réutilisables 🔥 -->
+<div th:fragment="modals">
+    <!-- Modal for Chapter -->
+    <div id="chapitreModal" class="modal">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold text-text-dark mb-6">Ajouter un chapitre</h3>
+            <input type="hidden" id="currentSectionId">
+            <input type="hidden" id="currentChapitreId">
+            <div class="space-y-5">
+                <div>
+                    <label class="form-label">Titre du chapitre *</label>
+                    <input type="text" id="chapitreTitre" class="form-input" placeholder="Ex: Introduction aux bases">
+                </div>
+                <div>
+                    <label class="form-label">Description</label>
+                    <textarea id="chapitreDescription" rows="4" class="form-textarea" placeholder="Décrivez le contenu de ce chapitre"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-border-color">
+                <button type="button" id="closeModalBtn" class="px-6 py-2.5 bg-gray-200 text-text-dark rounded-lg hover:bg-gray-300 transition-colors font-medium">Annuler</button>
+                <button type="button" id="saveChapitreBtn" class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Content -->
+    <div id="contenuModal" class="modal">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold text-text-dark mb-6">Ajouter un contenu</h3>
+            <input type="hidden" id="currentContenuSectionId">
+            <input type="hidden" id="currentContenuChapitreId">
+            <input type="hidden" id="currentContenuId">
+            <div class="space-y-5">
+                <div>
+                    <label class="form-label">Titre du contenu *</label>
+                    <input type="text" id="contenuTitre" class="form-input" placeholder="Ex: Vidéo d'introduction">
+                </div>
+                <div>
+                    <label class="form-label">Type de contenu</label>
+                    <select id="contenuType" class="form-select">
+                        <option value="VIDEO">🎬 Vidéo</option>
+                        <option value="TEXTE">📝 Texte</option>
+                        <option value="PDF">📑 PDF</option>
+                        <option value="IMAGE">🖼️ Image</option>
+                        <option value="LIEN">🔗 Lien externe</option>
+                    </select>
+                </div>
+                <div id="videoFields">
+                    <label class="form-label">URL Vidéo</label>
+                    <input type="text" id="videoUrl" class="form-input" placeholder="https://youtube.com/embed/...">
+                </div>
+                <div id="texteFields" style="display:none;">
+                    <label class="form-label">Contenu texte</label>
+                    <textarea id="contenuTexte" rows="5" class="form-textarea" placeholder="Entrez votre contenu..."></textarea>
+                </div>
+                <div id="fichierFields" style="display:none;">
+                    <label class="form-label">Fichier</label>
+                    <input type="file" id="fichierFile" class="form-input">
+                </div>
+                <div id="lienFields" style="display:none;">
+                    <label class="form-label">URL Lien</label>
+                    <input type="text" id="lienUrl" class="form-input" placeholder="https://...">
+                    <label class="form-label mt-4">Texte du lien</label>
+                    <input type="text" id="lienTexte" class="form-input" placeholder="Cliquez ici">
+                </div>
+                <div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="apercuGratuit" class="w-4 h-4 accent-primary">
+                        <span class="text-sm font-medium text-text-dark">Aperçu gratuit</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-border-color">
+                <button type="button" id="closeContenuModalBtn" class="px-6 py-2.5 bg-gray-200 text-text-dark rounded-lg hover:bg-gray-300 transition-colors font-medium">Annuler</button>
+                <button type="button" id="saveContenuBtn" class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

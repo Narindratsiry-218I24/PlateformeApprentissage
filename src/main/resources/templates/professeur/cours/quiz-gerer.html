@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerer les Quiz - L'Erudition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/static/css/all.min.css}">
+  <style>
+    :root {
+      --quiz-navy: #123a78;
+      --quiz-gold: #f0b44c;
+      --quiz-mint: #2fa88f;
+    }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(240, 180, 76, 0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(47, 168, 143, 0.16), transparent 28%),
+        linear-gradient(135deg, #f1f6ff 0%, #fbfdff 55%, #eef9f5 100%);
+    }
+    .bg-primary { background-color: var(--quiz-navy); }
+    .text-primary { color: var(--quiz-navy); }
+    .glass-nav { backdrop-filter: blur(16px); background-color: rgba(255, 255, 255, 0.8); }
+    .hero-panel {
+      background: linear-gradient(135deg, var(--quiz-navy) 0%, #1e5ca6 58%, #1f8a80 100%);
+      box-shadow: 0 28px 60px rgba(18, 58, 120, 0.24);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -70px -70px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: rgba(240, 180, 76, 0.16);
+    }
+    .surface-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    .flat-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.95rem;
+      background: linear-gradient(135deg, rgba(240, 180, 76, 0.22), rgba(47, 168, 143, 0.18));
+      color: var(--quiz-navy);
+    }
+    .page-enter {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: pageEnter 0.55s ease forwards;
+    }
+    @keyframes pageEnter {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="fixed top-0 w-full z-50 glass-nav border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
+  <div class="flex items-center gap-8">
+    <span class="text-xl font-extrabold tracking-tight text-primary">L'Erudition</span>
+  </div>
+</nav>
+
+<main class="pt-24 pb-12 min-h-screen">
+  <div class="p-4 md:p-8 max-w-5xl mx-auto">
+    <div class="hero-panel rounded-[30px] p-8 text-white mb-8 page-enter">
+      <a th:href="'/professeur/cours/' + ${cours.id}" class="inline-flex items-center gap-3 text-white/85 hover:text-white mb-5">
+        <span class="flat-icon !bg-white/15 !text-white"><i class="fa-solid fa-arrow-left"></i></span>
+        <span>Retour au cours</span>
+      </a>
+      <p class="text-xs uppercase tracking-[0.28em] text-white/70 mb-3">Espace professeur</p>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Quiz de <span th:text="${cours.titre}">Cours</span></h1>
+      <p class="text-white/75 mt-3 max-w-2xl">Creez des quiz, ajoutez des questions et pilotez l'experience etudiant dans un espace clair et anime.</p>
+    </div>
+
+    <div th:if="${success}" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-2xl relative mb-6 page-enter">
+      <span class="block sm:inline" th:text="${success}"></span>
+    </div>
+
+    <div class="surface-card rounded-[28px] p-6 mb-8 page-enter" style="animation-delay:0.08s;">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flat-icon"><i class="fa-solid fa-file-circle-plus"></i></span>
+        <h2 class="text-xl font-bold">Creer un nouveau quiz</h2>
+      </div>
+      <form th:action="'/professeur/cours/' + ${cours.id} + '/quiz/ajouter'" method="post" th:object="${nouveauQuiz}">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Titre du quiz</label>
+            <input type="text" th:field="*{titre}" required class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 px-4 py-3 border">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <input type="text" th:field="*{description}" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 px-4 py-3 border">
+          </div>
+        </div>
+        <button type="submit" class="bg-primary text-white px-5 py-3 rounded-2xl shadow hover:bg-opacity-90 inline-flex items-center gap-2 font-semibold">
+          <i class="fa-solid fa-sparkles"></i>
+          Creer le quiz
+        </button>
+      </form>
+    </div>
+
+    <div class="surface-card rounded-[28px] overflow-hidden page-enter" style="animation-delay:0.16s;">
+      <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-bold text-gray-900">Liste des quiz existants</h2>
+      </div>
+      <div class="p-6">
+        <div th:if="${#lists.isEmpty(quizzes)}" class="text-center text-gray-500 py-4">
+          Aucun quiz pour l'instant.
+        </div>
+        <div th:if="${not #lists.isEmpty(quizzes)}" class="space-y-4">
+          <div th:each="quiz : ${quizzes}" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-slate-200/80 p-5 rounded-[24px] bg-slate-50/90">
+            <div class="flex items-start gap-4">
+              <span class="flat-icon shrink-0"><i class="fa-solid fa-clipboard-list"></i></span>
+              <div>
+                <h3 class="font-bold text-lg text-gray-800" th:text="${quiz.titre}">Titre</h3>
+                <p class="text-sm text-gray-500" th:text="${quiz.description}">Description</p>
+                <p class="text-xs text-emerald-700 font-semibold mt-2 uppercase tracking-[0.18em]" th:text="${quiz.questions.size()} + ' question(s)'"></p>
+              </div>
+            </div>
+            <a th:href="'/professeur/quiz/' + ${quiz.id}" class="text-primary hover:text-blue-900 bg-blue-50 px-4 py-3 rounded-2xl border border-blue-100 inline-flex items-center justify-center gap-2 font-semibold">
+              <i class="fa-solid fa-pen-ruler"></i>
+              Gerer questions
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

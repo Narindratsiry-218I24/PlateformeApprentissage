@@ -16,64 +16,70 @@
     <nav class="flex-1">
         <div class="space-y-1">
             <a th:href="@{/professeur/dashboard}"
-               class="nav-item"
-               th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
-                <i class="fas fa-chart-line"></i>
+               class="nav-item flex items-center gap-3 px-6 py-3 mx-3 rounded-lg transition-colors"
+               th:style="${currentPage == 'dashboard'} ? 'background: #ca8a04; color: white;' : 'color: rgba(255,255,255,0.8);'"
+               th:classappend="${currentPage == 'dashboard'} ? '' : 'hover:bg-white/10'">
+                <i class="fas fa-chart-line w-5"></i>
                 <span class="sidebar-text">Tableau de bord</span>
             </a>
 
             <a th:href="@{/professeur/cours}"
-               class="nav-item"
-               th:classappend="${currentPage == 'cours'} ? 'active' : ''">
-                <i class="fas fa-book-open"></i>
+               class="nav-item flex items-center gap-3 px-6 py-3 mx-3 rounded-lg transition-colors"
+               th:style="${currentPage == 'cours'} ? 'background: #ca8a04; color: white;' : 'color: rgba(255,255,255,0.8);'"
+               th:classappend="${currentPage == 'cours'} ? '' : 'hover:bg-white/10'">
+                <i class="fas fa-book-open w-5"></i>
                 <span class="sidebar-text">Mes cours</span>
             </a>
 
             <a th:href="@{/professeur/cours/ajouter}"
-               class="nav-item"
-               th:classappend="${currentPage == 'ajouter-cours'} ? 'active' : ''">
-                <i class="fas fa-plus-circle"></i>
+               class="nav-item flex items-center gap-3 px-6 py-3 mx-3 rounded-lg transition-colors"
+               th:style="${currentPage == 'ajouter-cours'} ? 'background: #ca8a04; color: white;' : 'color: rgba(255,255,255,0.8);'"
+               th:classappend="${currentPage == 'ajouter-cours'} ? '' : 'hover:bg-white/10'">
+                <i class="fas fa-plus-circle w-5"></i>
                 <span class="sidebar-text">Créer un cours</span>
             </a>
 
             <a th:href="@{/professeur/etudiants}"
-               class="nav-item"
-               th:classappend="${currentPage == 'etudiants'} ? 'active' : ''">
-                <i class="fas fa-users"></i>
+               class="nav-item flex items-center gap-3 px-6 py-3 mx-3 rounded-lg transition-colors"
+               th:style="${currentPage == 'etudiants'} ? 'background: #ca8a04; color: white;' : 'color: rgba(255,255,255,0.8);'"
+               th:classappend="${currentPage == 'etudiants'} ? '' : 'hover:bg-white/10'">
+                <i class="fas fa-users w-5"></i>
                 <span class="sidebar-text">Étudiants</span>
             </a>
 
             <a th:href="@{/professeur/messages}"
-               class="nav-item"
-               th:classappend="${currentPage == 'messages'} ? 'active' : ''">
-                <i class="fas fa-envelope"></i>
+               class="nav-item flex items-center gap-3 px-6 py-3 mx-3 rounded-lg transition-colors"
+               th:style="${currentPage == 'messages'} ? 'background: #ca8a04; color: white;' : 'color: rgba(255,255,255,0.8);'"
+               th:classappend="${currentPage == 'messages'} ? '' : 'hover:bg-white/10'">
+                <i class="fas fa-envelope w-5"></i>
                 <span class="sidebar-text">Messages</span>
                 <span th:if="${unreadMessagesCount != null and unreadMessagesCount > 0}"
-                      class="nav-badge"
+                      class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"
                       th:text="${unreadMessagesCount}">0</span>
             </a>
 
             <a th:href="@{/professeur/statistiques}"
-               class="nav-item"
-               th:classappend="${currentPage == 'statistiques'} ? 'active' : ''">
-                <i class="fas fa-chart-simple"></i>
+               class="nav-item flex items-center gap-3 px-6 py-3 mx-3 rounded-lg transition-colors"
+               th:style="${currentPage == 'statistiques'} ? 'background: #ca8a04; color: white;' : 'color: rgba(255,255,255,0.8);'"
+               th:classappend="${currentPage == 'statistiques'} ? '' : 'hover:bg-white/10'">
+                <i class="fas fa-chart-simple w-5"></i>
                 <span class="sidebar-text">Statistiques</span>
             </a>
         </div>
     </nav>
 
-    <div class="p-6 border-t border-white/10 mt-auto">
-        <a th:href="@{/professeur/profil}" class="nav-item">
-            <i class="fas fa-user-circle"></i>
+    <div class="p-4 border-t border-white/10">
+        <a th:href="@{/professeur/profil}" 
+           class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10" 
+           style="color: rgba(255,255,255,0.8);">
+            <i class="fas fa-user-circle w-5"></i>
             <span class="sidebar-text">Mon profil</span>
         </a>
-        <a th:href="@{/logout}" class="nav-item">
-            <i class="fas fa-sign-out-alt"></i>
-            <span class="sidebar-text">Déconnexion</span>
+        <a th:href="@{/logout}" 
+           class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-white/10" 
+           style="color: rgba(255,255,255,0.8);">
+            <i class="fas fa-sign-out-alt w-5"></i>
+            <span class="sidebar-text">Deconnexion</span>
         </a>
     </div>
-
-    <button id="toggleSidebar" class="sidebar-toggle hidden md:flex">
-        <i class="fas fa-chevron-left"></i>
-    </button>
 </div>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le cours</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, #eef3ff 0%, #f8fafc 55%, #eef7f4 100%); }
+        .bg-primary { background-color: #163b7a; }
+        .text-primary { color: #163b7a; }
+        .border-primary { border-color: #163b7a; }
+        .panel { background: rgba(255,255,255,0.88); backdrop-filter: blur(10px); }
+    </style>
+</head>
+<body class="min-h-screen text-slate-900">
+<div class="max-w-7xl mx-auto px-4 py-8 md:px-8">
+    <div class="flex items-center justify-between gap-4 mb-8">
+        <div>
+            <a th:href="@{/professeur/cours}" class="inline-flex items-center gap-2 text-slate-500 hover:text-primary mb-3">
+                <span class="material-symbols-outlined text-sm">arrow_back</span>
+                Retour aux cours
+            </a>
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Modifier le cours</h1>
+            <p class="text-slate-500 mt-2">Mettez a jour les informations, gardez la structure existante et republiez si besoin.</p>
+        </div>
+        <a th:href="'/professeur/cours/' + ${cours.id} + '/gerer'" class="px-4 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800">
+            Vue gestion
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1.45fr_0.95fr] gap-6">
+        <section class="panel rounded-[28px] border border-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] p-6 md:p-8">
+            <div class="flex items-start justify-between gap-4 mb-6">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Edition</p>
+                    <h2 class="text-2xl font-bold mt-2" th:text="${cours.titre}">Titre</h2>
+                </div>
+                <span class="px-3 py-1 rounded-full text-sm font-semibold"
+                      th:classappend="${cours.publie} ? ' bg-emerald-100 text-emerald-700' : ' bg-amber-100 text-amber-700'"
+                      th:text="${cours.publie} ? 'Publie' : 'Brouillon'">Publie</span>
+            </div>
+
+            <form id="editCourseForm" class="space-y-6">
+                <input type="hidden" id="imageCouvertureExistante" th:value="${cours.imageCouverture}">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Titre du cours</label>
+                        <input id="titre" type="text" th:value="${cours.titre}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-blue-100">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Description courte</label>
+                        <input id="descriptionCourte" type="text" th:value="${cours.descriptionCourte}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-blue-100">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Description complete</label>
+                        <textarea id="description" rows="6" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-blue-100" th:text="${cours.description}"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Duree estimee</label>
+                        <input id="dureeEstimee" type="number" min="0" th:value="${cours.dureeEstimee}" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-primary focus:ring-4 focus:ring-blue-100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Nouvelle image de couverture</label>
+                        <input id="imageCouverture" type="file" accept="image/*" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-slate-200 bg-slate-50/80 p-5">
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg">Structure existante</h3>
+                            <p class="text-sm text-slate-500">Les sections, chapitres et contenus actuels seront conserves et mis a jour ensemble.</p>
+                        </div>
+                        <div class="text-sm text-slate-500">
+                            <span th:text="${cours.sections != null ? cours.sections.size() : 0}">0</span> section(s)
+                        </div>
+                    </div>
+                    <div class="space-y-4 max-h-[430px] overflow-y-auto pr-1">
+                        <div th:if="${cours.sections == null or #lists.isEmpty(cours.sections)}" class="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500">
+                            Ce cours n'a pas encore de structure.
+                        </div>
+                        <div th:each="section, secStat : ${cours.sections}" class="rounded-2xl bg-white border border-slate-200 p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="text-xs uppercase tracking-[0.22em] text-slate-400" th:text="'Section ' + ${secStat.index + 1}">Section 1</p>
+                                    <h4 class="font-bold text-slate-900" th:text="${section.titre}">Titre section</h4>
+                                    <p class="text-sm text-slate-500" th:if="${section.description}" th:text="${section.description}">Description</p>
+                                </div>
+                                <span class="text-xs rounded-full bg-slate-100 px-3 py-1 text-slate-500" th:text="${section.nombreTotalContenus} + ' contenu(s)'">0 contenu(s)</span>
+                            </div>
+                            <div class="mt-4 space-y-3" th:if="${section.chapitres != null and not #lists.isEmpty(section.chapitres)}">
+                                <div th:each="chapitre : ${section.chapitres}" class="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                                    <div class="flex items-start gap-3">
+                                        <span class="material-symbols-outlined text-primary mt-0.5">menu_book</span>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-slate-800" th:text="${chapitre.titre}">Titre chapitre</p>
+                                            <p class="text-sm text-slate-500" th:if="${chapitre.description}" th:text="${chapitre.description}">Description</p>
+                                            <p class="text-xs text-slate-400 mt-2" th:text="${chapitre.nombreTotalContenus} + ' contenu(s)'">0 contenu(s)</p>
+                                            <div class="mt-3 space-y-2" th:if="${chapitre.contenus != null and not #lists.isEmpty(chapitre.contenus)}">
+                                                <div th:each="contenu : ${chapitre.contenus}" class="flex items-center justify-between rounded-xl bg-white px-3 py-2 border border-slate-100">
+                                                    <span class="text-sm text-slate-700" th:text="${contenu.titre}">Contenu</span>
+                                                    <span class="text-xs text-slate-400" th:text="${contenu.typeContenu}">TEXTE</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-3 pt-2">
+                    <button type="button" id="saveDraftBtn" class="px-6 py-3 rounded-2xl bg-slate-200 text-slate-800 font-semibold hover:bg-slate-300">
+                        Enregistrer comme brouillon
+                    </button>
+                    <button type="button" id="publishBtn" class="px-7 py-3 rounded-2xl bg-primary text-white font-semibold shadow-lg shadow-blue-900/15 hover:opacity-95">
+                        Mettre a jour et publier
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="space-y-6">
+            <div class="panel rounded-[28px] border border-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] p-6">
+                <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Resume</p>
+                <div class="mt-5 grid grid-cols-2 gap-4">
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <p class="text-sm text-slate-500">Sections</p>
+                        <p class="text-2xl font-extrabold text-primary" th:text="${cours.sections != null ? cours.sections.size() : 0}">0</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 p-4">
+                        <p class="text-sm text-slate-500">Etudiants</p>
+                        <p class="text-2xl font-extrabold text-primary" th:text="${cours.nombreApprenants}">0</p>
+                    </div>
+                </div>
+                <div class="mt-4 rounded-2xl bg-slate-900 text-white p-5">
+                    <p class="text-sm text-slate-300">Publication</p>
+                    <p class="text-xl font-bold mt-1" th:text="${cours.publie} ? 'Visible par les etudiants' : 'Encore en brouillon'">Brouillon</p>
+                    <p class="text-sm text-slate-300 mt-2">Chaque mise a jour garde votre structure actuelle et remet la page de lecture dans l'ordre.</p>
+                </div>
+            </div>
+
+            <div class="panel rounded-[28px] border border-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] p-6">
+                <h3 class="font-bold text-lg">Conseils</h3>
+                <ul class="mt-4 space-y-3 text-sm text-slate-500">
+                    <li>Gardez un titre clair et une description courte lisible en une ligne.</li>
+                    <li>Remplacez l'image uniquement si vous voulez changer la carte du cours.</li>
+                    <li>La structure actuelle est renvoyee telle quelle pour eviter les pertes pendant la mise a jour.</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const cours = /*[[${cours}]]*/ null;
+
+    function normalizeChapitre(chapitre, index) {
+        return {
+            titre: chapitre.titre || `Chapitre ${index + 1}`,
+            description: chapitre.description || '',
+            ordre: chapitre.ordre != null ? chapitre.ordre : index,
+            contenus: (chapitre.contenus || []).map((contenu, ctIndex) => ({
+                titre: contenu.titre || `Contenu ${ctIndex + 1}`,
+                typeContenu: contenu.typeContenu || 'TEXTE',
+                apercuGratuit: contenu.apercuGratuit || false,
+                ordre: contenu.ordre != null ? contenu.ordre : ctIndex,
+                videoUrl: contenu.videoUrl || null,
+                contenuTexte: contenu.contenuTexte || null,
+                lienExterne: contenu.lienExterne || null,
+                lienTexte: contenu.lienTexte || null,
+                fichierUrl: contenu.fichierUrl || null
+            })),
+            sousChapitres: (chapitre.sousChapitres || []).map((sousChapitre, childIndex) => normalizeChapitre(sousChapitre, childIndex))
+        };
+    }
+
+    function normalizeSections(sections) {
+        return (sections || []).map((section, sIndex) => ({
+            titre: section.titre || `Section ${sIndex + 1}`,
+            description: section.description || '',
+            ordre: section.ordre != null ? section.ordre : sIndex,
+            chapitres: (section.chapitres || []).map((chapitre, cIndex) => normalizeChapitre(chapitre, cIndex)),
+        }));
+    }
+
+    function collectFormData(publier) {
+        const formData = new FormData();
+        formData.append('titre', $('#titre').val() || '');
+        formData.append('descriptionCourte', $('#descriptionCourte').val() || '');
+        formData.append('description', $('#description').val() || '');
+        formData.append('dureeEstimee', $('#dureeEstimee').val() || '0');
+        formData.append('publier', publier);
+        formData.append('imageCouvertureExistante', $('#imageCouvertureExistante').val() || '');
+
+        const image = $('#imageCouverture')[0].files[0];
+        if (image) {
+            formData.append('imageCouverture', image);
+        }
+
+        formData.append('sections', JSON.stringify(normalizeSections(cours ? cours.sections : [])));
+        return formData;
+    }
+
+    function submitUpdate(publier) {
+        const titre = ($('#titre').val() || '').trim();
+        if (!titre) {
+            alert('Le titre du cours est obligatoire.');
+            return;
+        }
+
+        const formData = collectFormData(publier);
+        const button = publier ? $('#publishBtn') : $('#saveDraftBtn');
+        const originalText = button.text();
+        button.prop('disabled', true).text('Enregistrement...');
+
+        $.ajax({
+            url: '/professeur/cours/' + cours.id + '/api/modifier-avec-fichier',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = '/professeur/cours/' + cours.id + '/gerer';
+                    return;
+                }
+                alert(response.message || 'Erreur inconnue');
+                button.prop('disabled', false).text(originalText);
+            },
+            error: function(xhr) {
+                const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erreur serveur pendant la mise a jour.';
+                alert(message);
+                button.prop('disabled', false).text(originalText);
+            }
+        });
+    }
+
+    $('#saveDraftBtn').on('click', function() { submitUpdate(false); });
+    $('#publishBtn').on('click', function() { submitUpdate(true); });
+</script>
+</body>
+</html>

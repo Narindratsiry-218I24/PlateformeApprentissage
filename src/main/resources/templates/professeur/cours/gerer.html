@@ -34,7 +34,7 @@
   </div>
   <div class="flex items-center gap-4">
     <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-      <span th:text="${professeur != null and professeur.utilisateur != null ? #strings.substring(professeur.utilisateur.prenom, 0, 1) : 'P'}">P</span>
+    <span th:text="${professeur != null ? #strings.substring(professeur.prenom, 0, 1) : 'P'}">P</span>
     </div>
   </div>
 </nav>
@@ -45,6 +45,7 @@
     <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">Dashboard</a>
     <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-primary font-bold bg-white rounded-lg shadow-sm">Mes cours</a>
     <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">Étudiants</a>
+    <a href="/messages" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg">💬 Messagerie</a>
     <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg mt-8">Déconnexion</a>
   </nav>
 </aside>
@@ -168,6 +169,11 @@
 
     <!-- Actions rapides -->
     <div class="mt-8 flex gap-4 justify-end">
+      <a th:href="'/professeur/cours/' + ${cours.id} + '/quiz'"
+         class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        <span class="material-symbols-outlined">quiz</span>
+        Gérer les Quiz
+      </a>
       <a th:href="'/professeur/cours/' + ${cours.id} + '/modifier'"
          class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
         <span class="material-symbols-outlined">edit</span>

@@ -51,7 +51,7 @@
             <div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center text-white">
                 <span class="material-symbols-outlined text-sm">account_circle</span>
             </div>
-            <span class="text-sm font-medium" th:text="${professeur != null ? professeur.utilisateur.prenom + ' ' + professeur.utilisateur.nom : 'Professeur'}">Professeur</span>
+            <span class="text-sm font-medium" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</span>
         </div>
     </div>
 </nav>
@@ -65,7 +65,7 @@
                 <span class="material-symbols-outlined">school</span>
             </div>
             <div>
-                <p class="font-bold text-primary text-sm" th:text="${professeur != null ? professeur.utilisateur.prenom + ' ' + professeur.utilisateur.nom : 'Professeur'}">Professeur</p>
+                <p class="font-bold text-primary text-sm" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
                 <p class="text-[10px] text-slate-500 uppercase tracking-wider">Professeur</p>
             </div>
         </div>

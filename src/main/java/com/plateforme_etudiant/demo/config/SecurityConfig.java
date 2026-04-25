@@ -12,27 +12,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Désactiver TOUTE la sécurité Spring
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/login",
-                                "/logout",
-                                "/inscription",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/uploads/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .requestMatchers("/professeur/**").hasRole("PROFESSEUR")
-                        .requestMatchers("/etudiant/**").hasRole("APPRENANT")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()  // Toutes les URLs sont accessibles sans authentification
                 )
-                .csrf(csrf -> csrf.disable())
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
-                .logout(logout -> logout.disable());
+                .csrf(csrf -> csrf.disable())  // Désactiver CSRF
+                .headers(headers -> headers.disable())  // Désactiver les en-têtes
+                .formLogin(form -> form.disable())  // Désactiver le formulaire par défaut
+                .httpBasic(basic -> basic.disable())  // Désactiver l'authentification basique
+                .logout(logout -> logout.disable());  // Désactiver la déconnexion par défaut
 
         return http.build();
     }

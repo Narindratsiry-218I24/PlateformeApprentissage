@@ -12,6 +12,7 @@
         .bg-primary { background-color: #003178; }
         .text-primary { color: #003178; }
         .hover\:bg-primary\/90:hover { background-color: rgba(0,49,120,0.9); }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-gray-50 font-body">
@@ -27,12 +28,11 @@
         </div>
     </div>
     <div class="flex items-center gap-4">
-        <div th:if="${professeur != null and professeur.utilisateur != null}" class="h-10 w-10 rounded-full bg-[#003178] flex items-center justify-center text-white font-bold">
-            <!-- CORRECTION ICI : accès via utilisateur.prenom et utilisateur.nom -->
-            <span th:text="${#strings.substring(professeur.utilisateur.prenom, 0, 1)} + ${#strings.substring(professeur.utilisateur.nom, 0, 1)}">PV</span>
+        <div th:if="${professeur != null}" class="h-10 w-10 rounded-full bg-[#003178] flex items-center justify-center text-white font-bold">
+            <span th:text="${#strings.substring(professeur.prenom, 0, 1)} + ${#strings.substring(professeur.nom, 0, 1)}">PV</span>
         </div>
         <!-- Fallback si professeur est null -->
-        <div th:if="${professeur == null or professeur.utilisateur == null}" class="h-10 w-10 rounded-full bg-[#003178] flex items-center justify-center text-white font-bold">
+        <div th:if="${professeur == null}" class="h-10 w-10 rounded-full bg-[#003178] flex items-center justify-center text-white font-bold">
             <span>P</span>
         </div>
     </div>
@@ -44,6 +44,7 @@
         <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-[#003178] hover:bg-white/50 rounded-lg">Tableau de bord</a>
         <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-[#003178] font-bold bg-white rounded-lg shadow-sm">Mes cours</a>
         <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-[#003178] hover:bg-white/50 rounded-lg">Étudiants</a>
+        <a href="/messages" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-[#003178] hover:bg-white/50 rounded-lg">💬 Messagerie</a>
         <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg mt-8">Déconnexion</a>
     </nav>
 </aside>

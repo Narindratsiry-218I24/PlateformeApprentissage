@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-200/50">
+<header class="bg-white shadow-sm sticky top-0 z-50" style="border-bottom: 3px solid #ca8a04;">
   <div class="px-6 py-4">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -11,8 +11,8 @@
           <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
           <input type="text"
                  id="globalSearch"
-                 placeholder="Rechercher un cours, un étudiant..."
-                 class="pl-10 pr-4 py-2 w-64 md:w-96 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50">
+                 placeholder="Rechercher..."
+                 class="pl-10 pr-4 py-2 w-64 md:w-80 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-600 bg-gray-50">
         </div>
       </div>
 
@@ -20,7 +20,7 @@
         <!-- Notifications -->
         <div class="relative">
           <button id="notificationsBtn" class="p-2 rounded-xl hover:bg-gray-100 relative">
-            <i class="fas fa-bell text-gray-600 text-xl"></i>
+            <i class="fas fa-bell text-gray-600 text-xl" style="color: #1e3a8a;"></i>
             <span th:if="${notificationsCount != null and notificationsCount > 0}"
                   class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
@@ -29,7 +29,7 @@
         <!-- Messages -->
         <div class="relative">
           <a th:href="@{/professeur/messages}" class="p-2 rounded-xl hover:bg-gray-100 relative inline-block">
-            <i class="fas fa-envelope text-gray-600 text-xl"></i>
+            <i class="fas fa-envelope text-gray-600 text-xl" style="color: #1e3a8a;"></i>
             <span th:if="${unreadMessagesCount != null and unreadMessagesCount > 0}"
                   class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
                   th:text="${unreadMessagesCount}">0</span>
@@ -39,7 +39,7 @@
         <!-- User Menu -->
         <div class="relative group">
           <button class="flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100">
-            <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #1e3a8a;">
               <i class="fas fa-user-graduate text-white text-sm"></i>
             </div>
             <div class="hidden md:block text-left">

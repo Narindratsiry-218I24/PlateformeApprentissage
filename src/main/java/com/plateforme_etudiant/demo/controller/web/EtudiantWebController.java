@@ -5,6 +5,7 @@ import com.plateforme_etudiant.demo.dto.*;
 import com.plateforme_etudiant.demo.service.EtudiantService;
 import com.plateforme_etudiant.demo.service.EtudiantCoursDetailService;
 import com.plateforme_etudiant.demo.service.ProgressionService;
+import com.plateforme_etudiant.demo.service.QuizService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +27,16 @@ public class EtudiantWebController {
     private final EtudiantService etudiantService;
     private final EtudiantCoursDetailService coursDetailService;
     private final ProgressionService progressionService;
+    private final QuizService quizService;
 
     public EtudiantWebController(EtudiantService etudiantService,
                                  EtudiantCoursDetailService coursDetailService,
-                                 ProgressionService progressionService) {
+                                 ProgressionService progressionService,
+                                 QuizService quizService) {
         this.etudiantService = etudiantService;
         this.coursDetailService = coursDetailService;
         this.progressionService = progressionService;
+        this.quizService = quizService;
     }
 
     @GetMapping("/dashboard")
@@ -216,6 +220,7 @@ public class EtudiantWebController {
             EtudiantResponseDTO etudiant = etudiantService.getEtudiantById(utilisateurId);
             model.addAttribute("cours", coursDetail);
             model.addAttribute("etudiant", etudiant);
+            model.addAttribute("quizzes", quizService.getQuizByCours(coursId));
             log.info("✅ Cours chargé avec {} sections", coursDetail.getSections() != null ? coursDetail.getSections().size() : 0);
 
             return "Etudiant/visionner-cours";

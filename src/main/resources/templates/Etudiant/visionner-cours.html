@@ -4,154 +4,141 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${cours.titre} + ' - Apprentissage'">Apprentissage</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <style>
-    .bg-primary { background-color: #003178; }
-    .text-primary { color: #003178; }
-    .border-primary { border-color: #003178; }
-    .progress-bar { transition: width 0.5s ease; }
-    .content-item.active {
-      background-color: rgba(0, 49, 120, 0.1);
-      border-left: 3px solid #003178;
-    }
-    .nav-button {
-      transition: all 0.2s ease;
-    }
-    .nav-button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .nav-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .chapitre-sidebar-item {
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    .chapitre-sidebar-item:hover {
-      background-color: #f3f4f6;
-    }
-    .prose {
-      max-width: none;
-    }
-    .prose p {
-      margin-bottom: 1rem;
-      line-height: 1.6;
-    }
-    .prose h1, .prose h2, .prose h3 {
-      margin-top: 1.5rem;
-      margin-bottom: 0.75rem;
-      font-weight: 600;
-    }
-    .prose ul, .prose ol {
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
+    body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, #edf4ff 0%, #f8fafc 55%, #eef7f3 100%); }
+    .bg-primary { background-color: #123a78; }
+    .text-primary { color: #123a78; }
+    .border-primary { border-color: #123a78; }
+    .progress-bar { transition: width 0.4s ease; }
+    .sidebar-card { backdrop-filter: blur(14px); background: rgba(255,255,255,0.92); }
+    .content-shell { background: rgba(255,255,255,0.92); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08); }
+    .chapter-item.active { border-color: #123a78; background: rgba(18,58,120,0.08); }
+    .chapter-item { transition: all 0.2s ease; }
   </style>
 </head>
-<body class="bg-gray-50 font-[Inter]">
-
-<!-- Navigation -->
-<nav class="fixed top-0 w-full z-50 bg-white border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
-  <div class="flex items-center gap-4">
-    <a href="/etudiant/mes-cours" class="flex items-center gap-2 text-gray-600 hover:text-primary">
-      <span class="material-symbols-outlined">arrow_back</span>
-      <span class="hidden md:inline">Mes cours</span>
-    </a>
-    <span class="text-xl font-black tracking-tighter text-primary">L'Érudition</span>
-  </div>
-  <div class="flex items-center gap-4">
-    <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-      <span th:text="${etudiant != null ? #strings.substring(etudiant.prenom, 0, 1) : 'E'} + ${etudiant != null ? #strings.substring(etudiant.nom, 0, 1) : 'T'}">ET</span>
+<body class="text-slate-900">
+<nav class="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/80 bg-white/80 backdrop-blur-xl">
+  <div class="h-full max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a href="/etudiant/mes-cours" class="inline-flex items-center gap-2 text-slate-500 hover:text-primary">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="hidden md:inline">Mes cours</span>
+      </a>
+      <div>
+        <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Lecture guidee</p>
+        <p class="text-lg font-extrabold tracking-tight text-primary">L'Erudition</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="hidden md:block text-right">
+        <p class="text-sm font-bold" th:text="${etudiant.nomComplet}">Etudiant</p>
+        <p class="text-xs text-slate-500">Progression synchronisee</p>
+      </div>
+      <div class="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold">
+        <span th:text="${etudiant != null ? #strings.substring(etudiant.prenom, 0, 1) : 'E'} + ${etudiant != null ? #strings.substring(etudiant.nom, 0, 1) : 'T'}">ET</span>
+      </div>
     </div>
   </div>
 </nav>
 
-<div class="flex pt-16">
-  <!-- Sidebar -->
-  <aside class="w-80 bg-white border-r border-gray-200 h-screen sticky top-16 overflow-y-auto">
-    <div class="p-4 border-b border-gray-200">
-      <h1 class="font-bold text-lg text-gray-900 line-clamp-2" th:text="${cours.titre}">Titre du cours</h1>
-      <div class="mt-3">
-        <div class="flex justify-between text-sm text-gray-600 mb-1">
-          <span>Progression globale</span>
-          <span id="globalProgression" th:text="${cours.progression} + '%'">0%</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div id="globalProgressBar" class="bg-primary h-2 rounded-full progress-bar" th:style="'width: ' + ${cours.progression} + '%'"></div>
-        </div>
-      </div>
-    </div>
-    <div class="p-3" id="sidebarContent"></div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto p-6">
-      <!-- En-tête -->
-      <div id="currentContentHeader" class="mb-4">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <span id="currentSectionName"></span>
-          <span class="material-symbols-outlined text-sm">chevron_right</span>
-          <span id="currentChapitreName"></span>
-        </div>
-        <h2 id="currentContentTitle" class="text-2xl font-bold text-gray-900"></h2>
-        <div class="flex items-center gap-2 mt-2">
-          <span id="currentContentType" class="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600"></span>
-          <span id="contentCounter" class="text-xs text-gray-400"></span>
+<div class="max-w-7xl mx-auto px-4 md:px-8 pt-24 pb-8">
+  <div class="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-6">
+    <aside class="sidebar-card rounded-[28px] border border-white/70 p-5 h-fit xl:sticky xl:top-24">
+      <div class="pb-5 border-b border-slate-100">
+        <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Cours</p>
+        <h1 class="text-xl font-extrabold mt-2 leading-tight" th:text="${cours.titre}">Titre du cours</h1>
+        <div class="mt-5">
+          <div class="flex justify-between text-sm text-slate-500 mb-2">
+            <span>Progression globale</span>
+            <span id="globalProgression" th:text="${cours.progression} + '%'">0%</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
+            <div id="globalProgressBar" class="progress-bar bg-primary h-full rounded-full" th:style="'width:' + ${cours.progression} + '%'"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Zone de contenu -->
-      <div id="contentArea" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[500px]">
-        <div class="text-center text-gray-400 py-20">
-          <span class="material-symbols-outlined text-5xl mb-3">menu_book</span>
-          <p>Chargement du cours...</p>
+      <div id="sidebarContent" class="pt-5 space-y-4"></div>
+
+      <div th:if="${quizzes != null and not #lists.isEmpty(quizzes)}" class="mt-5 pt-5 border-t border-slate-100">
+        <p class="text-xs uppercase tracking-[0.24em] text-slate-400 mb-3">Quiz du cours</p>
+        <div class="space-y-2">
+          <a th:each="quiz : ${quizzes}" th:href="'/etudiant/cours/' + ${cours.id} + '/quiz/' + ${quiz.id}"
+             class="flex items-center justify-between rounded-2xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 text-indigo-700 hover:bg-indigo-100/80">
+            <span class="inline-flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">quiz</span>
+              <span class="text-sm font-semibold" th:text="${quiz.titre}">Quiz</span>
+            </span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </a>
         </div>
       </div>
+    </aside>
 
-      <!-- Boutons de navigation -->
-      <div class="mt-6 flex justify-between items-center">
-        <button id="prevContentBtn" class="nav-button px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2">
-          <span class="material-symbols-outlined">chevron_left</span>
-          Précédent
-        </button>
-        <div class="flex gap-3">
-          <button id="markCompleteBtn" class="nav-button px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
-            <span class="material-symbols-outlined">check_circle</span>
-            Marquer comme terminé
+    <main class="space-y-6">
+      <section class="content-shell rounded-[32px] border border-white/70 p-6 md:p-8">
+        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+              <span id="currentSectionName"></span>
+              <span class="material-symbols-outlined text-sm">chevron_right</span>
+              <span id="currentChapitreName"></span>
+            </div>
+            <h2 id="currentContentTitle" class="text-2xl md:text-3xl font-extrabold mt-3"></h2>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+              <span id="currentContentType" class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"></span>
+              <span id="contentCounter" class="text-sm text-slate-400"></span>
+            </div>
+          </div>
+          <div class="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 min-w-[220px]">
+            <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Ordre de lecture</p>
+            <p id="currentPathHint" class="text-sm font-semibold text-slate-700 mt-2">Chapitre</p>
+          </div>
+        </div>
+
+        <div id="contentArea" class="mt-8 min-h-[500px] rounded-[28px] border border-slate-100 bg-white p-5 md:p-8">
+          <div class="text-center text-slate-400 py-20">
+            <span class="material-symbols-outlined text-5xl mb-3">menu_book</span>
+            <p>Chargement du cours...</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-shell rounded-[28px] border border-white/70 p-5 md:p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <button id="prevContentBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50">
+            <span class="material-symbols-outlined">chevron_left</span>
+            Precedent
           </button>
-          <button id="nextContentBtn" class="nav-button px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
-            Suivant
-            <span class="material-symbols-outlined">chevron_right</span>
-          </button>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="markCompleteBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700">
+              <span class="material-symbols-outlined">check_circle</span>
+              Marquer comme termine
+            </button>
+            <button id="nextContentBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 font-semibold text-white hover:opacity-95">
+              Suivant
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
-  </main>
+      </section>
+    </main>
+  </div>
 </div>
 
 <script th:inline="javascript">
-  // Récupérer les données du cours
-  var coursData = /*[[${cours}]]*/ null;
-  var coursId = coursData ? coursData.id : null;
-
-  console.log('=== DONNÉES REÇUES ===');
-  console.log('Cours:', coursData);
-
-  // Structure des données
-  var sections = [];
-  var chapitresListe = [];
-  var allContentsFlat = [];
-
-  var currentChapitreIndex = 0;
-  var currentContenuIndex = 0;
-  var currentContenuId = null;
-  var currentContenuComplete = false;
+  const coursData = /*[[${cours}]]*/ null;
+  const coursId = coursData ? coursData.id : null;
+  let sections = [];
+  let chapitresListe = [];
+  let currentChapitreIndex = 0;
+  let currentContenuIndex = 0;
+  let currentContenuId = null;
+  let currentContenuComplete = false;
 
   function escapeHtml(text) {
     if (!text) return '';
@@ -160,356 +147,245 @@
     });
   }
 
-  // Générer le HTML du contenu en fonction du type
-  function genererHtmlContenu(contenu) {
-    console.log('Génération HTML pour:', contenu);
-
-    const type = contenu.typeContenu;
-    const titre = contenu.titre || '';
-
-    switch(type) {
-      case 'VIDEO':
-        const videoUrl = contenu.videoUrl || '';
-        console.log('VIDEO URL:', videoUrl);
-        if (!videoUrl) {
-          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">warning</span><p>URL de la vidéo non disponible</p></div>`;
-        }
-        return `
-                    <div class="video-container">
-                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
-                        <video controls class="w-full rounded-lg" controlsList="nodownload">
-                            <source src="${videoUrl}" type="video/mp4">
-                            Votre navigateur ne supporte pas la vidéo.
-                        </video>
-                    </div>
-                `;
-
-      case 'TEXTE':
-        let texte = contenu.contenuTexte || contenu.htmlContent || '';
-        console.log('TEXTE longueur:', texte.length);
-        if (!texte) {
-          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">edit_note</span><p>Contenu texte non disponible</p></div>`;
-        }
-        return `
-                    <div class="prose max-w-none">
-                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
-                        <div class="mt-2">${texte}</div>
-                    </div>
-                `;
-
-      case 'PDF':
-        const pdfUrl = contenu.fichierUrl || '';
-        console.log('PDF URL:', pdfUrl);
-        if (!pdfUrl) {
-          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">picture_as_pdf</span><p>Fichier PDF non disponible</p></div>`;
-        }
-        return `
-                    <div class="pdf-container">
-                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
-                        <iframe src="${pdfUrl}" class="w-full h-[600px] rounded-lg"></iframe>
-                        <a href="${pdfUrl}" download class="mt-4 inline-block bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
-                            Télécharger le PDF
-                        </a>
-                    </div>
-                `;
-
-      case 'IMAGE':
-        const imageUrl = contenu.fichierUrl || '';
-        console.log('IMAGE URL:', imageUrl);
-        if (!imageUrl) {
-          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">image</span><p>Image non disponible</p></div>`;
-        }
-        return `
-                    <div class="image-container">
-                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
-                        <img src="${imageUrl}" alt="${escapeHtml(titre)}" class="w-full rounded-lg">
-                    </div>
-                `;
-
-      case 'LIEN':
-        const lienUrl = contenu.lienExterne || '';
-        const lienTexte = contenu.lienTexte || titre;
-        console.log('LIEN URL:', lienUrl);
-        if (!lienUrl) {
-          return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">link_off</span><p>Lien non disponible</p></div>`;
-        }
-        return `
-                    <div class="link-container">
-                        <h3 class="text-lg font-bold mb-3">${escapeHtml(titre)}</h3>
-                        <a href="${lienUrl}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline flex items-center gap-2">
-                            <span class="material-symbols-outlined">open_in_new</span>
-                            ${escapeHtml(lienTexte)}
-                        </a>
-                    </div>
-                `;
-
-      default:
-        return `<div class="text-center text-gray-500 py-10"><span class="material-symbols-outlined text-4xl mb-2">help</span><p>Type de contenu: ${type}</p></div>`;
+  function getTypeLabel(type) {
+    switch (type) {
+      case 'VIDEO': return 'Video';
+      case 'TEXTE': return 'Texte';
+      case 'PDF': return 'PDF';
+      case 'LIEN': return 'Lien externe';
+      case 'IMAGE': return 'Image';
+      default: return 'Contenu';
     }
   }
 
-  // Organiser les données par chapitre
+  function genererHtmlContenu(contenu) {
+    const titre = contenu.titre || '';
+
+    if (contenu.typeContenu === 'VIDEO') {
+      if (!contenu.videoUrl) return "<div class='text-center py-16 text-slate-400'>Video non disponible</div>";
+      return `
+        <div class="space-y-5">
+          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
+          <video controls class="w-full rounded-3xl border border-slate-200 bg-slate-950" controlsList="nodownload">
+            <source src="${contenu.videoUrl}" type="video/mp4">
+            Votre navigateur ne supporte pas la video.
+          </video>
+        </div>`;
+    }
+
+    if (contenu.typeContenu === 'TEXTE') {
+      const texte = contenu.contenuTexte || contenu.htmlContent || '';
+      if (!texte) return "<div class='text-center py-16 text-slate-400'>Texte non disponible</div>";
+      return `
+        <article class="prose prose-slate max-w-none">
+          <h3>${escapeHtml(titre)}</h3>
+          <div>${texte}</div>
+        </article>`;
+    }
+
+    if (contenu.typeContenu === 'PDF') {
+      if (!contenu.fichierUrl) return "<div class='text-center py-16 text-slate-400'>PDF non disponible</div>";
+      return `
+        <div class="space-y-5">
+          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
+          <iframe src="${contenu.fichierUrl}" class="w-full h-[680px] rounded-3xl border border-slate-200"></iframe>
+          <a href="${contenu.fichierUrl}" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-white font-semibold">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Telecharger le PDF
+          </a>
+        </div>`;
+    }
+
+    if (contenu.typeContenu === 'IMAGE') {
+      if (!contenu.fichierUrl) return "<div class='text-center py-16 text-slate-400'>Image non disponible</div>";
+      return `
+        <div class="space-y-5">
+          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
+          <img src="${contenu.fichierUrl}" alt="${escapeHtml(titre)}" class="w-full rounded-3xl border border-slate-200">
+        </div>`;
+    }
+
+    if (contenu.typeContenu === 'LIEN') {
+      if (!contenu.lienExterne) return "<div class='text-center py-16 text-slate-400'>Lien non disponible</div>";
+      return `
+        <div class="space-y-5">
+          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
+          <a href="${contenu.lienExterne}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-blue-50 px-4 py-3 text-primary font-semibold">
+            <span class="material-symbols-outlined text-sm">open_in_new</span>
+            ${escapeHtml(contenu.lienTexte || contenu.titre || 'Ouvrir le lien')}
+          </a>
+        </div>`;
+    }
+
+    return "<div class='text-center py-16 text-slate-400'>Contenu non pris en charge</div>";
+  }
+
+  function ajouterChapitre(section, chapitre, parentPath) {
+    const path = parentPath ? parentPath + ' / ' + (chapitre.titre || 'Chapitre') : (chapitre.titre || 'Chapitre');
+    const chapitreData = {
+      id: chapitre.id,
+      titre: chapitre.titre || 'Chapitre',
+      path: path,
+      sectionNom: section.titre || 'Section',
+      contenus: []
+    };
+
+    const contenus = [...(chapitre.contenus || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+    contenus.forEach(contenu => {
+      chapitreData.contenus.push({
+        id: contenu.id,
+        titre: contenu.titre,
+        typeContenu: contenu.typeContenu,
+        estComplete: contenu.estComplete || false,
+        videoUrl: contenu.videoUrl,
+        contenuTexte: contenu.contenuTexte,
+        fichierUrl: contenu.fichierUrl,
+        lienExterne: contenu.lienExterne,
+        lienTexte: contenu.lienTexte,
+        htmlContent: contenu.htmlContent
+      });
+    });
+
+    if (chapitreData.contenus.length > 0) {
+      chapitresListe.push(chapitreData);
+    }
+
+    const sousChapitres = [...(chapitre.sousChapitres || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+    sousChapitres.forEach(sousChapitre => ajouterChapitre(section, sousChapitre, path));
+  }
+
   function organiserDonnees() {
     if (!coursData || !coursData.sections) {
-      console.error('Pas de données de cours');
       return false;
     }
 
-    sections = coursData.sections;
+    sections = [...coursData.sections].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
     chapitresListe = [];
-    allContentsFlat = [];
 
-    for (let sIdx = 0; sIdx < sections.length; sIdx++) {
-      const section = sections[sIdx];
-      if (section.chapitres && section.chapitres.length > 0) {
-        for (let cIdx = 0; cIdx < section.chapitres.length; cIdx++) {
-          const chapitre = section.chapitres[cIdx];
-          const chapitreData = {
-            id: chapitre.id,
-            titre: chapitre.titre,
-            sectionId: section.id,
-            sectionNom: section.titre,
-            sectionIdx: sIdx,
-            chapitreIdx: cIdx,
-            contenus: []
-          };
-
-          if (chapitre.contenus && chapitre.contenus.length > 0) {
-            for (let ctIdx = 0; ctIdx < chapitre.contenus.length; ctIdx++) {
-              const contenu = chapitre.contenus[ctIdx];
-              const contenuData = {
-                id: contenu.id,
-                titre: contenu.titre,
-                typeContenu: contenu.typeContenu,
-                estComplete: contenu.estComplete || false,
-                videoUrl: contenu.videoUrl,
-                contenuTexte: contenu.contenuTexte,
-                fichierUrl: contenu.fichierUrl,
-                lienExterne: contenu.lienExterne,
-                lienTexte: contenu.lienTexte,
-                htmlContent: contenu.htmlContent
-              };
-              chapitreData.contenus.push(contenuData);
-              allContentsFlat.push(contenuData);
-            }
-          }
-
-          if (chapitreData.contenus.length > 0) {
-            chapitresListe.push(chapitreData);
-          }
-        }
-      }
-    }
-
-    console.log('=== ORGANISATION DES DONNÉES ===');
-    console.log('Sections:', sections.length);
-    console.log('Chapitres avec contenu:', chapitresListe.length);
-    console.log('Contenus totaux:', allContentsFlat.length);
-    console.log('Détail chapitres:', chapitresListe.map(c => ({ titre: c.titre, nbContenus: c.contenus.length })));
+    sections.forEach(section => {
+      const chapitres = [...(section.chapitres || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+      chapitres.forEach(chapitre => ajouterChapitre(section, chapitre, ''));
+    });
 
     return chapitresListe.length > 0;
   }
 
-  // Initialiser la sidebar
   function initSidebar() {
     const sidebar = document.getElementById('sidebarContent');
-    if (!sections || sections.length === 0) {
-      sidebar.innerHTML = '<div class="text-center text-gray-500 py-4">Aucune section disponible</div>';
+    if (chapitresListe.length === 0) {
+      sidebar.innerHTML = "<div class='rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500'>Aucun contenu disponible.</div>";
       return;
     }
 
-    let html = '';
-    for (let sIdx = 0; sIdx < sections.length; sIdx++) {
-      const section = sections[sIdx];
-      html += `<div class="mb-4">
-                        <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg mb-2">
-                            <span class="material-symbols-outlined text-gray-500 text-sm">folder</span>
-                            <span class="font-semibold text-gray-700 text-sm">${escapeHtml(section.titre)}</span>
-                        </div>
-                        <div class="ml-2 space-y-1">`;
-
-      if (section.chapitres && section.chapitres.length > 0) {
-        for (let cIdx = 0; cIdx < section.chapitres.length; cIdx++) {
-          const chapitre = section.chapitres[cIdx];
-          // Trouver l'index global de ce chapitre
-          let globalIdx = -1;
-          for (let i = 0; i < chapitresListe.length; i++) {
-            if (chapitresListe[i].sectionIdx === sIdx && chapitresListe[i].chapitreIdx === cIdx) {
-              globalIdx = i;
-              break;
-            }
-          }
-
-          if (globalIdx === -1) continue;
-
-          const isActive = (globalIdx === currentChapitreIndex);
-          const chapitreData = chapitresListe[globalIdx];
-          const completedCount = chapitreData.contenus.filter(c => c.estComplete).length;
-          const totalCount = chapitreData.contenus.length;
-          const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
-
-          html += `<div class="chapitre-sidebar-item mb-2 p-2 rounded-lg ${isActive ? 'bg-primary/10 border-l-3 border-primary' : ''}"
-                                   data-global-idx="${globalIdx}">
-                                <div class="flex items-center justify-between" onclick="goToChapitre(${globalIdx})">
-                                    <div class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-sm ${completedCount === totalCount && totalCount > 0 ? 'text-green-500' : 'text-gray-400'}">
-                                            ${completedCount === totalCount && totalCount > 0 ? 'check_circle' : 'menu_book'}
-                                        </span>
-                                        <span class="text-sm font-medium ${isActive ? 'text-primary' : 'text-gray-700'}">${escapeHtml(chapitre.titre)}</span>
-                                    </div>
-                                    <span class="text-xs text-gray-400">${completedCount}/${totalCount}</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
-                                    <div class="bg-primary h-1 rounded-full" style="width: ${progressPercent}%"></div>
-                                </div>
-                            </div>`;
-        }
-      } else {
-        html += `<div class="text-center text-gray-400 text-sm py-2 italic">Aucun chapitre</div>`;
+    const sectionsMap = new Map();
+    chapitresListe.forEach((chapitre, index) => {
+      if (!sectionsMap.has(chapitre.sectionNom)) {
+        sectionsMap.set(chapitre.sectionNom, []);
       }
-      html += `</div></div>`;
-    }
+      sectionsMap.get(chapitre.sectionNom).push({ ...chapitre, globalIndex: index });
+    });
+
+    let html = '';
+    sectionsMap.forEach((chapitres, sectionName) => {
+      html += `<div class="rounded-3xl border border-slate-100 bg-slate-50/80 p-3">
+        <div class="px-2 pb-2">
+          <p class="text-xs uppercase tracking-[0.22em] text-slate-400">${escapeHtml(sectionName)}</p>
+        </div>`;
+
+      chapitres.forEach(item => {
+        const doneCount = item.contenus.filter(c => c.estComplete).length;
+        const progress = item.contenus.length ? Math.round((doneCount / item.contenus.length) * 100) : 0;
+        const activeClass = item.globalIndex === currentChapitreIndex ? 'active' : '';
+        html += `<button type="button" class="chapter-item ${activeClass} w-full text-left rounded-2xl border border-transparent px-3 py-3 mb-2 last:mb-0" onclick="goToChapitre(${item.globalIndex})">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-800">${escapeHtml(item.path)}</p>
+              <p class="text-xs text-slate-400 mt-1">${doneCount}/${item.contenus.length} contenu(s) termines</p>
+            </div>
+            <span class="text-xs text-slate-400">${progress}%</span>
+          </div>
+          <div class="mt-3 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+            <div class="h-full rounded-full bg-primary" style="width:${progress}%"></div>
+          </div>
+        </button>`;
+      });
+
+      html += '</div>';
+    });
 
     sidebar.innerHTML = html;
   }
 
-  // Naviguer vers un chapitre spécifique
-  function goToChapitre(globalIdx) {
-    if (globalIdx >= 0 && globalIdx < chapitresListe.length) {
-      currentChapitreIndex = globalIdx;
-      currentContenuIndex = 0;
-      chargerContenuCourant();
-      initSidebar();
-    }
-  }
-
-  // Charger le contenu courant
   function chargerContenuCourant() {
-    if (!chapitresListe.length || currentChapitreIndex >= chapitresListe.length) {
-      console.error('Chapitre non trouvé');
-      return;
-    }
-
     const chapitre = chapitresListe[currentChapitreIndex];
-    if (!chapitre.contenus.length || currentContenuIndex >= chapitre.contenus.length) {
-      console.error('Contenu non trouvé');
-      return;
-    }
-
+    if (!chapitre) return;
     const contenu = chapitre.contenus[currentContenuIndex];
+    if (!contenu) return;
+
     currentContenuId = contenu.id;
     currentContenuComplete = contenu.estComplete || false;
 
-    console.log('Chargement contenu:', {
-      chapitre: chapitre.titre,
-      contenu: contenu.titre,
-      type: contenu.typeContenu,
-      complete: currentContenuComplete,
-      videoUrl: contenu.videoUrl,
-      fichierUrl: contenu.fichierUrl
-    });
-
-    // Mettre à jour l'en-tête
     document.getElementById('currentSectionName').textContent = chapitre.sectionNom;
-    document.getElementById('currentChapitreName').textContent = chapitre.titre;
-    document.getElementById('currentContentTitle').textContent = contenu.titre;
-
-    let typeLabel = '';
-    switch(contenu.typeContenu) {
-      case 'VIDEO': typeLabel = '🎬 Vidéo'; break;
-      case 'TEXTE': typeLabel = '📝 Texte'; break;
-      case 'PDF': typeLabel = '📄 PDF'; break;
-      case 'LIEN': typeLabel = '🔗 Lien externe'; break;
-      case 'IMAGE': typeLabel = '🖼️ Image'; break;
-      default: typeLabel = '📚 Contenu';
-    }
-    document.getElementById('currentContentType').textContent = typeLabel;
+    document.getElementById('currentChapitreName').textContent = chapitre.path;
+    document.getElementById('currentPathHint').textContent = chapitre.path;
+    document.getElementById('currentContentTitle').textContent = contenu.titre || 'Contenu';
+    document.getElementById('currentContentType').textContent = getTypeLabel(contenu.typeContenu);
     document.getElementById('contentCounter').textContent = `Contenu ${currentContenuIndex + 1} / ${chapitre.contenus.length}`;
+    document.getElementById('contentArea').innerHTML = genererHtmlContenu(contenu);
 
-    // Générer et afficher le contenu
-    const htmlContent = genererHtmlContenu(contenu);
-    document.getElementById('contentArea').innerHTML = htmlContent;
-
-    // Mettre à jour les boutons
     updateButtonsState();
-
-    // Mettre à jour la sidebar
     initSidebar();
-
-    // Scroll
-    document.getElementById('contentArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function updateButtonsState() {
-    const markBtn = document.getElementById('markCompleteBtn');
-    const nextBtn = document.getElementById('nextContentBtn');
     const prevBtn = document.getElementById('prevContentBtn');
-
-    // Bouton marquer comme terminé
-    if (currentContenuComplete) {
-      markBtn.disabled = true;
-      markBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    } else {
-      markBtn.disabled = false;
-      markBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-    }
-
-    // Bouton précédent
-    if (currentChapitreIndex === 0 && currentContenuIndex === 0) {
-      prevBtn.disabled = true;
-      prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
-    } else {
-      prevBtn.disabled = false;
-      prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-    }
-
-    // Bouton suivant
+    const nextBtn = document.getElementById('nextContentBtn');
+    const markBtn = document.getElementById('markCompleteBtn');
     const chapitre = chapitresListe[currentChapitreIndex];
-    const isLastContent = (currentContenuIndex === chapitre.contenus.length - 1);
-    const isLastChapitre = (currentChapitreIndex === chapitresListe.length - 1);
 
-    if (isLastContent && isLastChapitre) {
-      nextBtn.disabled = true;
-      nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      nextBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Terminé';
-    } else {
-      nextBtn.disabled = false;
-      nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-      nextBtn.innerHTML = 'Suivant <span class="material-symbols-outlined">chevron_right</span>';
-    }
+    prevBtn.disabled = currentChapitreIndex === 0 && currentContenuIndex === 0;
+    prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+
+    markBtn.disabled = currentContenuComplete;
+    markBtn.classList.toggle('opacity-50', markBtn.disabled);
+
+    const isLastContent = currentContenuIndex === chapitre.contenus.length - 1;
+    const isLastChapter = currentChapitreIndex === chapitresListe.length - 1;
+    nextBtn.disabled = isLastContent && isLastChapter;
+    nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+  }
+
+  function goToChapitre(index) {
+    currentChapitreIndex = index;
+    currentContenuIndex = 0;
+    chargerContenuCourant();
   }
 
   function goToPrevious() {
     if (currentContenuIndex > 0) {
       currentContenuIndex--;
-      chargerContenuCourant();
     } else if (currentChapitreIndex > 0) {
       currentChapitreIndex--;
-      const prevChapitre = chapitresListe[currentChapitreIndex];
-      currentContenuIndex = prevChapitre.contenus.length - 1;
-      chargerContenuCourant();
+      currentContenuIndex = chapitresListe[currentChapitreIndex].contenus.length - 1;
     }
+    chargerContenuCourant();
   }
 
   function goToNext() {
     const chapitre = chapitresListe[currentChapitreIndex];
+    if (!currentContenuComplete) {
+      alert("Veuillez d'abord marquer ce contenu comme termine.");
+      return;
+    }
 
     if (currentContenuIndex < chapitre.contenus.length - 1) {
-      if (!currentContenuComplete) {
-        alert('Veuillez d\'abord marquer ce contenu comme terminé');
-        return;
-      }
       currentContenuIndex++;
-      chargerContenuCourant();
     } else if (currentChapitreIndex < chapitresListe.length - 1) {
-      if (!currentContenuComplete) {
-        alert('Veuillez d\'abord marquer ce contenu comme terminé');
-        return;
-      }
       currentChapitreIndex++;
       currentContenuIndex = 0;
-      chargerContenuCourant();
     }
+
+    chargerContenuCourant();
   }
 
   function markContentComplete() {
@@ -519,42 +395,33 @@
       url: '/etudiant/cours/' + coursId + '/contenu/' + currentContenuId + '/completer',
       method: 'POST',
       success: function(response) {
-        if (response.success) {
-          currentContenuComplete = true;
-          chapitresListe[currentChapitreIndex].contenus[currentContenuIndex].estComplete = true;
-
-          document.getElementById('globalProgression').textContent = response.progression + '%';
-          document.getElementById('globalProgressBar').style.width = response.progression + '%';
-
-          updateButtonsState();
-          initSidebar();
-
-          const markBtn = document.getElementById('markCompleteBtn');
-          markBtn.innerHTML = '<span class="material-symbols-outlined">done_all</span> Terminé !';
-          setTimeout(() => {
-            markBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Marquer comme terminé';
-          }, 2000);
-
-          // Auto passage au suivant
-          setTimeout(() => {
-            const nextBtn = document.getElementById('nextContentBtn');
-            if (!nextBtn.disabled) {
-              goToNext();
-            }
-          }, 800);
-
-        } else {
-          alert('Erreur: ' + (response.message || 'Impossible de marquer comme terminé'));
+        if (!response.success) {
+          alert(response.message || 'Erreur de mise a jour');
+          return;
         }
+
+        chapitresListe[currentChapitreIndex].contenus[currentContenuIndex].estComplete = true;
+        currentContenuComplete = true;
+        document.getElementById('globalProgression').textContent = response.progression + '%';
+        document.getElementById('globalProgressBar').style.width = response.progression + '%';
+        updateButtonsState();
+        initSidebar();
+
+        setTimeout(function() {
+          const chapitre = chapitresListe[currentChapitreIndex];
+          const isLastContent = currentContenuIndex === chapitre.contenus.length - 1;
+          const isLastChapter = currentChapitreIndex === chapitresListe.length - 1;
+          if (!(isLastContent && isLastChapter)) {
+            goToNext();
+          }
+        }, 500);
       },
-      error: function(xhr) {
-        console.error(xhr);
-        alert('Erreur lors de la mise à jour');
+      error: function() {
+        alert('Erreur lors de la mise a jour de la progression.');
       }
     });
   }
 
-  // Trouver le premier contenu non complété
   function trouverPremierContenuNonComplete() {
     for (let i = 0; i < chapitresListe.length; i++) {
       for (let j = 0; j < chapitresListe[i].contenus.length; j++) {
@@ -566,40 +433,24 @@
     return { chapitreIdx: 0, contenuIdx: 0 };
   }
 
-  // Initialisation
   function init() {
-    console.log('=== INITIALISATION ===');
     const hasData = organiserDonnees();
-
     if (!hasData) {
-      document.getElementById('contentArea').innerHTML = `
-                <div class="text-center text-gray-500 py-20">
-                    <span class="material-symbols-outlined text-5xl mb-3">error</span>
-                    <p>Aucun contenu disponible pour ce cours</p>
-                    <p class="text-sm mt-2">Le professeur n'a pas encore ajouté de contenu.</p>
-                </div>
-            `;
-      document.getElementById('sidebarContent').innerHTML = '<div class="text-center text-gray-500 py-4">Aucun contenu disponible</div>';
+      document.getElementById('contentArea').innerHTML = "<div class='text-center py-20 text-slate-400'><span class='material-symbols-outlined text-5xl mb-3'>menu_book</span><p>Aucun contenu disponible pour ce cours.</p></div>";
+      initSidebar();
       return;
     }
 
-    const { chapitreIdx, contenuIdx } = trouverPremierContenuNonComplete();
-    currentChapitreIndex = chapitreIdx;
-    currentContenuIndex = contenuIdx;
-
-    initSidebar();
+    const first = trouverPremierContenuNonComplete();
+    currentChapitreIndex = first.chapitreIdx;
+    currentContenuIndex = first.contenuIdx;
     chargerContenuCourant();
   }
 
-  // Attacher les événements
   document.getElementById('prevContentBtn').addEventListener('click', goToPrevious);
   document.getElementById('nextContentBtn').addEventListener('click', goToNext);
   document.getElementById('markCompleteBtn').addEventListener('click', markContentComplete);
-
-  // Exposer goToChapitre globalement
   window.goToChapitre = goToChapitre;
-
-  // Démarrer
   init();
 </script>
 </body>

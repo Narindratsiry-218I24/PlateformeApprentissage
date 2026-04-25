@@ -3,101 +3,246 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>L'Érudition Augmentée | L'art du Savoir Moderne</title>
+  <title>L'Erudition | Plateforme de Formation</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
   <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block;
-      line-height: 1;
-      text-transform: none;
-      letter-spacing: normal;
-      word-wrap: normal;
-      white-space: nowrap;
-      direction: ltr;
+    /* Flat Design - No gradients, solid colors */
+    :root {
+      --color-primary: #1e3a8a;    /* Bleu marine */
+      --color-secondary: #ca8a04;   /* Or/Dore */
+      --color-accent: #f8fafc;      /* Blanc casse */
     }
-    .hero-gradient {
-      background: linear-gradient(180deg, #1A064F 0%, #0D0328 100%);
+    
+    .flat-btn {
+      background: var(--color-primary);
+      border: none;
+      border-radius: 4px;
+      padding: 12px 24px;
+      color: white;
+      font-weight: 600;
+      transition: all 0.2s ease;
     }
-    .hero-curve {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      overflow: hidden;
-      line-height: 0;
-      transform: rotate(180deg);
+    
+    .flat-btn:hover {
+      background: #172554;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
     }
-    .hero-curve svg {
-      position: relative;
-      display: block;
-      width: calc(100% + 1.3px);
-      height: 80px;
+    
+    .flat-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
     }
-    .hero-curve .shape-fill {
-      fill: #FFFFFF;
+    
+    .flat-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
     }
-    .animate-bounce-slow {
-      animation: bounce 3s infinite;
+    
+    .hero-bg {
+      background: var(--color-primary);
     }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    
+    .category-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eff6ff;
+    }
+    
+    .category-icon i {
+      color: var(--color-primary);
+      font-size: 24px;
     }
   </style>
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#4F46E5",
-            "secondary": "#059669",
-            "accent-green": "#10B981",
-            "dark-purple": "#1A064F",
-            "surface": "#FFFFFF",
-            "surface-low": "#F8FAFC",
-          },
-          fontFamily: {
-            "headline": ["Plus Jakarta Sans"],
-            "body": ["Plus Jakarta Sans"],
-            "label": ["Plus Jakarta Sans"]
-          },
-          borderRadius: {
-            "DEFAULT": "8px",
-            "lg": "12px",
-            "xl": "16px",
-            "2xl": "24px",
-            "full": "9999px"
-          },
-        },
-      },
-    }
-  </script>
 </head>
-<body class="bg-surface font-body text-slate-900 antialiased">
-<!-- Header & Hero Section -->
-<header class="hero-gradient relative min-h-[800px] overflow-hidden text-white">
-  <!-- Navigation -->
-  <nav class="w-full z-50 h-20 border-b border-white/10">
-    <div class="flex justify-between items-center px-8 h-full max-w-screen-2xl mx-auto">
-      <div class="flex items-center space-x-12">
-        <div class="text-2xl font-bold tracking-tight font-headline flex items-center gap-2">
-          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span class="material-symbols-outlined text-white text-xl">school</span>
-          </div>
-          <span>L'Érudition</span>
+<body class="bg-slate-50 font-sans">
+<!-- Header -->
+<header class="hero-bg text-white">
+  <nav class="max-w-7xl mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+          <i class="fas fa-graduation-cap text-xl" style="color: var(--color-primary)"></i>
         </div>
-        <div class="hidden lg:flex items-center space-x-8">
-          <div class="flex items-center space-x-6 text-sm font-medium">
-            <a th:href="@{/}" class="hover:text-primary transition-colors">Accueil</a>
-            <a th:href="@{/cours}" class="hover:text-primary transition-colors">Cours</a>
-            <a href="#" class="hover:text-primary transition-colors">Blog</a>
-            <a href="#" class="hover:text-primary transition-colors">Contact</a>
-          </div>
+        <span class="text-xl font-bold">L'Erudition</span>
+      </div>
+      
+      <div class="hidden md:flex items-center gap-8">
+        <a th:href="@{/}" class="text-white/90 hover:text-white transition-colors">Accueil</a>
+        <a th:href="@{/cours}" class="text-white/90 hover:text-white transition-colors">Cours</a>
+        <a href="#" class="text-white/90 hover:text-white transition-colors">A propos</a>
+        <a href="#" class="text-white/90 hover:text-white transition-colors">Contact</a>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <a th:href="@{/login}" class="text-white hover:text-white transition-colors">Connexion</a>
+        <a th:href="@{/inscription}" class="flat-btn">S'inscrire</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
+    <div class="space-y-6">
+      <h1 class="text-5xl font-bold leading-tight">
+        Developpez vos competences avec nos formations
+      </h1>
+      <p class="text-lg text-white/80 max-w-lg">
+        Accedez a des cours de qualite dispenses par des experts. Rejoignez notre plateforme d'apprentissage moderne.
+      </p>
+      <div class="flex gap-4">
+        <a th:href="@{/inscription}" class="flat-btn">
+          <i class="fas fa-user-plus mr-2"></i>Commencer
+        </a>
+        <a th:href="@{/cours}" class="px-6 py-3 border border-white/30 rounded hover:bg-white/10 transition-colors">
+          <i class="fas fa-play mr-2"></i>Voir les cours
+        </a>
+      </div>
+      <div class="flex gap-8 pt-4">
+        <div class="text-center">
+          <p class="text-3xl font-bold" style="color: var(--color-secondary)">12000+</p>
+          <p class="text-sm text-white/70">Etudiants</p>
         </div>
+        <div class="text-center">
+          <p class="text-3xl font-bold" style="color: var(--color-secondary)">500+</p>
+          <p class="text-sm text-white/70">Cours</p>
+        </div>
+        <div class="text-center">
+          <p class="text-3xl font-bold" style="color: var(--color-secondary)">50+</p>
+          <p class="text-sm text-white/70">Formateurs</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="relative hidden md:block">
+      <div class="w-full max-w-md mx-auto">
+        <img alt="Education" class="w-full rounded-lg shadow-2xl" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800"/>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Partners -->
+<section class="py-12 bg-white border-b">
+  <div class="max-w-7xl mx-auto px-6">
+    <p class="text-center text-slate-500 text-sm mb-8">Nos partenaires</p>
+    <div class="flex flex-wrap justify-center items-center gap-12 opacity-50">
+      <i class="fab fa-google text-4xl"></i>
+      <i class="fab fa-microsoft text-4xl"></i>
+      <i class="fab fa-amazon text-4xl"></i>
+      <i class="fab fa-apple text-4xl"></i>
+      <i class="fab fa-meta text-4xl"></i>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+<section class="py-16 bg-slate-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-slate-900 mb-3">Nos Categories</h2>
+      <p class="text-slate-600">Decouvrez nos domaines de formation</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div class="flat-card p-6 text-center cursor-pointer">
+        <div class="category-icon mx-auto mb-4">
+          <i class="fas fa-palette"></i>
+        </div>
+        <h3 class="font-semibold mb-1">Design</h3>
+        <p class="text-xs text-slate-500">8 cours</p>
+      </div>
+      <div class="flat-card p-6 text-center cursor-pointer">
+        <div class="category-icon mx-auto mb-4">
+          <i class="fas fa-code"></i>
+        </div>
+        <h3 class="font-semibold mb-1">Programmation</h3>
+        <p class="text-xs text-slate-500">25 cours</p>
+      </div>
+      <div class="flat-card p-6 text-center cursor-pointer">
+        <div class="category-icon mx-auto mb-4">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h3 class="font-semibold mb-1">Marketing</h3>
+        <p class="text-xs text-slate-500">12 cours</p>
+      </div>
+      <div class="flat-card p-6 text-center cursor-pointer">
+        <div class="category-icon mx-auto mb-4">
+          <i class="fas fa-brain"></i>
+        </div>
+        <h3 class="font-semibold mb-1">IA & Data</h3>
+        <p class="text-xs text-slate-500">10 cours</p>
+      </div>
+      <div class="flat-card p-6 text-center cursor-pointer">
+        <div class="category-icon mx-auto mb-4">
+          <i class="fas fa-coins"></i>
+        </div>
+        <h3 class="font-semibold mb-1">Finance</h3>
+        <p class="text-xs text-slate-500">6 cours</p>
+      </div>
+      <div class="flat-card p-6 text-center cursor-pointer">
+        <div class="category-icon mx-auto mb-4">
+          <i class="fas fa-comments"></i>
+        </div>
+        <h3 class="font-semibold mb-1">Communication</h3>
+        <p class="text-xs text-slate-500">5 cours</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-slate-900 text-white py-12">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+          <i class="fas fa-graduation-cap text-xl" style="color: var(--color-primary)"></i>
+        </div>
+        <span class="text-xl font-bold">L'Erudition</span>
+      </div>
+      <p class="text-slate-400 text-sm">
+        Plateforme d'apprentissage en ligne pour developper vos competences.
+      </p>
+    </div>
+    <div>
+      <h4 class="font-semibold mb-4">Liens utiles</h4>
+      <ul class="space-y-2 text-sm text-slate-400">
+        <li><a th:href="@{/cours}" class="hover:text-white">Cours</a></li>
+        <li><a href="#" class="hover:text-white">A propos</a></li>
+        <li><a href="#" class="hover:text-white">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-semibold mb-4">Legal</h4>
+      <ul class="space-y-2 text-sm text-slate-400">
+        <li><a href="#" class="hover:text-white">Confidentialite</a></li>
+        <li><a href="#" class="hover:text-white">Conditions</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-semibold mb-4">Newsletter</h4>
+      <div class="flex">
+        <input class="bg-slate-800 border-none rounded-l px-4 py-2 text-sm w-full" placeholder="Votre email" type="email"/>
+        <button class="bg-yellow-600 px-4 py-2 rounded-r hover:bg-yellow-700 transition-colors">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 mt-8 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
+    <p>2024 L'Erudition. Tous droits reserves.</p>
+  </div>
+</footer>
+</body>
+</html>
       </div>
       <div class="flex items-center space-x-6">
         <button class="text-white/80 hover:text-white"><span class="material-symbols-outlined">search</span></button>

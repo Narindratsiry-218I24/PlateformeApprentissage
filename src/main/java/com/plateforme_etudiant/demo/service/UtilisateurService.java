@@ -60,6 +60,11 @@ public class UtilisateurService {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
+    public Utilisateur findByNomUtilisateur(String nomUtilisateur) {
+        return utilisateurRepository.findByNomUtilisateur(nomUtilisateur)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec le pseudo: " + nomUtilisateur));
+    }
+
     public Utilisateur findById(Long id) {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Details du Quiz - L'Erudition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/static/css/all.min.css}">
+  <style>
+    :root {
+      --quiz-navy: #123a78;
+      --quiz-gold: #f0b44c;
+      --quiz-mint: #2fa88f;
+    }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(240, 180, 76, 0.18), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(47, 168, 143, 0.16), transparent 30%),
+        linear-gradient(135deg, #eef4ff 0%, #fafcff 55%, #eef9f5 100%);
+    }
+    .bg-primary { background-color: var(--quiz-navy); }
+    .text-primary { color: var(--quiz-navy); }
+    .surface-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+    }
+    .flat-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.95rem;
+      background: linear-gradient(135deg, rgba(240, 180, 76, 0.22), rgba(47, 168, 143, 0.18));
+      color: var(--quiz-navy);
+    }
+    .hero-panel {
+      background: linear-gradient(135deg, var(--quiz-navy) 0%, #1b5da9 60%, #247f89 100%);
+      box-shadow: 0 28px 60px rgba(18, 58, 120, 0.24);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -60px;
+      top: -70px;
+      border-radius: 999px;
+      background: rgba(240, 180, 76, 0.16);
+    }
+    .page-enter {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: pageEnter 0.55s ease forwards;
+    }
+    @keyframes pageEnter {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur border-b border-gray-200 shadow-sm px-4 md:px-8 h-16 flex justify-between items-center">
+  <div class="flex items-center gap-8">
+    <span class="text-xl font-extrabold tracking-tight text-primary">L'Erudition</span>
+  </div>
+</nav>
+
+<main class="pt-24 pb-12 min-h-screen">
+  <div class="p-4 md:p-8 max-w-5xl mx-auto">
+    <div class="hero-panel rounded-[30px] p-8 text-white mb-8 page-enter">
+      <a th:href="'/professeur/cours/' + ${quiz.cours.id} + '/quiz'" class="inline-flex items-center gap-3 text-white/85 hover:text-white mb-5">
+        <span class="flat-icon !bg-white/15 !text-white"><i class="fa-solid fa-arrow-left"></i></span>
+        <span>Retour aux quiz</span>
+      </a>
+      <p class="text-xs uppercase tracking-[0.28em] text-white/70 mb-3">Construction du quiz</p>
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight" th:text="${quiz.titre}">Titre du Quiz</h1>
+      <p class="text-white/75 mt-3 max-w-2xl" th:text="${quiz.description}"></p>
+    </div>
+
+    <div th:if="${success}" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-2xl relative mb-6 page-enter">
+      <span class="block sm:inline" th:text="${success}"></span>
+    </div>
+
+    <div class="surface-card rounded-[28px] p-6 mb-8 page-enter" style="animation-delay:0.08s;">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="flat-icon"><i class="fa-solid fa-circle-question"></i></span>
+        <h2 class="text-xl font-bold">Ajouter une question</h2>
+      </div>
+      <form th:action="'/professeur/quiz/' + ${quiz.id} + '/question/ajouter'" method="post" th:object="${nouvelleQuestion}">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Texte de la question</label>
+          <textarea th:field="*{texteQuestion}" required rows="2" class="w-full rounded-2xl border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 px-4 py-3 border"></textarea>
+        </div>
+        <button type="submit" class="bg-primary text-white px-5 py-3 rounded-2xl shadow hover:bg-opacity-90 inline-flex items-center gap-2 font-semibold">
+          <i class="fa-solid fa-plus"></i>
+          Ajouter la question
+        </button>
+      </form>
+    </div>
+
+    <div class="space-y-6">
+      <div th:each="question, qStat : ${quiz.questions}" class="surface-card rounded-[28px] overflow-hidden page-enter" th:style="'animation-delay:' + (${qStat.index} * 0.06 + 0.16) + 's'">
+        <div class="p-5 border-b border-gray-100 bg-slate-50/90">
+          <h3 class="font-bold text-lg text-gray-900 flex items-center gap-3">
+            <span class="flat-icon !w-10 !h-10 !rounded-2xl text-sm shrink-0" th:text="${qStat.index + 1}">1</span>
+            <span th:text="${question.texteQuestion}"></span>
+          </h3>
+        </div>
+
+        <div class="p-4">
+          <ul class="space-y-2 mb-4" th:if="${not #lists.isEmpty(question.reponses)}">
+            <li th:each="rep : ${question.reponses}" class="flex items-center gap-3 p-3 rounded-2xl" th:classappend="${rep.estCorrecte} ? 'bg-green-50 text-green-800 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'">
+              <span class="flat-icon !w-9 !h-9 !rounded-xl !bg-white" th:if="${rep.estCorrecte}"><i class="fa-solid fa-check"></i></span>
+              <span class="flat-icon !w-9 !h-9 !rounded-xl !bg-white !text-slate-500" th:unless="${rep.estCorrecte}"><i class="fa-solid fa-xmark"></i></span>
+              <span th:text="${rep.texteReponse}"></span>
+            </li>
+          </ul>
+          <div th:if="${#lists.isEmpty(question.reponses)}" class="text-sm text-gray-400 italic mb-4">
+            Aucune reponse definie pour cette question.
+          </div>
+
+          <form th:action="'/professeur/question/' + ${question.id} + '/reponse/ajouter'" method="post" class="flex flex-col md:flex-row md:items-center gap-4 bg-gray-50 p-4 rounded-[24px] border border-gray-200">
+            <input type="hidden" name="quizId" th:value="${quiz.id}" />
+            <div class="flex-1">
+              <input type="text" name="texteReponse" placeholder="Nouvelle reponse..." required class="w-full rounded-2xl border-gray-300 px-4 py-3 text-sm border focus:border-primary">
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="checkbox" name="estCorrecte" value="true" class="rounded text-primary focus:ring-primary h-4 w-4">
+              <label class="text-sm text-gray-700">Correcte</label>
+            </div>
+            <button type="submit" class="bg-primary text-white px-4 py-3 rounded-2xl shadow hover:bg-blue-900 text-sm inline-flex items-center justify-center gap-2 font-semibold">
+              <i class="fa-solid fa-plus"></i>
+              Ajouter
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</body>
+</html>

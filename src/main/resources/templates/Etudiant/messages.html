@@ -3,24 +3,14 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Messagerie | L'Érudition Augmentée</title>
+    <title>Messagerie | L'Érudition</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
+    <script>
         tailwind.config = {
             darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#003178",
-                        "surface-container-low": "#f2f4f6",
-                        "surface-container-lowest": "#ffffff",
-                        "on-surface": "#191c1e"
-                    },
-                    fontFamily: { "body": ["Inter"] }
-                }
-            }
+            theme: { extend: { colors: { "primary": "#003178" }, fontFamily: { "body": ["Inter"] } } }
         }
     </script>
     <style>
@@ -31,16 +21,15 @@
         .modal-overlay.active { display: flex; }
     </style>
 </head>
-<body class="bg-gray-50 font-body text-on-surface antialiased flex flex-col h-screen overflow-hidden">
+<body class="bg-gray-50 font-body text-gray-900 antialiased flex flex-col h-screen overflow-hidden">
 
 <!-- NavBar -->
-<nav class="w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm flex justify-between items-center px-8 h-16 shrink-0">
+<nav class="w-full z-50 bg-white border-b border-gray-200 shadow-sm flex justify-between items-center px-8 h-16 shrink-0">
     <div class="flex items-center gap-8">
         <span class="text-xl font-black tracking-tighter text-primary">L'Érudition</span>
         <div class="hidden md:flex gap-6">
-            <a class="text-slate-500 hover:bg-slate-50 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="/professeur/dashboard">Tableau de bord</a>
-            <a class="text-slate-500 hover:bg-slate-50 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="/professeur/cours">Cours</a>
-            <a class="text-slate-500 hover:bg-slate-50 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="/professeur/etudiants">Étudiants</a>
+            <a class="text-slate-500 hover:bg-slate-50 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="/etudiant/dashboard">Dashboard</a>
+            <a class="text-slate-500 hover:bg-slate-50 transition-colors px-3 py-2 rounded-lg text-sm font-medium" href="/etudiant/mes-cours">Mes cours</a>
             <a class="text-primary font-bold border-b-2 border-primary px-3 py-2 text-sm" href="/messages">Messages</a>
         </div>
     </div>
@@ -50,27 +39,24 @@
 </nav>
 
 <div class="flex flex-1 overflow-hidden">
-    <!-- Sidebar gauche -->
-    <aside class="hidden md:flex flex-col p-6 gap-4 w-64 bg-[#f2f4f6] shrink-0 border-r border-gray-200">
+    <!-- Sidebar -->
+    <aside class="hidden md:flex flex-col p-6 gap-4 w-64 bg-white shrink-0 border-r border-gray-200">
         <nav class="flex flex-col gap-1 mt-4">
-            <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest" href="/professeur/dashboard">
-                <span class="material-symbols-outlined">dashboard</span> Tableau de bord
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium" href="/etudiant/dashboard">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest" href="/professeur/cours">
-                <span class="material-symbols-outlined">menu_book</span> Cours
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium" href="/etudiant/mes-cours">
+                <span class="material-symbols-outlined">menu_book</span> Mes cours
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-slate-600 hover:text-primary transition-colors text-xs font-bold uppercase tracking-widest" href="/professeur/etudiants">
-                <span class="material-symbols-outlined">groups</span> Étudiants
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 text-primary bg-white rounded-lg shadow-sm text-xs font-bold uppercase tracking-widest" href="/messages">
+            <a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary/10 rounded-lg font-bold text-sm" href="/messages">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span> Messages
             </a>
         </nav>
-        <!-- Bouton Nouveau message -->
+        <!-- Nouveau message -->
         <button onclick="document.getElementById('modalNouveauMessage').classList.add('active')"
-                class="mt-4 flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-3 px-4 text-sm font-bold hover:bg-blue-900 transition-colors shadow-md">
+                class="mt-2 flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-3 px-4 text-sm font-bold hover:bg-blue-900 transition-colors shadow-md">
             <span class="material-symbols-outlined text-sm">edit_square</span>
-            Nouveau message
+            Contacter un prof
         </button>
     </aside>
 
@@ -91,7 +77,7 @@
                      th:classappend="${currentConversationId == conv.id} ? 'bg-white shadow-sm border-l-4 border-primary' : 'hover:bg-white/50'"
                      th:attr="data-href=@{'/messages/' + ${conv.id}}">
                     <div class="shrink-0 flex items-center justify-center w-12 h-12 bg-indigo-100 text-indigo-700 font-bold rounded-lg uppercase"
-                         th:text="${#strings.substring(conv.getOtherParticipantName(userId), 0, 1)}">A</div>
+                         th:text="${#strings.substring(conv.getOtherParticipantName(userId), 0, 1)}">P</div>
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start">
                             <h3 class="font-bold text-sm truncate" th:text="${conv.getOtherParticipantName(userId)}">Nom</h3>
@@ -103,7 +89,7 @@
                 <div th:if="${#lists.isEmpty(conversations)}" class="text-center text-gray-500 py-12 text-sm">
                     <span class="material-symbols-outlined text-4xl text-gray-300 block mb-2">chat</span>
                     Aucune conversation.<br>
-                    <span class="text-primary font-medium cursor-pointer" onclick="document.getElementById('modalNouveauMessage').classList.add('active')">Commencez par écrire à un étudiant ↗</span>
+                    <span class="text-primary font-medium cursor-pointer" onclick="document.getElementById('modalNouveauMessage').classList.add('active')">Écrire à un professeur ↗</span>
                 </div>
             </div>
         </div>
@@ -115,7 +101,7 @@
                 <p class="font-medium">Sélectionnez une conversation</p>
                 <button onclick="document.getElementById('modalNouveauMessage').classList.add('active')"
                         class="mt-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-900 transition-colors">
-                    <span class="material-symbols-outlined text-sm align-middle mr-1">edit_square</span>Nouveau message
+                    <span class="material-symbols-outlined text-sm align-middle mr-1">edit_square</span>Contacter un professeur
                 </button>
             </div>
 
@@ -124,12 +110,12 @@
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold uppercase"
                              th:with="otherName=${currentConversation != null ? currentConversation.getOtherParticipantName(userId) : null}"
-                             th:text="${otherName != null ? #strings.substring(otherName,0,1) : 'U'}">U</div>
+                             th:text="${otherName != null ? #strings.substring(otherName,0,1) : 'P'}">P</div>
                         <div>
                             <h2 class="font-bold text-sm"
                                 th:with="otherName=${currentConversation != null ? currentConversation.getOtherParticipantName(userId) : null}"
                                 th:text="${otherName ?: 'Discussion'}">Discussion</h2>
-                            <p class="text-xs text-slate-400">Étudiant</p>
+                            <p class="text-xs text-slate-400">Professeur</p>
                         </div>
                     </div>
                 </header>
@@ -157,7 +143,7 @@
                     <form th:action="'/messages/' + ${currentConversationId} + '/envoyer'" method="post" class="flex items-center gap-3">
                         <input type="hidden" name="receiverId" th:value="${currentConversation != null ? currentConversation.getOtherParticipantId(userId) : ''}" />
                         <input type="hidden" name="receiverName" th:value="${currentConversation != null ? currentConversation.getOtherParticipantName(userId) : ''}" />
-                        <input type="hidden" name="receiverRole" value="APPRENANT" />
+                        <input type="hidden" name="receiverRole" value="PROFESSEUR" />
                         <input type="text" name="content" required placeholder="Votre message..."
                                class="flex-1 border border-gray-300 rounded-full px-5 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                                autocomplete="off" id="messageInput"/>
@@ -175,24 +161,23 @@
 <div id="modalNouveauMessage" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
         <div class="flex justify-between items-center mb-5">
-            <h2 class="text-lg font-bold">Nouveau message</h2>
-            <button onclick="document.getElementById('modalNouveauMessage').classList.remove('active')"
-                    class="text-gray-400 hover:text-gray-700">
+            <h2 class="text-lg font-bold">Contacter un professeur</h2>
+            <button onclick="document.getElementById('modalNouveauMessage').classList.remove('active')" class="text-gray-400 hover:text-gray-700">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
         <form action="/messages/nouvelle" method="post" class="flex flex-col gap-4">
             <div>
-                <label class="text-sm font-semibold text-gray-700 block mb-1">Destinataire (étudiant)</label>
-                <select name="destinataireId" required
+                <label class="text-sm font-semibold text-gray-700 block mb-1">Professeur</label>
+                <select name="destinataireId" required id="selectProf"
                         class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
-                    <option value="" disabled selected>— Sélectionner un étudiant —</option>
-                    <option th:each="u : ${interlocuteurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom + ' (' + u.email + ')'}">Étudiant</option>
+                    <option value="" disabled selected>— Sélectionner un professeur —</option>
+                    <option th:each="u : ${interlocuteurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom + ' (' + u.email + ')'}">Prof</option>
                 </select>
             </div>
             <div>
                 <label class="text-sm font-semibold text-gray-700 block mb-1">Message</label>
-                <textarea name="content" required rows="4" placeholder="Écrivez votre message..."
+                <textarea name="content" required rows="4" placeholder="Bonjour, j'ai une question concernant..."
                           class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"></textarea>
             </div>
             <div class="flex justify-end gap-3">
@@ -206,7 +191,6 @@
     </div>
 </div>
 
-<!-- Filtrer liste -->
 <script>
     const msgContainer = document.getElementById('messagesContainer');
     if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -223,10 +207,7 @@
     const msgInput = document.getElementById('messageInput');
     if (msgInput) {
         msgInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.closest('form').submit();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.closest('form').submit(); }
         });
     }
 </script>

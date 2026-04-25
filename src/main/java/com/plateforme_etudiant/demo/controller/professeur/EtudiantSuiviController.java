@@ -3,6 +3,7 @@ package com.plateforme_etudiant.demo.controller.professeur;
 import com.plateforme_etudiant.demo.dto.*;
 import com.plateforme_etudiant.demo.model.*;
 import com.plateforme_etudiant.demo.repository.*;
+import com.plateforme_etudiant.demo.service.ProfesseurService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,9 @@ public class EtudiantSuiviController {
     @Autowired
     private ContenuItemRepository contenuItemRepository;
 
+    @Autowired
+    private ProfesseurService professeurService;
+
     // Méthode utilitaire pour récupérer le professeur depuis la session
     private Professeur getProfesseurFromSession(HttpSession session) {
         Long professeurId = (Long) session.getAttribute("professeurId");
@@ -65,7 +69,7 @@ public class EtudiantSuiviController {
             List<Long> coursIds = coursList.stream().map(Cours::getId).collect(Collectors.toList());
 
             if (coursIds.isEmpty()) {
-                model.addAttribute("professeur", professeur);
+                model.addAttribute("professeur", professeurService.getProfesseurById(professeur.getId()));
                 model.addAttribute("etudiants", new ArrayList<>());
                 model.addAttribute("coursList", coursList);
                 model.addAttribute("pageTitle", "Suivi des étudiants");
@@ -121,7 +125,7 @@ public class EtudiantSuiviController {
             // Trier par nom
             etudiantsDTO.sort(Comparator.comparing(EtudiantSuiviDTO::getNomComplet));
 
-            model.addAttribute("professeur", professeur);
+            model.addAttribute("professeur", professeurService.getProfesseurById(professeur.getId()));
             model.addAttribute("etudiants", etudiantsDTO);
             model.addAttribute("coursList", coursList);
             model.addAttribute("pageTitle", "Suivi des étudiants");
@@ -158,62 +162,13 @@ public class EtudiantSuiviController {
 
             if (inscriptions.isEmpty()) {
                 log.warn("Acces refuse au detail etudiant {} pour le professeur {}", etudiantId, professeur.getId());
-                model.addAttribute("professeur", professeur);
+                model.addAttribute("professeur", professeurService.getProfesseurById(professeur.getId()));
                 model.addAttribute("error", "Cet etudiant n'est inscrit a aucun de vos cours.");
                 model.addAttribute("progressionCours", new ArrayList<>());
                 model.addAttribute("statistiques", new StatistiquesEtudiantDTO());
                 model.addAttribute("pageTitle", "Detail etudiant");
                 return "professeur/etudiants/detail";
             }
-
-            // Construire les DTOs de progression par cours
-            List<ProgressionCoursDTO> progressionCours = new ArrayList<>();
-            for (Inscription inscription : inscriptions) {
-                ProgressionCoursDTO dto = new ProgressionCoursDTO();
-                dto.setCoursId(inscription.getCours().getId());
-                dto.setCoursTitre(inscription.getCours().getTitre());
-                dto.setCoursDescriptionCourte(inscription.getCours().getDescriptionCourte());
-                dto.setImageCouverture(inscription.getCours().getImageCouverture());
-
-                // Calculer la progression
-                int progression = calculerProgressionEtudiantCours(etudiantId, inscription.getCours().getId());
-                dto.setProgression(progression);
-
-                // Nombre de contenus complétés / total
-                Long totalContenus = contenuItemRepository.countByCoursId(inscription.getCours().getId());
-                Long contenusCompletes = progressionRepository.countCompletedByApprenantAndCours(etudiantId, inscription.getCours().getId());
-                dto.setContenusCompletes(contenusCompletes != null ? contenusCompletes.intValue() : 0);
-                dto.setContenusTotal(totalContenus != null ? totalContenus.intValue() : 0);
-
-                dto.setDateDernierAcces(inscription.getDateDernierAcces());
-                dto.setEstTermine(inscription.getTermine() != null ? inscription.getTermine() : false);
-
-                progressionCours.add(dto);
-            }
-
-            // Statistiques globales
-            StatistiquesEtudiantDTO statistiques = new StatistiquesEtudiantDTO();
-            statistiques.setTotalCours(inscriptions.size());
-
-            int progressionMoyenne = 0;
-            if (!progressionCours.isEmpty()) {
-                progressionMoyenne = progressionCours.stream()
-                        .mapToInt(ProgressionCoursDTO::getProgression)
-                        .sum() / progressionCours.size();
-            }
-            statistiques.setProgressionMoyenne(progressionMoyenne);
-
-            // Calculer les heures totales étudiées
-            int heuresTotal = calculerHeuresTotalEtudiees(etudiantId, coursIdsProfesseur);
-            statistiques.setTotalHeures(heuresTotal);
-
-            model.addAttribute("professeur", professeur);
-            model.addAttribute("etudiant", etudiant);
-            model.addAttribute("progressionCours", progressionCours);
-            model.addAttribute("statistiques", statistiques);
-            model.addAttribute("pageTitle", "Détail - " + etudiant.getNomComplet());
-
-            log.info("✅ Détail affiché pour {}", etudiant.getNomComplet());
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage(), e);

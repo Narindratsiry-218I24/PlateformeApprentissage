@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
     <title th:text="${pageTitle} ?: 'EduTrack - Espace Professeur'">EduTrack - Espace Professeur</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,39 +22,249 @@
     <link rel="stylesheet" th:href="@{/css/professeur.css}">
 
     <style>
-        /* Tailwind custom configuration */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* Color System */
+        :root {
+            --primary: #003178;
+            --primary-dark: #002155;
+            --primary-light: #1a3a8a;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+            --text-dark: #1e293b;
+        }
+
+        .bg-primary { background-color: var(--primary); }
+        .text-primary { color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+
+        /* Navbar - Fixed at top */
+        .navbar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .navbar-fixed {
+                padding: 0 2rem;
+            }
+        }
+
+        /* Sidebar - Fixed on left */
+        .sidebar-fixed {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            width: 280px;
+            background-color: var(--bg-light);
+            border-right: 1px solid var(--border-color);
+            z-index: 900;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        /* Main content area */
+        .main-content {
+            margin-left: 280px;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Navigation links */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+            background-color: rgba(0, 49, 120, 0.05);
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background-color: var(--bg-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sidebar-fixed {
+                transform: translateX(-100%);
+                width: 100%;
+                transition: transform 0.3s ease;
+                z-index: 950;
+            }
+
+            .sidebar-fixed.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Line clamp utilities */
         .line-clamp-2 {
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
         .line-clamp-3 {
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
+        /* Material icons */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 1.5rem;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        .material-symbols-outlined.sm {
+            font-size: 1.25rem;
+        }
+
+        .material-symbols-outlined.lg {
+            font-size: 2rem;
+        }
     </style>
 </head>
-<body>
-<div class="flex min-h-screen">
-    <!-- Sidebar -->
-    <div th:replace="~{professeur/fragments/sidebar :: sidebar}"></div>
-
-    <!-- Main Content -->
-    <div class="main-content flex-1 flex flex-col">
-        <!-- Header -->
-        <div th:replace="~{professeur/fragments/header :: header}"></div>
-
-        <!-- Page Content -->
-        <main class="flex-1 p-6">
-            <div layout:fragment="content">
-                <!-- Page specific content will be injected here -->
+<body class="bg-light">
+<!-- Navbar -->
+<nav class="navbar-fixed">
+    <div class="flex justify-between items-center flex-1">
+        <div class="flex items-center gap-8">
+            <span class="text-xl font-black tracking-tighter text-primary">L'Érudition</span>
+            <div class="hidden md:flex items-center gap-6">
+                <a href="/professeur/dashboard" class="nav-link">Tableau de bord</a>
+                <a href="/professeur/cours" class="nav-link">Mes cours</a>
+                <a href="/professeur/etudiants" class="nav-link">Étudiants</a>
             </div>
-        </main>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="p-2 text-text-muted hover:bg-bg-light rounded-full transition-colors hidden md:flex">
+                <span class="material-symbols-outlined sm">notifications</span>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden md:block">
+                    <p class="text-sm font-bold text-text-dark" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
+                    <p class="text-xs text-text-muted" th:text="${professeur != null ? professeur.specialite : 'Formateur'}">Formateur</p>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shadow-md text-sm">
+                    <span th:text="${professeur != null ? #strings.substring(professeur.prenom, 0, 1) + #strings.substring(professeur.nom, 0, 1) : 'P'}">P</span>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="sidebar-fixed">
+    <div class="mb-8">
+        <p class="text-xs font-bold uppercase tracking-wider text-text-muted mb-3">Menu Principal</p>
+        <div class="h-px bg-border-color"></div>
+    </div>
+    <nav class="space-y-1">
+        <a href="/professeur/dashboard" class="nav-link">
+            <span class="material-symbols-outlined sm">dashboard</span>
+            <span>Tableau de bord</span>
+        </a>
+        <a href="/professeur/cours" class="nav-link">
+            <span class="material-symbols-outlined sm">menu_book</span>
+            <span>Mes cours</span>
+        </a>
+        <a href="/professeur/etudiants" class="nav-link">
+            <span class="material-symbols-outlined sm">groups</span>
+            <span>Étudiants</span>
+        </a>
+        <a href="/messages" class="nav-link">
+            <span class="material-symbols-outlined sm">chat</span>
+            <span>Messagerie</span>
+        </a>
+        <div class="pt-8 mt-8 border-t border-border-color">
+            <a href="/logout" class="nav-link text-red-600 hover:text-red-700 hover:bg-red-50">
+                <span class="material-symbols-outlined sm">logout</span>
+                <span>Déconnexion</span>
+            </a>
+        </div>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="p-4 md:p-8">
+        <div layout:fragment="content">
+            <!-- Page specific content will be injected here -->
+        </div>
+    </div>
+</main>
 
 <!-- Custom JavaScript -->
 <script th:src="@{/js/professeur.js}"></script>
