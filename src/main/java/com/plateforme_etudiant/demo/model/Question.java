@@ -3,15 +3,16 @@ package com.plateforme_etudiant.demo.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "question")
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class Question {
@@ -29,7 +30,7 @@ public class Question {
     private Quiz quiz;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reponse> reponses = new ArrayList<>();
+    private Set<Reponse> reponses = new LinkedHashSet<>();
 
     public Long getId() {
         return id;
@@ -55,11 +56,11 @@ public class Question {
         this.quiz = quiz;
     }
 
-    public List<Reponse> getReponses() {
+    public Set<Reponse> getReponses() {
         return reponses;
     }
 
-    public void setReponses(List<Reponse> reponses) {
+    public void setReponses(Set<Reponse> reponses) {
         this.reponses = reponses;
     }
 }

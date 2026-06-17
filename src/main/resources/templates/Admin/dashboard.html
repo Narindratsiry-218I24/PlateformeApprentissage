@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head>
+    <title>Dashboard Admin</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div th:with="currentPage='dashboard'"></div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center">
+                    <i class="fi fi-br-student text-indigo-600 text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">TOTAL</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-1" th:text="${countEtudiants}">0</h3>
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Étudiants</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center">
+                    <i class="fi fi-br-chalkboard-user text-emerald-600 text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">ACTIFS</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-1" th:text="${countProfesseurs}">0</h3>
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Professeurs</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
+                    <i class="fi fi-br-book-alt text-amber-600 text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">PUBLIÉS</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-1" th:text="${countCours}">0</h3>
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Cours</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center">
+                    <i class="fi fi-br-check-circle text-rose-600 text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-full">INSCRITS</span>
+            </div>
+            <h3 class="text-3xl font-black text-slate-900 mb-1" th:text="${countInscriptions}">0</h3>
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Inscriptions</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                <i class="fi fi-sr-bolt text-amber-500"></i>
+                Actions Rapides
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="/admin/professeurs" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all group">
+                    <i class="fi fi-br-plus text-indigo-500 mb-2 block group-hover:scale-110 transition-transform"></i>
+                    <p class="text-sm font-bold text-slate-800">Ajouter Professeur</p>
+                </a>
+                <a href="/admin/etudiants" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all group">
+                    <i class="fi fi-br-plus text-indigo-500 mb-2 block group-hover:scale-110 transition-transform"></i>
+                    <p class="text-sm font-bold text-slate-800">Inscrire Étudiant</p>
+                </a>
+                <a href="/admin/suivi" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all group">
+                    <i class="fi fi-br-stats text-indigo-500 mb-2 block group-hover:scale-110 transition-transform"></i>
+                    <p class="text-sm font-bold text-slate-800">Voir Rapports</p>
+                </a>
+                <a href="/" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition-all group">
+                    <i class="fi fi-br-arrow-right text-indigo-500 mb-2 block group-hover:scale-110 transition-transform"></i>
+                    <p class="text-sm font-bold text-slate-800">Aller au Site</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                <i class="fi fi-sr-info text-blue-500"></i>
+                Infos Système
+            </h2>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                    <span class="text-sm font-bold text-slate-600">Version</span>
+                    <span class="text-sm font-black text-slate-900">v0.0.1-STABLE</span>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                    <span class="text-sm font-bold text-slate-600">Base de données</span>
+                    <span class="text-sm font-black text-emerald-600 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        Connectée
+                    </span>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                    <span class="text-sm font-bold text-slate-600">Serveur Web</span>
+                    <span class="text-sm font-black text-emerald-600 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                        Opérationnel
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Création Compte Universel -->
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mt-8">
+        <h2 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+            <span class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
+                <i class="fi fi-br-user-add text-white text-sm"></i>
+            </span>
+            Créer un Compte (Admin)
+            <span class="ml-2 text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">ADMIN / ÉTUDIANT / PROFESSEUR</span>
+        </h2>
+
+        <!-- Messages flash -->
+        <div th:if="${success}" class="mb-5 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-sm font-medium" th:text="${success}"></div>
+        <div th:if="${error}"   class="mb-5 p-4 bg-red-50    border border-red-200    rounded-2xl text-red-800    text-sm font-medium" th:text="${error}"></div>
+
+        <form th:action="@{/admin/utilisateurs/creer}" method="post">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                <!-- Rôle -->
+                <div class="lg:col-span-3">
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Rôle du compte</label>
+                    <select name="role" id="roleSelect" onchange="toggleProfFields(this.value)" required
+                            class="w-full md:w-64 px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none font-bold text-slate-700 bg-slate-50">
+                        <option value="APPRENANT"> Étudiant (Apprenant)</option>
+                        <option value="PROFESSEUR">‍ Professeur</option>
+                        <option value="ADMINISTRATEUR">️ Administrateur</option>
+                    </select>
+                </div>
+
+                <!-- Prénom -->
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Prénom</label>
+                    <input type="text" name="prenom" required placeholder="Jean" minlength="2"
+                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                </div>
+
+                <!-- Nom -->
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nom</label>
+                    <input type="text" name="nom" required placeholder="Dupont" minlength="2"
+                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                </div>
+
+                <!-- Nom d'utilisateur -->
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nom d'utilisateur</label>
+                    <input type="text" name="nomUtilisateur" required placeholder="jean_dupont" minlength="3"
+                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Email</label>
+                    <input type="email" name="email" required placeholder="jean@exemple.mg"
+                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                </div>
+
+                <!-- Mot de passe -->
+                <div>
+                    <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Mot de passe</label>
+                    <input type="password" name="motDePasse" required placeholder="Min. 6 caractères" minlength="6"
+                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                </div>
+
+                <!-- Champs Professeur (masqués par défaut) -->
+                <div id="profFields" class="lg:col-span-3 hidden grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Spécialité</label>
+                        <input type="text" name="specialite" placeholder="ex: Mathématiques, Informatique"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Biographie</label>
+                        <input type="text" name="bio" placeholder="Courte description du professeur"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-indigo-400 outline-none bg-slate-50"/>
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="mt-6 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition-all flex items-center gap-2">
+                <i class="fi fi-br-user-add"></i>
+                Créer le Compte
+            </button>
+        </form>
+    </div>
+
+</div>
+<script>
+function toggleProfFields(role) {
+    const profFields = document.getElementById('profFields');
+    if (role === 'PROFESSEUR') {
+        profFields.classList.remove('hidden');
+    } else {
+        profFields.classList.add('hidden');
+    }
+}
+</script>
+</body>
+</html>

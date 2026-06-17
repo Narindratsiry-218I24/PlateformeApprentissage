@@ -3,420 +3,363 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>L'Erudition | Plateforme de Formation</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+  <title>L'Érudition | Plateforme de Formation Moderne</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            secondary: '#ca8a04',
+            accent: {
+              green: '#10b981',
+              blue: '#3b82f6',
+            },
+            surface: {
+              low: '#f8fafc',
+              dim: '#e2e8f0',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            headline: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          borderRadius: {
+            'card': '1.5rem',
+          },
+          animation: {
+            'bounce-slow': 'bounce 3s infinite',
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    /* Flat Design - No gradients, solid colors */
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
     :root {
-      --color-primary: #1e3a8a;    /* Bleu marine */
-      --color-secondary: #ca8a04;   /* Or/Dore */
-      --color-accent: #f8fafc;      /* Blanc casse */
+      --color-primary: #2563eb;
+      --color-secondary: #ca8a04;
+    }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
     }
     
-    .flat-btn {
-      background: var(--color-primary);
-      border: none;
-      border-radius: 4px;
-      padding: 12px 24px;
-      color: white;
-      font-weight: 600;
-      transition: all 0.2s ease;
-    }
+    .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; opacity: 0; }
+    .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+    .animate-slide-left { animation: slideInLeft 0.8s ease-out forwards; opacity: 0; }
     
-    .flat-btn:hover {
-      background: #172554;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
-    }
-    
-    .flat-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-      transition: all 0.2s ease;
-    }
-    
-    .flat-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-      transform: translateY(-2px);
-    }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    .delay-500 { animation-delay: 0.5s; }
     
     .hero-bg {
-      background: var(--color-primary);
+      background: #2563eb;
+      position: relative;
+      overflow: hidden;
     }
-    
-    .category-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #eff6ff;
+    .hero-curve {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      overflow: hidden;
+      line-height: 0;
     }
-    
-    .category-icon i {
-      color: var(--color-primary);
-      font-size: 24px;
+    .hero-curve svg {
+      position: relative;
+      display: block;
+      width: calc(100% + 1.3px);
+      height: 120px;
+    }
+    .hero-curve .shape-fill {
+      fill: #f8fafc;
     }
   </style>
 </head>
-<body class="bg-slate-50 font-sans">
-<!-- Header -->
+<body class="bg-surface-low text-slate-900">
+
+<!-- Header / Navigation -->
 <header class="hero-bg text-white">
-  <nav class="max-w-7xl mx-auto px-6 py-4">
+  <nav class="max-w-screen-2xl mx-auto px-8 py-6 relative z-50">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <i class="fas fa-graduation-cap text-xl" style="color: var(--color-primary)"></i>
+        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+          <i class="fas fa-graduation-cap text-primary text-2xl"></i>
         </div>
-        <span class="text-xl font-bold">L'Erudition</span>
+        <span class="text-2xl font-black tracking-tighter">L'Érudition</span>
       </div>
       
-      <div class="hidden md:flex items-center gap-8">
-        <a th:href="@{/}" class="text-white/90 hover:text-white transition-colors">Accueil</a>
-        <a th:href="@{/cours}" class="text-white/90 hover:text-white transition-colors">Cours</a>
-        <a href="#" class="text-white/90 hover:text-white transition-colors">A propos</a>
-        <a href="#" class="text-white/90 hover:text-white transition-colors">Contact</a>
+      <div class="hidden lg:flex items-center gap-10">
+        <a th:href="@{/}" class="text-white font-bold hover:text-accent-green transition-colors">Accueil</a>
+        <a th:href="@{/etudiant/catalogue}" class="text-white/80 font-semibold hover:text-white transition-colors">Catalogue</a>
+        <a href="#propos" class="text-white/80 font-semibold hover:text-white transition-colors">À propos</a>
+        <a href="#contact" class="text-white/80 font-semibold hover:text-white transition-colors">Contact</a>
       </div>
       
-      <div class="flex items-center gap-4">
-        <a th:href="@{/login}" class="text-white hover:text-white transition-colors">Connexion</a>
-        <a th:href="@{/inscription}" class="flat-btn">S'inscrire</a>
+      <div class="flex items-center gap-6">
+        <a th:href="@{/login}" class="hidden sm:block text-white font-bold hover:text-accent-green transition-colors">Connexion</a>
+        <a th:href="@{/inscription}" class="px-8 py-3.5 bg-white text-primary rounded-2xl font-black shadow-xl hover:bg-slate-50 transition-all transform hover:-translate-y-1">
+          S'INSCRIRE
+        </a>
       </div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <div class="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
-    <div class="space-y-6">
-      <h1 class="text-5xl font-bold leading-tight">
-        Developpez vos competences avec nos formations
+  <div class="max-w-screen-2xl mx-auto px-8 relative z-40">
+    <div th:if="${error}" class="mb-6 mt-2 bg-red-50/95 text-red-800 border border-red-200 rounded-2xl px-6 py-4 font-bold backdrop-blur">
+      <i class="fas fa-triangle-exclamation mr-2"></i><span th:text="${error}">Erreur</span>
+    </div>
+    <div th:if="${success}" class="mb-6 mt-2 bg-emerald-50/95 text-emerald-800 border border-emerald-200 rounded-2xl px-6 py-4 font-bold backdrop-blur">
+      <i class="fas fa-check-circle mr-2"></i><span th:text="${success}">Succès</span>
+    </div>
+  </div>
+
+  <!-- Hero Content -->
+  <div class="max-w-screen-2xl mx-auto px-8 pt-20 pb-40 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+    <div class="space-y-10">
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full backdrop-blur-md border border-white/20">
+        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+        <span class="text-xs font-black uppercase tracking-widest text-white/80">Nouvelle session disponible</span>
+      </div>
+      <h1 class="text-6xl md:text-8xl font-black leading-[1.05] tracking-tighter">
+        Apprenez sans <br/>
+        <span class="text-accent-green italic">limites.</span>
       </h1>
-      <p class="text-lg text-white/80 max-w-lg">
-        Accedez a des cours de qualite dispenses par des experts. Rejoignez notre plateforme d'apprentissage moderne.
+      <p class="text-xl text-white/70 max-w-lg leading-relaxed font-medium">
+        Rejoignez une élite académique et maîtrisez les compétences de demain avec nos parcours d'excellence.
       </p>
-      <div class="flex gap-4">
-        <a th:href="@{/inscription}" class="flat-btn">
-          <i class="fas fa-user-plus mr-2"></i>Commencer
+      <div class="flex flex-wrap gap-6">
+        <a th:href="@{/inscription}" class="px-10 py-5 bg-accent-green hover:bg-emerald-600 text-primary font-black rounded-3xl transition-all shadow-2xl shadow-accent-green/20 transform hover:-translate-y-1">
+          COMMENCER GRATUITEMENT
         </a>
-        <a th:href="@{/cours}" class="px-6 py-3 border border-white/30 rounded hover:bg-white/10 transition-colors">
-          <i class="fas fa-play mr-2"></i>Voir les cours
+        <a th:href="@{/etudiant/catalogue}" class="px-10 py-5 border-2 border-white/30 text-white hover:bg-white/10 rounded-3xl font-black transition-all backdrop-blur-sm">
+          VOIR LES COURS
         </a>
       </div>
-      <div class="flex gap-8 pt-4">
-        <div class="text-center">
-          <p class="text-3xl font-bold" style="color: var(--color-secondary)">12000+</p>
-          <p class="text-sm text-white/70">Etudiants</p>
+      <div class="flex items-center gap-12 pt-8 text-sm text-white/60">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-users text-green-500"></i>
+          <span class="font-bold uppercase tracking-widest text-[10px]">12M+ Etudiants</span>
         </div>
-        <div class="text-center">
-          <p class="text-3xl font-bold" style="color: var(--color-secondary)">500+</p>
-          <p class="text-sm text-white/70">Cours</p>
-        </div>
-        <div class="text-center">
-          <p class="text-3xl font-bold" style="color: var(--color-secondary)">50+</p>
-          <p class="text-sm text-white/70">Formateurs</p>
+        <div class="flex items-center gap-3">
+          <i class="fas fa-book text-green-500"></i>
+          <span class="font-bold uppercase tracking-widest text-[10px]">60K+ Modules</span>
         </div>
       </div>
     </div>
     
-    <div class="relative hidden md:block">
-      <div class="w-full max-w-md mx-auto">
-        <img alt="Education" class="w-full rounded-lg shadow-2xl" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800"/>
-      </div>
-    </div>
-  </div>
-</header>
-
-<!-- Partners -->
-<section class="py-12 bg-white border-b">
-  <div class="max-w-7xl mx-auto px-6">
-    <p class="text-center text-slate-500 text-sm mb-8">Nos partenaires</p>
-    <div class="flex flex-wrap justify-center items-center gap-12 opacity-50">
-      <i class="fab fa-google text-4xl"></i>
-      <i class="fab fa-microsoft text-4xl"></i>
-      <i class="fab fa-amazon text-4xl"></i>
-      <i class="fab fa-apple text-4xl"></i>
-      <i class="fab fa-meta text-4xl"></i>
-    </div>
-  </div>
-</section>
-
-<!-- Categories -->
-<section class="py-16 bg-slate-50">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl font-bold text-slate-900 mb-3">Nos Categories</h2>
-      <p class="text-slate-600">Decouvrez nos domaines de formation</p>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-      <div class="flat-card p-6 text-center cursor-pointer">
-        <div class="category-icon mx-auto mb-4">
-          <i class="fas fa-palette"></i>
-        </div>
-        <h3 class="font-semibold mb-1">Design</h3>
-        <p class="text-xs text-slate-500">8 cours</p>
-      </div>
-      <div class="flat-card p-6 text-center cursor-pointer">
-        <div class="category-icon mx-auto mb-4">
-          <i class="fas fa-code"></i>
-        </div>
-        <h3 class="font-semibold mb-1">Programmation</h3>
-        <p class="text-xs text-slate-500">25 cours</p>
-      </div>
-      <div class="flat-card p-6 text-center cursor-pointer">
-        <div class="category-icon mx-auto mb-4">
-          <i class="fas fa-chart-line"></i>
-        </div>
-        <h3 class="font-semibold mb-1">Marketing</h3>
-        <p class="text-xs text-slate-500">12 cours</p>
-      </div>
-      <div class="flat-card p-6 text-center cursor-pointer">
-        <div class="category-icon mx-auto mb-4">
-          <i class="fas fa-brain"></i>
-        </div>
-        <h3 class="font-semibold mb-1">IA & Data</h3>
-        <p class="text-xs text-slate-500">10 cours</p>
-      </div>
-      <div class="flat-card p-6 text-center cursor-pointer">
-        <div class="category-icon mx-auto mb-4">
-          <i class="fas fa-coins"></i>
-        </div>
-        <h3 class="font-semibold mb-1">Finance</h3>
-        <p class="text-xs text-slate-500">6 cours</p>
-      </div>
-      <div class="flat-card p-6 text-center cursor-pointer">
-        <div class="category-icon mx-auto mb-4">
-          <i class="fas fa-comments"></i>
-        </div>
-        <h3 class="font-semibold mb-1">Communication</h3>
-        <p class="text-xs text-slate-500">5 cours</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="bg-slate-900 text-white py-12">
-  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
-    <div>
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <i class="fas fa-graduation-cap text-xl" style="color: var(--color-primary)"></i>
-        </div>
-        <span class="text-xl font-bold">L'Erudition</span>
-      </div>
-      <p class="text-slate-400 text-sm">
-        Plateforme d'apprentissage en ligne pour developper vos competences.
-      </p>
-    </div>
-    <div>
-      <h4 class="font-semibold mb-4">Liens utiles</h4>
-      <ul class="space-y-2 text-sm text-slate-400">
-        <li><a th:href="@{/cours}" class="hover:text-white">Cours</a></li>
-        <li><a href="#" class="hover:text-white">A propos</a></li>
-        <li><a href="#" class="hover:text-white">Contact</a></li>
-      </ul>
-    </div>
-    <div>
-      <h4 class="font-semibold mb-4">Legal</h4>
-      <ul class="space-y-2 text-sm text-slate-400">
-        <li><a href="#" class="hover:text-white">Confidentialite</a></li>
-        <li><a href="#" class="hover:text-white">Conditions</a></li>
-      </ul>
-    </div>
-    <div>
-      <h4 class="font-semibold mb-4">Newsletter</h4>
-      <div class="flex">
-        <input class="bg-slate-800 border-none rounded-l px-4 py-2 text-sm w-full" placeholder="Votre email" type="email"/>
-        <button class="bg-yellow-600 px-4 py-2 rounded-r hover:bg-yellow-700 transition-colors">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="max-w-7xl mx-auto px-6 mt-8 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-    <p>2024 L'Erudition. Tous droits reserves.</p>
-  </div>
-</footer>
-</body>
-</html>
-      </div>
-      <div class="flex items-center space-x-6">
-        <button class="text-white/80 hover:text-white"><span class="material-symbols-outlined">search</span></button>
-        <a th:href="@{/login}" class="px-6 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition-colors font-semibold">Connexion</a>
-        <a th:href="@{/inscription}" class="px-6 py-2 bg-primary rounded-lg hover:bg-indigo-600 transition-colors font-semibold">S'inscrire</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero Content -->
-  <div class="max-w-screen-2xl mx-auto px-8 pt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-    <div class="space-y-8">
-      <h1 class="text-6xl md:text-7xl font-extrabold leading-[1.1] tracking-tight font-headline">
-        Apprenez de nouvelles compétences en ligne avec le <br/>
-        <span class="text-accent-green">Savoir Moderne</span>
-      </h1>
-      <p class="text-lg text-white/70 max-w-lg">
-        Développez vos compétences avec des cours, des certificats et des diplômes en ligne provenant d'universités et d'entreprises de classe mondiale.
-      </p>
-      <div class="flex flex-wrap gap-4">
-        <a th:href="@{/inscription}" class="px-8 py-4 bg-primary hover:bg-indigo-600 rounded-lg font-bold transition-all shadow-lg shadow-primary/20">
-          S'inscrire gratuitement
-        </a>
-        <a th:href="@{/cours}" class="px-8 py-4 border border-accent-green text-accent-green hover:bg-accent-green/10 rounded-lg font-bold transition-all">
-          Voir les cours
-        </a>
-      </div>
-      <div class="flex items-center gap-8 pt-4 text-sm text-white/60">
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">school</span>
-          Plus de 12 millions d'étudiants
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">play_circle</span>
-          Plus de 60 000 cours
-        </div>
-      </div>
-    </div>
     <!-- Hero Decorative Images -->
     <div class="relative hidden lg:block h-[600px]">
-      <div class="absolute top-0 right-0 w-[400px] h-[500px] rounded-2xl overflow-hidden border-8 border-white/5 shadow-2xl">
-        <img alt="Portrait" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800"/>
+      <div class="absolute top-0 right-0 w-[450px] h-[550px] rounded-[3rem] overflow-hidden border-[12px] border-white/5 shadow-2xl transform rotate-3">
+        <img alt="Portrait" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800"/>
       </div>
-      <div class="absolute bottom-10 left-10 w-[240px] h-[300px] rounded-2xl overflow-hidden border-8 border-white/5 shadow-2xl z-20">
+      <div class="absolute -bottom-10 left-0 w-[280px] h-[350px] rounded-[2.5rem] overflow-hidden border-[10px] border-white/10 shadow-2xl z-20 transform -rotate-6">
         <img alt="Student" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600"/>
       </div>
-      <!-- Floating Cards -->
-      <div class="absolute top-20 right-[350px] bg-white text-slate-900 p-4 rounded-xl shadow-2xl z-30 flex items-center gap-3 animate-bounce-slow">
-        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
-          <span class="material-symbols-outlined">star</span>
+      
+      <!-- Floating Badges -->
+      <div class="absolute top-20 left-20 bg-white text-slate-900 p-5 rounded-3xl shadow-2xl z-30 flex items-center gap-4 animate-bounce-slow border border-slate-100">
+        <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600">
+          <i class="fas fa-check-circle text-xl"></i>
         </div>
         <div>
-          <p class="text-sm font-bold">3,000+</p>
-          <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Cours Gratuits</p>
+          <p class="text-xl font-black leading-none">Certifié</p>
+          <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black mt-1">Établissement reconnu</p>
         </div>
       </div>
     </div>
   </div>
+  
   <!-- Decorative Curve -->
   <div class="hero-curve">
-    <svg data-name="Layer 1" preserveaspectratio="none" viewbox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg">
+    <svg data-name="Layer 1" preserveAspectRatio="none" viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg">
       <path class="shape-fill" d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z"></path>
     </svg>
   </div>
 </header>
 
 <!-- Partners Section -->
-<section class="py-16 bg-white">
+<section class="py-24 bg-surface-low">
   <div class="max-w-screen-2xl mx-auto px-8">
-    <p class="text-center text-slate-500 font-medium mb-12">Approuvé par les meilleurs mondiaux</p>
-    <div class="flex flex-wrap justify-center items-center gap-12 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all">
-      <img alt="partner" class="h-6" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png"/>
-      <img alt="partner" class="h-6" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Microsoft_logo.svg/2560px-Microsoft_logo.svg.png"/>
-      <img alt="partner" class="h-8" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png"/>
-      <img alt="partner" class="h-6" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png"/>
-      <img alt="partner" class="h-6" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png"/>
+    <p class="text-center text-slate-400 font-black uppercase tracking-[0.4em] text-[10px] mb-16">Propulsé par les leaders mondiaux</p>
+    <div class="flex flex-wrap justify-center items-center gap-16 md:gap-32 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
+      <img alt="partner" class="h-8" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/2560px-Amazon_logo.svg.png"/>
+      <img alt="partner" class="h-8" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Microsoft_logo.svg/2560px-Microsoft_logo.svg.png"/>
+      <img alt="partner" class="h-10" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png"/>
+      <img alt="partner" class="h-8" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png"/>
+      <img alt="partner" class="h-10" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png"/>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Courses Section -->
+<section id="cours" class="py-32 bg-white">
+  <div class="max-w-screen-2xl mx-auto px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+      <div class="space-y-4">
+        <p class="text-accent-green font-black uppercase tracking-widest text-xs">Excellence académique</p>
+        <h2 class="text-5xl font-black tracking-tighter">Nos Cours Populaires</h2>
+      </div>
+      <a th:href="@{/etudiant/catalogue}" class="inline-flex items-center gap-3 text-primary font-black group">
+        VOIR TOUT LE CATALOGUE
+        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div th:each="cours : ${derniersCours}" class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all group border border-slate-100 flex flex-col">
+        <div class="relative h-64 overflow-hidden">
+          <img th:src="${cours.imageCouverture != null ? cours.imageCouverture : 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600'}" 
+               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Course thumbnail"/>
+          <div class="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest text-primary uppercase" th:text="${cours.categorie != null ? cours.categorie.nom : 'Général'}">
+            INFORMATIQUE
+          </div>
+        </div>
+        <div class="p-8 flex flex-col flex-1">
+          <h3 class="text-2xl font-black mb-4 leading-tight group-hover:text-primary transition-colors" th:text="${cours.titre}">Titre du cours</h3>
+          <p class="text-slate-400 font-medium text-sm mb-8 line-clamp-2" th:text="${cours.descriptionCourte}">Description du cours...</p>
+          <div class="mt-auto pt-8 border-t border-slate-50 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
+                <i class="fas fa-user-tie text-slate-300 text-xs"></i>
+              </div>
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-widest" th:text="${cours.professeur != null ? cours.professeur.nomComplet : 'Professeur'}">Professeur</span>
+            </div>
+            <a th:href="@{/login}" class="text-primary font-black text-sm group-hover:translate-x-1 transition-transform">Explorer</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- Top Categories -->
-<section class="py-24 bg-surface-low">
+<section id="propos" class="py-32 bg-surface-low rounded-[4rem] mx-4 shadow-sm border border-slate-100">
   <div class="max-w-screen-2xl mx-auto px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-4xl font-bold font-headline mb-4">Meilleures Catégories</h2>
-      <p class="text-slate-500">Explorez nos domaines les plus demandés.</p>
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+      <div class="space-y-4">
+        <p class="text-accent-green font-black uppercase tracking-widest text-xs">Explorer le savoir</p>
+        <h2 class="text-5xl font-black tracking-tighter">Nos Filières d'Excellence</h2>
+      </div>
+      <a th:href="@{/etudiant/catalogue}" class="inline-flex items-center gap-3 text-primary font-black group">
+        VOIR TOUTES LES CATÉGORIES
+        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_forward</span>
+      </a>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow text-center group cursor-pointer">
-        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary transition-colors">
-          <span class="material-symbols-outlined text-primary group-hover:text-white">palette</span>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="bg-surface-low p-10 rounded-[2.5rem] hover:shadow-2xl hover:shadow-primary/5 transition-all group cursor-pointer border border-transparent hover:border-primary/10">
+        <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-8 group-hover:bg-primary transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-primary text-4xl group-hover:text-white">code</span>
         </div>
-        <h3 class="font-bold mb-1">Design Graphique</h3>
-        <p class="text-xs text-slate-400">5 Cours</p>
+        <h3 class="text-2xl font-black mb-2">Informatique</h3>
+        <p class="text-slate-400 font-medium mb-6">Développement, Cloud et Cyber-sécurité.</p>
+        <p class="text-xs font-black text-primary tracking-widest">25 MODULES</p>
       </div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow text-center group cursor-pointer">
-        <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary transition-colors">
-          <span class="material-symbols-outlined text-purple-600 group-hover:text-white">trending_up</span>
+      
+      <div class="bg-surface-low p-10 rounded-[2.5rem] hover:shadow-2xl hover:shadow-primary/5 transition-all group cursor-pointer border border-transparent hover:border-primary/10">
+        <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-8 group-hover:bg-primary transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-primary text-4xl group-hover:text-white">psychology</span>
         </div>
-        <h3 class="font-bold mb-1">Marketing</h3>
-        <p class="text-xs text-slate-400">12 Cours</p>
+        <h3 class="text-2xl font-black mb-2">IA & Data</h3>
+        <p class="text-slate-400 font-medium mb-6">Machine Learning et Analyse Prédictive.</p>
+        <p class="text-xs font-black text-primary tracking-widest">12 MODULES</p>
       </div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow text-center group cursor-pointer">
-        <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary transition-colors">
-          <span class="material-symbols-outlined text-green-600 group-hover:text-white">code</span>
+
+      <div class="bg-surface-low p-10 rounded-[2.5rem] hover:shadow-2xl hover:shadow-primary/5 transition-all group cursor-pointer border border-transparent hover:border-primary/10">
+        <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-8 group-hover:bg-primary transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-primary text-4xl group-hover:text-white">palette</span>
         </div>
-        <h3 class="font-bold mb-1">Informatique</h3>
-        <p class="text-xs text-slate-400">25 Cours</p>
+        <h3 class="text-2xl font-black mb-2">Design</h3>
+        <p class="text-slate-400 font-medium mb-6">UX/UI et Direction Artistique.</p>
+        <p class="text-xs font-black text-primary tracking-widest">18 MODULES</p>
       </div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow text-center group cursor-pointer">
-        <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary transition-colors">
-          <span class="material-symbols-outlined text-orange-600 group-hover:text-white">psychology</span>
+
+      <div class="bg-surface-low p-10 rounded-[2.5rem] hover:shadow-2xl hover:shadow-primary/5 transition-all group cursor-pointer border border-transparent hover:border-primary/10">
+        <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-8 group-hover:bg-primary transition-colors shadow-sm">
+          <span class="material-symbols-outlined text-primary text-4xl group-hover:text-white">trending_up</span>
         </div>
-        <h3 class="font-bold mb-1">IA &amp; Data</h3>
-        <p class="text-xs text-slate-400">8 Cours</p>
-      </div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow text-center group cursor-pointer">
-        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary transition-colors">
-          <span class="material-symbols-outlined text-red-600 group-hover:text-white">payments</span>
-        </div>
-        <h3 class="font-bold mb-1">Finance</h3>
-        <p class="text-xs text-slate-400">10 Cours</p>
-      </div>
-      <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow text-center group cursor-pointer">
-        <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-primary transition-colors">
-          <span class="material-symbols-outlined text-pink-600 group-hover:text-white">record_voice_over</span>
-        </div>
-        <h3 class="font-bold mb-1">Communication</h3>
-        <p class="text-xs text-slate-400">6 Cours</p>
+        <h3 class="text-2xl font-black mb-2">Marketing</h3>
+        <p class="text-slate-400 font-medium mb-6">Stratégie digitale et Growth Hacking.</p>
+        <p class="text-xs font-black text-primary tracking-widest">15 MODULES</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Footer -->
-<footer class="bg-slate-900 text-white py-16">
-  <div class="max-w-screen-2xl mx-auto px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
-    <div class="space-y-6">
-      <div class="text-2xl font-bold tracking-tight font-headline flex items-center gap-2">
-        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-          <span class="material-symbols-outlined text-white text-xl">school</span>
+<footer class="bg-primary text-white pt-32 pb-16 mt-20 relative overflow-hidden">
+  <div class="absolute top-0 left-0 w-full h-1 bg-accent-green"></div>
+  <div class="max-w-screen-2xl mx-auto px-8 grid grid-cols-1 md:grid-cols-4 gap-20 relative z-10">
+    <div class="space-y-8 col-span-1 md:col-span-2">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary font-bold">school</span>
         </div>
-        <span>L'Érudition</span>
+        <span class="text-3xl font-black tracking-tighter">L'Érudition</span>
       </div>
-      <p class="text-slate-400 text-sm leading-relaxed">
+      <p class="text-white/60 text-lg max-w-md leading-relaxed font-medium">
         Redéfinir les standards de l'éducation en ligne avec une approche moderne et académique.
       </p>
-    </div>
-    <div>
-      <h4 class="font-bold mb-6">Explorer</h4>
-      <ul class="space-y-4 text-slate-400 text-sm">
-        <li><a th:href="@{/cours}" class="hover:text-white transition-colors">Tous les cours</a></li>
-        <li><a href="#" class="hover:text-white transition-colors">Parcours de carrière</a></li>
-        <li><a href="#" class="hover:text-white transition-colors">Pour Entreprises</a></li>
-      </ul>
-    </div>
-    <div>
-      <h4 class="font-bold mb-6">Légal</h4>
-      <ul class="space-y-4 text-slate-400 text-sm">
-        <li><a href="#" class="hover:text-white transition-colors">Confidentialité</a></li>
-        <li><a href="#" class="hover:text-white transition-colors">Conditions</a></li>
-      </ul>
-    </div>
-    <div>
-      <h4 class="font-bold mb-6">S'abonner</h4>
-      <div class="flex gap-2">
-        <input class="bg-white/5 border-none rounded-lg px-4 py-2 w-full text-sm focus:ring-1 focus:ring-primary" placeholder="Votre email" type="email"/>
-        <button class="bg-primary px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
-          <span class="material-symbols-outlined text-sm">send</span>
-        </button>
+      <div class="flex gap-6">
+        <a href="#" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-accent-green transition-colors">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="#" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-accent-green transition-colors">
+          <i class="fab fa-twitter"></i>
+        </a>
       </div>
-      <p class="text-[10px] text-slate-500 mt-4">© 2024 L'Érudition Augmentée.</p>
+    </div>
+    
+    <div>
+      <h4 class="text-sm font-black uppercase tracking-[0.3em] mb-10 text-accent-green">Explorer</h4>
+      <ul class="space-y-6 text-white/70 font-bold">
+        <li><a th:href="@{/etudiant/catalogue}" class="hover:text-white transition-colors">Tous les cours</a></li>
+        <li><a href="#" class="hover:text-white transition-colors">Parcours carrière</a></li>
+        <li><a href="#" class="hover:text-white transition-colors">Entreprises</a></li>
+      </ul>
+    </div>
+    
+    <div id="contact">
+      <h4 class="text-sm font-black uppercase tracking-[0.3em] mb-10 text-accent-green">Contact</h4>
+      <ul class="space-y-6 text-white/70 font-bold">
+        <li class="flex items-center gap-3">
+          <i class="fas fa-envelope text-accent-green"></i>
+          <a href="mailto:contact@lerudition.com" class="hover:text-white transition-colors">contact@lerudition.com</a>
+        </li>
+        <li class="flex items-center gap-3">
+          <i class="fas fa-phone text-accent-green"></i>
+          <span>+261 34 00 000 00</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="max-w-screen-2xl mx-auto px-8 mt-32 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+    <p class="text-white/40 text-xs font-bold uppercase tracking-widest">© 2026 L'Érudition Augmentée. Tous droits réservés.</p>
+    <div class="flex gap-10 text-white/40 text-xs font-bold uppercase tracking-widest">
+      <a href="#" class="hover:text-white transition-colors">Confidentialité</a>
+      <a href="#" class="hover:text-white transition-colors">Conditions</a>
     </div>
   </div>
 </footer>
+
 </body>
 </html>

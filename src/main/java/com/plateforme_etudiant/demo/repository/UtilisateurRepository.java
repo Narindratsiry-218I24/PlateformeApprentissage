@@ -27,4 +27,13 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     // Recherche par mot-clé dans nom, prénom, email ou nom d'utilisateur
     @Query("SELECT u FROM Utilisateur u WHERE u.nom LIKE %:keyword% OR u.prenom LIKE %:keyword% OR u.email LIKE %:keyword% OR u.nomUtilisateur LIKE %:keyword%")
     List<Utilisateur> searchByKeyword(@Param("keyword") String keyword);
+
+    @Query("SELECT DISTINCT i.cours.professeur.utilisateur FROM Inscription i WHERE i.apprenant.id = :apprenantId")
+    List<Utilisateur> findProfesseursByApprenantId(@Param("apprenantId") Long apprenantId);
+
+    @Query("SELECT COUNT(u) FROM Utilisateur u WHERE u.role = 'APPRENANT'")
+    long countAllApprenants();
+
+    @Query("SELECT COUNT(u) FROM Utilisateur u WHERE u.role = 'PROFESSEUR'")
+    long countAllProfesseurs();
 }

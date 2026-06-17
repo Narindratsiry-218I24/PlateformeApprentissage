@@ -1,8 +1,8 @@
 /* static/css/style.css */
 :root {
-    --primary: #003178;
-    --primary-dark: #00255a;
-    --secondary: #4a40e0;
+    --primary: #a855f7;
+    --primary-dark: #9333ea;
+    --secondary: #d946ef;
     --tertiary: #003d28;
     --error: #ba1a1a;
 }
@@ -29,7 +29,7 @@ body {
 }
 
 .progress-fill {
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    background: var(--primary);
     height: 100%;
     border-radius: 9999px;
     transition: width 0.3s ease;

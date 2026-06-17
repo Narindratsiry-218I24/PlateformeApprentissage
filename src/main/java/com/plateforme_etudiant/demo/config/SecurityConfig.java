@@ -6,22 +6,56 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // Désactiver TOUTE la sécurité Spring
         http
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()  // Toutes les URLs sont accessibles sans authentification
+                        .requestMatchers(
+                                "/",
+                                "/login",
+                                "/logout",
+                                "/inscription/**",
+                                "/forgot-password",
+                                "/reset-password",
+                                "/api/check-email",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/uploads/**",
+                                "/webjars/**",
+                                "/error",
+                                "/ws/**",
+                                "/ws"
+                        ).permitAll()
+                        .requestMatchers("/messages/**", "/messages").hasAnyRole("PROFESSEUR", "APPRENANT", "ADMINISTRATEUR")
+                        .requestMatchers("/professeur/**").hasRole("PROFESSEUR")
+                        .requestMatchers("/etudiant/**").hasRole("APPRENANT")
+                        .requestMatchers("/admin/**").hasRole("ADMINISTRATEUR")
+                        .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable())  // Désactiver CSRF
-                .headers(headers -> headers.disable())  // Désactiver les en-têtes
-                .formLogin(form -> form.disable())  // Désactiver le formulaire par défaut
-                .httpBasic(basic -> basic.disable())  // Désactiver l'authentification basique
-                .logout(logout -> logout.disable());  // Désactiver la déconnexion par défaut
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.disable())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .permitAll()
+                );
 
         return http.build();
     }

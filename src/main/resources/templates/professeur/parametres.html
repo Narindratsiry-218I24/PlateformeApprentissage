@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
+<head>
+    <title>Paramètres</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-secondary">Paramètres du Compte</h1>
+        <p class="text-secondary-light font-medium mt-1">Configurez vos préférences de notification et vos paramètres de sécurité.</p>
+    </div>
+
+    <div class="card-premium p-6">
+        <h3 class="text-lg font-bold text-secondary mb-6 flex items-center gap-2">
+            <i class="fi fi-br-settings text-primary"></i> Réglages généraux
+        </h3>
+        
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-bold text-sm text-secondary">Recevoir des notifications par email</h4>
+                    <p class="text-xs text-secondary-light mt-1">Être averti par email lorsqu'un étudiant s'inscrit ou pose une question.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+            </div>
+
+            <div class="h-px bg-border-color"></div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-bold text-sm text-secondary">Afficher mon profil publiquement</h4>
+                    <p class="text-xs text-secondary-light mt-1">Permettre aux étudiants non-inscrits de voir votre profil et vos cours.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+            </div>
+
+            <div class="h-px bg-border-color"></div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-bold text-sm text-secondary">Double authentification (2FA)</h4>
+                    <p class="text-xs text-secondary-light mt-1">Renforcer la sécurité de mon accès formateur.</p>
+                </div>
+                <button class="px-4 py-2 border border-border-color rounded-xl text-xs font-bold text-secondary hover:bg-slate-50 transition-colors">Activer</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

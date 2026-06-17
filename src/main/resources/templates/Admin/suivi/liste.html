@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head>
+    <title>Suivi Global</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div th:with="currentPage='suivi'"></div>
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-black text-slate-900">Suivi des Inscriptions</h1>
+        <p class="text-slate-500 font-medium">Visualisez l'activité d'apprentissage sur toute la plateforme</p>
+    </div>
+
+    <!-- Stats Inscriptions -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Dernières Inscriptions</h2>
+            <span class="text-[10px] font-black text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-100" th:text="${inscriptions.size() + ' TOTAL'}">0 TOTAL</span>
+        </div>
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-white border-b border-slate-50">
+                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Étudiant</th>
+                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Cours</th>
+                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Date Inscription</th>
+                    <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Progression</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                <tr th:each="ins : ${inscriptions}" class="hover:bg-slate-50/30 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 font-bold text-xs" th:text="${#strings.substring(ins.apprenant.prenom, 0, 1)}">E</div>
+                            <span class="text-sm font-bold text-slate-900" th:text="${ins.apprenant.nomComplet}">Nom Etudiant</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-sm font-bold text-slate-700" th:text="${ins.cours.titre}">Titre du Cours</p>
+                        <p class="text-[10px] text-slate-500 font-medium" th:text="${ins.cours.professeur.utilisateur.nomComplet}">Professeur</p>
+                    </td>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-600" th:text="${#temporals.format(ins.dateInscription, 'dd/MM/yyyy')}">01/01/2024</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3" th:if="${ins.score != null}">
+                            <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-emerald-500" th:style="'width: ' + ${ins.score} + '%'"></div>
+                            </div>
+                            <span class="text-[11px] font-black text-emerald-600" th:text="${ins.score + '%'}">0%</span>
+                        </div>
+                        <span class="text-xs text-slate-400 font-medium" th:if="${ins.score == null}">Aucun quiz passé</span>
+                    </td>
+                </tr>
+                <tr th:if="${inscriptions.isEmpty()}">
+                    <td colspan="4" class="px-6 py-12 text-center text-slate-400 font-medium">
+                        <i class="fi fi-br-info text-2xl mb-2 block"></i>
+                        Aucune inscription trouvée
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

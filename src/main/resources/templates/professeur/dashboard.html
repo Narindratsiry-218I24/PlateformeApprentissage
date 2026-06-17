@@ -1,73 +1,131 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
 <head>
-    <title>Dashboard - L'Érudition Augmentée</title>
-    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
-    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+    <title>Dashboard - L'Érudition</title>
 </head>
 <body>
-<!-- Main Content -->
-<main class="main-content" layout:fragment="content">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header Section -->
-        <div class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-black text-text-dark mb-2">Dashboard</h1>
-            <p class="text-text-muted mb-6">Bienvenue sur votre espace de gestion des cours</p>
-            <a href="/professeur/cours/ajouter" class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium">
-                <span class="material-symbols-outlined" style="font-size: 1.25rem;">add</span>
-                <span>Nouveau cours</span>
-            </a>
+<div layout:fragment="content" class="animate-fade">
+    <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-4xl font-black text-secondary mb-2">Tableau de bord</h1>
+            <p class="text-muted font-medium">Bienvenue, <span class="text-primary font-bold" th:text="${professeur != null ? professeur.prenom : 'Professeur'}">Professeur</span>. Voici un aperçu de votre activité.</p>
+        </div>
+        <a href="/professeur/cours/ajouter" class="btn-primary flex items-center gap-3">
+            <i class="fi fi-br-add"></i>
+            <span>Créer une formation</span>
+        </a>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-primary/10 text-primary">
+                <i class="fi fi-br-book-alt text-xl"></i>
+            </div>
+            <div>
+                <p class="text-muted text-xs font-bold uppercase tracking-wider">Total Cours</p>
+                <p class="text-2xl font-black text-secondary" th:text="${totalCours}">0</p>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-accent/10 text-accent">
+                <i class="fi fi-br-publish text-xl"></i>
+            </div>
+            <div>
+                <p class="text-muted text-xs font-bold uppercase tracking-wider">Publiés</p>
+                <p class="text-2xl font-black text-secondary" th:text="${coursPublies}">0</p>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-orange-100 text-orange-500">
+                <i class="fi fi-br-users-alt text-xl"></i>
+            </div>
+            <div>
+                <p class="text-muted text-xs font-bold uppercase tracking-wider">Étudiants</p>
+                <p class="text-2xl font-black text-secondary" th:text="${totalEtudiants}">0</p>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-purple-100 text-purple-500">
+                <i class="fi fi-br-chart-line text-xl"></i>
+            </div>
+            <div>
+                <p class="text-muted text-xs font-bold uppercase tracking-wider">Progression</p>
+                <p class="text-2xl font-black text-secondary" th:text="${progressionMoyenne} + '%'">0%</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Recent Courses -->
+        <div class="lg:col-span-2 card-premium">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-bold text-secondary">Dernières formations</h2>
+                <a href="/professeur/cours" class="text-primary font-bold text-sm hover:underline">Voir tout</a>
+            </div>
+            <div class="space-y-4">
+                <div th:each="c : ${derniersCours}" class="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-border-color">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl overflow-hidden bg-white shadow-sm border border-border-color">
+                            <img th:src="${c.imageCouverture}" class="w-full h-full object-cover" th:if="${c.imageCouverture != null}">
+                            <div class="w-full h-full flex items-center justify-center bg-primary/5 text-primary" th:unless="${c.imageCouverture != null}">
+                                <i class="fi fi-br-book"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-bold text-secondary" th:text="${c.titre}">Titre</p>
+                            <p class="text-xs text-muted font-medium" th:text="${c.nombreApprenants} + ' étudiants inscrits'">0 étudiants</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span th:if="${c.publie}" class="text-[10px] bg-accent/10 text-accent px-3 py-1 rounded-full font-black uppercase">Publié</span>
+                        <span th:unless="${c.publie}" class="text-[10px] bg-orange-100 text-orange-500 px-3 py-1 rounded-full font-black uppercase">Brouillon</span>
+                        <a th:href="'/professeur/cours/' + ${c.id} + '/gerer'" class="w-10 h-10 rounded-xl bg-white border border-border-color flex items-center justify-center text-secondary hover:text-primary hover:border-primary transition-all">
+                            <i class="fi fi-br-settings"></i>
+                        </a>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(derniersCours)}" class="text-center py-20 text-muted">
+                    <i class="fi fi-br-book-alt text-5xl mb-3 block opacity-20"></i>
+                    <p class="font-bold">Aucune formation créée</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Statistics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Stat Card 1: Total Courses -->
-            <div class="bg-white rounded-lg border border-border-color p-6 shadow-sm hover:shadow-md hover:border-primary transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-text-muted mb-1">Total des cours</p>
-                        <p class="text-2xl font-bold text-primary" th:text="${totalCours}">0</p>
-                    </div>
-                    <span class="material-symbols-outlined text-primary/20" style="font-size: 2.5rem;">menu_book</span>
+        <!-- Quick Actions / Mini Stats -->
+        <div class="space-y-8">
+            <div class="card-premium bg-gradient-to-br from-primary to-primary-dark text-white border-none relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="text-lg font-bold mb-2">Besoin d'aide ?</h3>
+                    <p class="text-white/70 text-sm mb-6">Consultez notre guide de création de contenu pour maximiser l'engagement de vos étudiants.</p>
+                    <button class="bg-white text-primary px-6 py-3 rounded-xl font-bold text-sm shadow-xl hover:bg-opacity-90 transition-all">
+                        Voir le guide
+                    </button>
                 </div>
+                <i class="fi fi-br-info absolute -right-4 -bottom-4 text-9xl text-white/10 rotate-12"></i>
             </div>
 
-            <!-- Stat Card 2: Published Courses -->
-            <div class="bg-white rounded-lg border border-border-color p-6 shadow-sm hover:shadow-md hover:border-primary transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-text-muted mb-1">Cours publiés</p>
-                        <p class="text-2xl font-bold text-primary" th:text="${coursPublies}">0</p>
+            <div class="card-premium">
+                <h3 class="text-lg font-bold text-secondary mb-6">Activité récente</h3>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="w-2 bg-accent rounded-full"></div>
+                        <div>
+                            <p class="text-sm font-bold text-secondary">Nouveau message</p>
+                            <p class="text-xs text-muted">Il y a 5 minutes</p>
+                        </div>
                     </div>
-                    <span class="material-symbols-outlined text-primary/20" style="font-size: 2.5rem;">publish</span>
-                </div>
-            </div>
-
-            <!-- Stat Card 3: Total Students -->
-            <div class="bg-white rounded-lg border border-border-color p-6 shadow-sm hover:shadow-md hover:border-primary transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-text-muted mb-1">Étudiants inscrits</p>
-                        <p class="text-2xl font-bold text-primary" th:text="${totalEtudiants}">0</p>
+                    <div class="flex gap-4">
+                        <div class="w-2 bg-primary rounded-full"></div>
+                        <div>
+                            <p class="text-sm font-bold text-secondary">Étudiant inscrit</p>
+                            <p class="text-xs text-muted">Il y a 2 heures</p>
+                        </div>
                     </div>
-                    <span class="material-symbols-outlined text-primary/20" style="font-size: 2.5rem;">groups</span>
-                </div>
-            </div>
-
-            <!-- Stat Card 4: Average Progress -->
-            <div class="bg-white rounded-lg border border-border-color p-6 shadow-sm hover:shadow-md hover:border-primary transition-all">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-text-muted mb-1">Progression moyenne</p>
-                        <p class="text-2xl font-bold text-primary">
-                            <span th:text="${progressionMoyenne}">0</span>%
-                        </p>
-                    </div>
-                    <span class="material-symbols-outlined text-primary/20" style="font-size: 2.5rem;">trending_up</span>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</div>
 </body>
 </html>

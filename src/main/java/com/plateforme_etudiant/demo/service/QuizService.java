@@ -78,7 +78,10 @@ public class QuizService {
             Long reponseIdSoumise = reponsesSoumises.get(question.getId());
             if (reponseIdSoumise != null) {
                 Optional<Reponse> reponseOpt = reponseRepository.findById(reponseIdSoumise);
-                if (reponseOpt.isPresent() && reponseOpt.get().getEstCorrecte()) {
+                if (reponseOpt.isPresent()
+                        && reponseOpt.get().getQuestion() != null
+                        && question.getId().equals(reponseOpt.get().getQuestion().getId())
+                        && reponseOpt.get().getEstCorrecte()) {
                     reponsesCorrectes++;
                 }
             }
@@ -86,11 +89,25 @@ public class QuizService {
 
         double score = totalQuestions > 0 ? ((double) reponsesCorrectes / totalQuestions) * 100 : 0;
 
-        ResultatQuiz resultat = new ResultatQuiz();
+        List<ResultatQuiz> historiques = resultatQuizRepository
+                .findByEtudiantIdAndQuizIdOrderByDatePassageDesc(utilisateurId, quizId);
+
+        ResultatQuiz resultat = historiques.isEmpty() ? new ResultatQuiz() : historiques.get(0);
+
         resultat.setQuiz(quiz);
         resultat.setEtudiant(etudiant);
         resultat.setScore(score);
 
-        return resultatQuizRepository.save(resultat);
+        ResultatQuiz saved = resultatQuizRepository.save(resultat);
+
+        // Nettoyage des doublons historiques pour eviter NonUniqueResultException
+        resultatQuizRepository.deleteDuplicatesForPair(utilisateurId, quizId, saved.getId());
+        return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public ResultatQuiz getResultatById(Long resultatId) {
+        return resultatQuizRepository.findById(resultatId)
+                .orElseThrow(() -> new RuntimeException("Resultat introuvable"));
     }
 }

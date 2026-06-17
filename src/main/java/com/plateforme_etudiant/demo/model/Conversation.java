@@ -3,16 +3,14 @@ package com.plateforme_etudiant.demo.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "conversation")
-@Data
-@NoArgsConstructor
+
 @AllArgsConstructor
 public class Conversation {
     @Id
@@ -31,6 +29,10 @@ public class Conversation {
     private LocalDateTime lastMessageTime;
     private String lastMessagePreview;
     private int unreadCount = 0;
+
+    // Hibernate/JPA needs an explicit public no-arg constructor in some builds
+    // (e.g. when Lombok annotation processing isn't applied as expected).
+    public Conversation() {}
 
     public Conversation(String participant1Id, String participant1Name, String participant1Role,
                         String participant2Id, String participant2Name, String participant2Role) {
@@ -51,6 +53,11 @@ public class Conversation {
     public String getOtherParticipantName(String userId) {
         if (participant1Id != null && participant1Id.equals(userId)) return participant2Name;
         return participant1Name;
+    }
+
+    public String getOtherParticipantRole(String userId) {
+        if (participant1Id != null && participant1Id.equals(userId)) return participant2Role;
+        return participant1Role;
     }
 
     public String getId() {

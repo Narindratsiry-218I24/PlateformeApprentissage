@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certification - L'Érudition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --color-navy: #2563eb;
+      --color-navy-light: #1d4ed8;
+      --color-gold: #365392;
+      --color-gold-light: #3174cc;
+      --color-bg: #F8FAFC;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-navy);
+      overflow-x: hidden;
+    }
+    
+    .bg-desk {
+      background-image: 
+        linear-gradient(to bottom, rgba(248, 250, 252, 0.9) 0%, rgba(248, 250, 252, 1) 100%),
+        url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><path d="M0 0l100 100M100 0L0 100" stroke="rgba(15,23,42,0.03)" stroke-width="1"/></svg>');
+      background-size: cover, 400px 400px;
+    }
+
+    .card-shadow {
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 10px 15px -5px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Certificate Specific Styles */
+    .cert-container {
+      background: #FFFFFF;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.15);
+    }
+    
+    .cert-border {
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      pointer-events: none;
+    }
+    .cert-border-inner {
+      position: absolute;
+      inset: 18px;
+      border: 2px solid #2563eb;
+      pointer-events: none;
+    }
+    
+    /* Corner Ornaments */
+    .cert-corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-gold);
+      z-index: 10;
+    }
+    .cert-corner.tl { top: 14px; left: 14px; border-right: none; border-bottom: none; }
+    .cert-corner.tr { top: 14px; right: 14px; border-left: none; border-bottom: none; }
+    .cert-corner.bl { bottom: 14px; left: 14px; border-right: none; border-top: none; }
+    .cert-corner.br { bottom: 14px; right: 14px; border-left: none; border-top: none; }
+
+    /* Geometric corner accents (Navy) */
+    .cert-geo {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+    .cert-geo.tl { top: 0; left: 0; border-width: 120px 120px 0 0; border-color: var(--color-navy) transparent transparent transparent; }
+    .cert-geo.br { bottom: 0; right: 0; border-width: 0 0 120px 120px; border-color: transparent transparent var(--color-navy) transparent; }
+    
+    .cert-geo-gold {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      z-index: 1;
+    }
+    .cert-geo-gold.tl { top: 0; left: 0; border-width: 150px 150px 0 0; border-color: var(--color-gold) transparent transparent transparent; opacity: 0.8; }
+    .cert-geo-gold.br { bottom: 0; right: 0; border-width: 0 0 150px 150px; border-color: transparent transparent var(--color-gold) transparent; opacity: 0.8;}
+
+    /* Background pattern for certificate */
+    .cert-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(15, 23, 42, 0.04) 2px, transparent 2px);
+      background-size: 30px 30px;
+      z-index: 0;
+    }
+
+    .font-serif {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Subtle Gold Border for Cards */
+    .gold-border-card {
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      background: white;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.03);
+    }
+  </style>
+</head>
+<body class="bg-desk min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-20 flex items-center justify-between px-6 sticky top-0 z-40">
+    <div class="flex-1">
+      <a th:href="'/etudiant/cours/' + ${cours.id} + '/visionner'" class="group inline-flex items-center gap-3 bg-[#2563eb] text-white px-4 py-2 rounded-xl font-medium transition-all hover:bg-slate-800 hover:shadow-md">
+        <i class="fa-solid fa-arrow-left text-sm group-hover:-translate-x-1 transition-transform"></i>
+        Retour au cours
+      </a>
+    </div>
+    
+    <div class="flex-1 text-center">
+      <h1 class="text-xl md:text-2xl font-bold text-[#2563eb]">Confirmation de Certification</h1>
+    </div>
+
+    <div class="flex-1 flex justify-end items-center gap-4">
+      <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+        <div class="text-right hidden sm:block">
+          <p class="text-sm font-bold text-[#2563eb]" th:text="${session.utilisateur != null ? session.utilisateur.nom : 'Jean Dupont'}">Jean Dupont</p>
+          <p class="text-xs text-slate-500">Session : ID-7A9B2X</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-[#D4AF37] overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=User&background=0F172A&color=fff" alt="Profile" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-[1200px] w-full mx-auto p-4 md:p-8 flex flex-col gap-10">
+    
+    <!-- Visual Result Card (Certificate) -->
+    <div class="w-full max-w-[900px] mx-auto perspective-1000">
+      <div class="cert-container rounded-sm aspect-[1.4/1] w-full p-12 flex flex-col items-center justify-center relative">
+        <!-- Certificate Design Elements -->
+        <div class="cert-pattern"></div>
+        <div class="cert-geo-gold tl"></div>
+        <div class="cert-geo-gold br"></div>
+        <div class="cert-geo tl"></div>
+        <div class="cert-geo br"></div>
+        <div class="cert-border"></div>
+        <div class="cert-border-inner"></div>
+        <div class="cert-corner tl"></div><div class="cert-corner tr"></div>
+        <div class="cert-corner bl"></div><div class="cert-corner br"></div>
+
+        <!-- Best Award Medal -->
+        <div class="absolute top-12 right-12 z-20 flex flex-col items-center">
+          <div class="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#B8860B] rounded-full flex items-center justify-center shadow-lg relative border-4 border-dashed border-[#FDE047]">
+            <div class="absolute inset-1 rounded-full border-2 border-[#FDE047]"></div>
+            <div class="text-center text-white leading-tight">
+              <span class="block text-xs font-bold tracking-widest">BEST</span>
+              <span class="block text-sm font-black font-serif italic">Award</span>
+            </div>
+          </div>
+          <!-- Ribbons -->
+          <div class="flex gap-1 -mt-2 z-[-1]">
+            <div class="w-4 h-12 bg-[#2563eb]"></div>
+            <div class="w-4 h-14 bg-[#2563eb]"></div>
+            <div class="w-4 h-12 bg-[#2563eb]"></div>
+          </div>
+        </div>
+
+        <!-- Central Ribbon Focal Point -->
+        <div class="absolute top-8 left-1/2 -translate-x-1/2 z-20 w-16 h-20 bg-[#D4AF37] flex items-end justify-center pb-2 shadow-md" style="clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);">
+          <i class="fa-solid fa-star text-white text-xl drop-shadow"></i>
+        </div>
+
+        <div class="relative z-10 w-full text-center flex flex-col items-center">
+          <h2 class="text-[#2563eb] font-serif text-3xl md:text-5xl font-black tracking-widest mb-2 mt-8 uppercase">Certificat</h2>
+          <p class="text-[#2563eb] text-sm md:text-lg tracking-[0.3em] font-semibold mb-8 uppercase">D'accomplissement</p>
+
+          <div class="w-24 h-px bg-[#D4AF37] mb-6"></div>
+
+          <p class="text-slate-600 italic text-lg mb-4">Ce certificat est fièrement décerné à :</p>
+          
+          <h3 class="font-serif text-4xl md:text-6xl text-[#D4AF37] mb-6 drop-shadow-sm capitalize" th:text="${session.utilisateur != null ? session.utilisateur.nom : 'Jean Dupont'}">Jean Dupont</h3>
+          
+          <p class="text-slate-700 max-w-2xl mx-auto text-sm md:text-base leading-relaxed mb-8">
+            Félicitations ! Vous avez réussi l'évaluation : 
+            <br/><span class="font-bold text-[#2563eb] text-lg mt-2 inline-block" th:text="${cours.titre}">Maîtrise de la Data Science</span>
+          </p>
+
+          <div class="w-full max-w-lg mt-auto flex justify-between items-end border-t border-slate-300 pt-4 px-8">
+            <div class="text-center">
+              <p class="text-xs font-bold text-[#2563eb] mb-1">DÉCERNÉ LE</p>
+              <p class="text-sm text-slate-600 font-mono" th:text="${#dates.format(#dates.createNow(), 'dd MMM yyyy')}">23 OCTOBRE 2026</p>
+            </div>
+            <div class="text-center">
+              <div class="w-32 h-12 border-b border-[#2563eb] mb-2 flex items-end justify-center">
+                <span class="font-serif italic text-[#2563eb] text-2xl" style="font-family: 'Brush Script MT', cursive;">Signature</span>
+              </div>
+              <p class="text-xs font-bold text-[#2563eb]">DIRECTEUR ACADÉMIQUE</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Cards & Stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Statistiques Clés -->
+      <div class="gold-border-card rounded-2xl p-6 lg:col-span-1 flex flex-col">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-[#D4AF37]"></i> Statistiques Clés
+        </h3>
+        <div class="space-y-6 flex-1 flex flex-col justify-center">
+          <div>
+            <p class="text-xs text-slate-500 font-semibold mb-1">Score Final</p>
+            <div class="flex items-end gap-2">
+              <span class="text-4xl font-black text-[#2563eb]" th:text="${#numbers.formatDecimal(score, 1, 0)} + '%'">94%</span>
+              <span class="text-sm text-green-500 font-bold mb-1 bg-green-50 px-2 py-0.5 rounded"><i class="fa-solid fa-arrow-trend-up"></i> Excellent</span>
+            </div>
+          </div>
+          <div class="w-full h-px bg-slate-100"></div>
+          <div>
+            <p class="text-xs text-slate-500 font-semibold mb-1">Questions Correctes</p>
+            <p class="text-2xl font-bold text-[#2563eb]"><span th:text="${correctes}">18</span><span class="text-slate-400 text-lg font-normal">/<span th:text="${totalQuestions}">20</span></span></p>
+          </div>
+          <div class="w-full h-px bg-slate-100"></div>
+          <div>
+            <p class="text-xs text-slate-500 font-semibold mb-1">Temps d'Apprentissage Total</p>
+            <p class="text-2xl font-bold text-[#2563eb]">120<span class="text-slate-400 text-lg font-normal">h</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progression Graph -->
+      <div class="gold-border-card rounded-2xl p-6 lg:col-span-2 flex flex-col">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+          <i class="fa-solid fa-bars-progress text-[#D4AF37]"></i> Évolution des Compétences
+        </h3>
+        <div class="flex-1 flex items-end justify-between gap-2 h-48 relative">
+          <!-- Trend Line SVG -->
+          <svg class="absolute inset-0 w-full h-full preserve-3d" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M5,80 Q25,75 50,40 T95,10" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          
+          <!-- Bar Chart -->
+          <div class="w-1/6 bg-gradient-to-t from-[#1d4ed8] to-[#334155] rounded-t-lg h-[30%] relative group">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2563eb] text-white text-xs py-1 px-2 rounded font-bold">30%</div>
+          </div>
+          <div class="w-1/6 bg-gradient-to-t from-[#1d4ed8] to-[#334155] rounded-t-lg h-[45%] relative group">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2563eb] text-white text-xs py-1 px-2 rounded font-bold">45%</div>
+          </div>
+          <div class="w-1/6 bg-gradient-to-t from-[#1d4ed8] to-[#334155] rounded-t-lg h-[60%] relative group">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2563eb] text-white text-xs py-1 px-2 rounded font-bold">60%</div>
+          </div>
+          <div class="w-1/6 bg-gradient-to-t from-[#1d4ed8] to-[#334155] rounded-t-lg h-[75%] relative group">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#2563eb] text-white text-xs py-1 px-2 rounded font-bold">75%</div>
+          </div>
+          <div class="w-1/6 bg-gradient-to-t from-[#1d4ed8] to-[#2563eb] rounded-t-lg h-[94%] border-t-2 border-[#D4AF37] relative group shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+            <div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-100 transition-opacity bg-[#D4AF37] text-[#2563eb] text-xs py-1 px-2 rounded font-bold" th:text="${#numbers.formatDecimal(score, 1, 0)} + '%'">94%</div>
+          </div>
+        </div>
+        <div class="flex justify-between text-xs text-slate-400 mt-4 font-semibold uppercase">
+          <span>Mod 1</span><span>Mod 2</span><span>Mod 3</span><span>Mod 4</span><span class="text-[#2563eb]">Final</span>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Derniers Cours & Main CTA -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end mb-12">
+      <div class="lg:col-span-2 gold-border-card rounded-2xl p-6">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-[#D4AF37]"></i> Derniers Cours Complétés
+        </h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-serif font-bold text-lg">D</div>
+              <div>
+                <p class="font-bold text-[#2563eb] text-sm">Design Patterns Avancés</p>
+                <p class="text-xs text-slate-500">Complété le 15 Octobre 2026</p>
+              </div>
+            </div>
+            <button class="text-[#D4AF37] hover:text-[#b08f2a] p-2 bg-[#D4AF37]/10 rounded-lg transition-colors" title="Télécharger">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-serif font-bold text-lg">A</div>
+              <div>
+                <p class="font-bold text-[#2563eb] text-sm">Architecture Microservices</p>
+                <p class="text-xs text-slate-500">Complété le 02 Septembre 2026</p>
+              </div>
+            </div>
+            <button class="text-[#D4AF37] hover:text-[#b08f2a] p-2 bg-[#D4AF37]/10 rounded-lg transition-colors" title="Télécharger">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-serif font-bold text-lg">S</div>
+              <div>
+                <p class="font-bold text-[#2563eb] text-sm">Sécurité des Applications Web</p>
+                <p class="text-xs text-slate-500">Complété le 18 Août 2026</p>
+              </div>
+            </div>
+            <button class="text-[#D4AF37] hover:text-[#b08f2a] p-2 bg-[#D4AF37]/10 rounded-lg transition-colors" title="Télécharger">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="lg:col-span-1 flex flex-col items-center justify-center">
+        <a th:href="@{/etudiant/mes-cours}" class="w-full py-5 bg-[#2563eb] text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-[0_10px_20px_rgba(15,23,42,0.2)] hover:shadow-[0_15px_30px_rgba(15,23,42,0.3)] hover:-translate-y-1 group">
+          <i class="fa-solid fa-user-graduate text-[#D4AF37] text-2xl group-hover:rotate-12 transition-transform"></i>
+          VÉRIFIER MES COMPÉTENCES
+        </a>
+        <p class="mt-4 text-xs text-slate-500 text-center font-medium max-w-xs">Vos résultats ont été enregistrés dans votre dossier académique officiel.</p>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

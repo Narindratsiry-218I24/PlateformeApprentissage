@@ -73,6 +73,7 @@ public class EtudiantService {
                 dto.setImageCouverture(cours.getImageCouverture());
                 dto.setPublie(cours.getPublie());
                 dto.setDureeEstimee(cours.getDureeEstimee());
+                dto.setFavori(inscription.getFavori() != null ? inscription.getFavori() : false);
 
                 if (cours.getProfesseur() != null && cours.getProfesseur().getUtilisateur() != null) {
                     dto.setProfesseur(cours.getProfesseur().getUtilisateur().getNomComplet());
@@ -210,6 +211,35 @@ public class EtudiantService {
         log.info("Étudiant {} inscrit au cours {}", utilisateurId, coursId);
     }
 
+    /**
+     * Vérifie si un étudiant peut s'inscrire à un cours
+     * @return Message d'erreur si non autorisé, null si autorisé
+     */
+    @Transactional(readOnly = true)
+    public String peutSInscrire(Long utilisateurId, Long coursId) {
+        // Vérifier si déjà inscrit
+        if (inscriptionRepository.existsByApprenantIdAndCoursId(utilisateurId, coursId)) {
+            return "Vous êtes déjà inscrit à ce cours";
+        }
+
+        // Vérifier si le cours existe et est publié
+        Cours cours = coursRepository.findById(coursId).orElse(null);
+        if (cours == null) {
+            return "Cours non trouvé";
+        }
+        if (!cours.getPublie()) {
+            return "Ce cours n'est pas disponible pour inscription";
+        }
+
+        // Vérifier si le cours a du contenu
+        long nbContenus = contenuItemRepository.countByCoursId(coursId);
+        if (nbContenus == 0) {
+            return "Ce cours n'a pas encore de contenu disponible";
+        }
+
+        return null; // Autorisé
+    }
+
     @Transactional(readOnly = true)
     public Integer calculerProgressionCours(Long utilisateurId, Long coursId) {
         try {
@@ -296,5 +326,46 @@ public class EtudiantService {
             log.error("❌ Erreur lors de la complétion: {}", e.getMessage());
             throw new RuntimeException("Erreur lors de la mise à jour de la progression: " + e.getMessage());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<CoursEtudiantDTO> searchCours(String keyword, Long utilisateurId) {
+        List<Cours> coursMatches = coursRepository.searchByKeyword(keyword);
+        List<Long> coursInscritsIds = inscriptionRepository.findCoursIdsByApprenantId(utilisateurId);
+        List<CoursEtudiantDTO> result = new ArrayList<>();
+        for (Cours cours : coursMatches) {
+            if (Boolean.TRUE.equals(cours.getPublie())) {
+                CoursEtudiantDTO dto = new CoursEtudiantDTO();
+                dto.setId(cours.getId());
+                dto.setTitre(cours.getTitre());
+                dto.setDescriptionCourte(cours.getDescriptionCourte());
+                dto.setImageCouverture(cours.getImageCouverture());
+                dto.setDureeEstimee(cours.getDureeEstimee());
+                boolean inscrit = coursInscritsIds.contains(cours.getId());
+                dto.setProgression(inscrit ? calculerProgressionCours(utilisateurId, cours.getId()) : null);
+                if (inscrit) {
+                    inscriptionRepository.findByApprenantIdAndCoursId(utilisateurId, cours.getId())
+                            .ifPresent(ins -> dto.setFavori(ins.getFavori() != null ? ins.getFavori() : false));
+                } else {
+                    dto.setFavori(false);
+                }
+                if (cours.getProfesseur() != null && cours.getProfesseur().getUtilisateur() != null) {
+                    dto.setProfesseur(cours.getProfesseur().getUtilisateur().getNomComplet());
+                }
+                result.add(dto);
+            }
+        }
+        return result;
+    }
+
+    @Transactional
+    public boolean toggleFavori(Long utilisateurId, Long coursId) {
+        Inscription inscription = inscriptionRepository.findByApprenantIdAndCoursId(utilisateurId, coursId)
+                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
+        boolean newFavori = !Boolean.TRUE.equals(inscription.getFavori());
+        inscription.setFavori(newFavori);
+        inscriptionRepository.save(inscription);
+        log.info("Favori basculé à {} pour l'étudiant {} sur le cours {}", newFavori, utilisateurId, coursId);
+        return newFavori;
     }
 }

@@ -14,6 +14,7 @@ public class CoursEtudiantDTO {
     private LocalDateTime derniereActivite;
     private Integer nombreChapitresCompletes;
     private Integer nombreChapitresTotal;
+    private Boolean favori;
 
     public CoursEtudiantDTO() {}
 
@@ -29,6 +30,7 @@ public class CoursEtudiantDTO {
     public LocalDateTime getDerniereActivite() { return derniereActivite; }
     public Integer getNombreChapitresCompletes() { return nombreChapitresCompletes; }
     public Integer getNombreChapitresTotal() { return nombreChapitresTotal; }
+    public Boolean getFavori() { return favori; }
 
     // Setters
     public void setId(Long id) { this.id = id; }
@@ -42,4 +44,5 @@ public class CoursEtudiantDTO {
     public void setDerniereActivite(LocalDateTime derniereActivite) { this.derniereActivite = derniereActivite; }
     public void setNombreChapitresCompletes(Integer nombreChapitresCompletes) { this.nombreChapitresCompletes = nombreChapitresCompletes; }
     public void setNombreChapitresTotal(Integer nombreChapitresTotal) { this.nombreChapitresTotal = nombreChapitresTotal; }
+    public void setFavori(Boolean favori) { this.favori = favori; }
 }

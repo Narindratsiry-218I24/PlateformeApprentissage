@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" th:with="role=${#httpServletRequest.getUserPrincipal() != null ? #httpServletRequest.isUserInRole('PROFESSEUR') ? 'professeur' : 'etudiant' : 'etudiant'}" layout:decorate="~{${role} + '/layout'}" lang="fr">
+<head>
+    <title>Messagerie - L'Érudition</title>
+    <style>
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .conversation-item { transition: all 0.2s ease; cursor: pointer; }
+        .conversation-item:hover { background: #F8FAFC; }
+        .conversation-item.active { background: white; border-left: 3px solid var(--secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="flex h-[calc(100vh-110px)] bg-white rounded-2xl overflow-hidden border border-gray-100">
+        <div class="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col">
+            <div class="p-5 border-b border-gray-200">
+                <h2 class="font-bold text-gray-900">Messages</h2>
+                <button onclick="openNewMessageModal()" class="mt-3 w-full flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-dark transition">
+                    <i class="fi fi-br-edit"></i> Nouveau message
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <div th:each="conv : ${conversations}" class="conversation-item p-4 border-b border-gray-100" th:classappend="${currentConversationId == conv.id} ? 'active' : ''" onclick="window.location.href='/messages/' + ${conv.id}">
+                    <div class="flex gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary to-amber-500 flex items-center justify-center text-white font-bold" th:text="${#strings.substring(conv.getOtherParticipantName(userId), 0, 1)}">P</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-900 truncate" th:text="${conv.getOtherParticipantName(userId)}">Nom</p>
+                            <p class="text-xs text-gray-500 truncate" th:text="${conv.lastMessagePreview}">Dernier message</p>
+                        </div>
+                        <div th:if="${conv.unreadCount > 0}" class="bg-secondary text-white text-[10px] px-2 py-0.5 rounded-full h-5 flex items-center" th:text="${conv.unreadCount}">3</div>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(conversations)}" class="text-center py-12 text-gray-400">
+                    <i class="fi fi-br-comment-dots text-4xl mb-3 block"></i>
+                    <p>Aucune conversation</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col" th:if="${currentConversationId != null}">
+            <div class="p-5 border-b border-gray-200 bg-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary to-amber-500 flex items-center justify-center text-white font-bold" th:with="otherName=${currentConversation.getOtherParticipantName(userId)}" th:text="${#strings.substring(otherName, 0, 1)}">P</div>
+                    <div>
+                        <p class="font-bold text-gray-900" th:with="otherName=${currentConversation.getOtherParticipantName(userId)}" th:text="${otherName}">Nom</p>
+                        <p class="text-xs text-gray-500" th:if="${role == 'professeur'}">Étudiant</p>
+                        <p class="text-xs text-gray-500" th:if="${role == 'etudiant'}">Professeur</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50" id="messagesContainer">
+                <div th:each="msg : ${messages}">
+                    <div th:if="${msg.senderId == userId}" class="flex justify-end">
+                        <div class="bg-primary text-white px-4 py-2 rounded-2xl rounded-br-none max-w-[75%]">
+                            <p class="text-sm" th:text="${msg.content}">Message</p>
+                            <p class="text-[9px] text-white/50 text-right mt-1" th:text="${msg.formattedTime}">12:00</p>
+                        </div>
+                    </div>
+                    <div th:if="${msg.senderId != userId}" class="flex justify-start">
+                        <div class="bg-white border border-gray-200 px-4 py-2 rounded-2xl rounded-bl-none max-w-[75%]">
+                            <p class="text-sm" th:text="${msg.content}">Message</p>
+                            <p class="text-[9px] text-gray-400 mt-1" th:text="${msg.formattedTime}">12:00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-200 bg-white">
+                <form th:action="'/messages/' + ${currentConversationId} + '/envoyer'" method="post" class="flex gap-3">
+                    <input type="hidden" name="receiverId" th:value="${currentConversation.getOtherParticipantId(userId)}">
+                    <input type="text" name="content" required placeholder="Écrivez votre message..." class="flex-1 border border-gray-200 rounded-full px-5 py-3 text-sm focus:outline-none focus:border-secondary">
+                    <button type="submit" class="w-11 h-11 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary-dark"><i class="fi fi-br-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${currentConversationId == null}" class="flex-1 flex items-center justify-center text-gray-400">
+            <div class="text-center">
+                <i class="fi fi-br-comment-dots text-5xl mb-4 block"></i>
+                <p>Sélectionnez une conversation</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nouveau Message -->
+<div id="newMessageModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-xl font-bold">Nouveau message</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fi fi-br-cross"></i></button>
+        </div>
+        <form action="/messages/nouvelle" method="post">
+            <div class="mb-4">
+                <label class="text-sm font-semibold block mb-2">Destinataire</label>
+                <select name="destinataireId" required class="w-full border border-gray-200 rounded-xl px-4 py-3">
+                    <option value="">Sélectionner</option>
+                    <option th:each="u : ${interlocuteurs}" th:value="${u.id}" th:text="${u.prenom} + ' ' + ${u.nom} + ' (' + ${u.email} + ')'"></option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="text-sm font-semibold block mb-2">Message</label>
+                <textarea name="content" required rows="4" class="w-full border border-gray-200 rounded-xl px-4 py-3 resize-none"></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-200 rounded-xl">Annuler</button>
+                <button type="submit" class="px-5 py-2 bg-primary text-white rounded-xl font-semibold">Envoyer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openNewMessageModal() { document.getElementById('newMessageModal').classList.add('active'); }
+    function closeModal() { document.getElementById('newMessageModal').classList.remove('active'); }
+    const container = document.getElementById('messagesContainer');
+    if (container) container.scrollTop = container.scrollHeight;
+</script>
+</body>
+</html>

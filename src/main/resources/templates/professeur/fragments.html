@@ -118,7 +118,7 @@
 </head>
 <body>
 
-<!-- 🔥 SIDEBAR - Utilisé sur toutes les pages 🔥 -->
+<!--  SIDEBAR - Utilisé sur toutes les pages  -->
 <div th:fragment="sidebar">
     <aside class="sidebar-fixed hidden md:block pt-5">
         <div class="p-6">
@@ -154,7 +154,7 @@
     </aside>
 </div>
 
-<!-- 🔥 NAVBAR - Utilisée sur toutes les pages 🔥 -->
+<!--  NAVBAR - Utilisée sur toutes les pages  -->
 <div th:fragment="navbar">
     <nav class="navbar-fixed flex justify-between items-center px-4 md:px-8" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); height: 64px;">
         <div class="flex items-center gap-8 flex-1">
@@ -182,7 +182,7 @@
     </nav>
 </div>
 
-<!-- 🔥 STYLES - Styles communs utilisés partout 🔥 -->
+<!--  STYLES - Styles communs utilisés partout  -->
 <div th:fragment="styles">
     <style>
         :root {
@@ -268,7 +268,7 @@
     </style>
 </div>
 
-<!-- 🔥 MODALS - Modales réutilisables 🔥 -->
+<!--  MODALS - Modales réutilisables  -->
 <div th:fragment="modals">
     <!-- Modal for Chapter -->
     <div id="chapitreModal" class="modal">
@@ -308,11 +308,11 @@
                 <div>
                     <label class="form-label">Type de contenu</label>
                     <select id="contenuType" class="form-select">
-                        <option value="VIDEO">🎬 Vidéo</option>
-                        <option value="TEXTE">📝 Texte</option>
-                        <option value="PDF">📑 PDF</option>
-                        <option value="IMAGE">🖼️ Image</option>
-                        <option value="LIEN">🔗 Lien externe</option>
+                        <option value="VIDEO"> Vidéo</option>
+                        <option value="TEXTE"> Texte</option>
+                        <option value="PDF"> PDF</option>
+                        <option value="IMAGE">️ Image</option>
+                        <option value="LIEN"> Lien externe</option>
                     </select>
                 </div>
                 <div id="videoFields">

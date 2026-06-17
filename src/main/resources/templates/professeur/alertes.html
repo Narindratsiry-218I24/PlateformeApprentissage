@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
+<head>
+    <title>Alertes & Notifications</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-secondary">Alertes & Notifications</h1>
+        <p class="text-secondary-light font-medium mt-1">Suivez les activités récentes et les alertes de vos classes en temps réel.</p>
+    </div>
+
+    <div class="card-premium p-6">
+        <h2 class="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+            <i class="fi fi-br-bell text-primary"></i> Notifications Récentes
+        </h2>
+        <div class="divide-y divide-border-color">
+            <div class="py-4 flex items-start gap-4">
+                <span class="p-3 rounded-xl bg-blue-50 text-blue-500 mt-1">
+                    <i class="fi fi-rr-info"></i>
+                </span>
+                <div>
+                    <h3 class="font-bold text-sm text-secondary">Nouveau message reçu</h3>
+                    <p class="text-xs text-secondary-light mt-1">Un étudiant a envoyé une question sur le module de programmation Java.</p>
+                    <span class="text-[10px] text-text-muted font-bold mt-2 block">Il y a 10 minutes</span>
+                </div>
+            </div>
+            <div class="py-4 flex items-start gap-4">
+                <span class="p-3 rounded-xl bg-green-50 text-green-500 mt-1">
+                    <i class="fi fi-rr-check"></i>
+                </span>
+                <div>
+                    <h3 class="font-bold text-sm text-secondary">Quiz validé avec succès</h3>
+                    <p class="text-xs text-secondary-light mt-1">Marc Dupont a terminé le quiz final avec un score de 85%.</p>
+                    <span class="text-[10px] text-text-muted font-bold mt-2 block">Il y a 1 heure</span>
+                </div>
+            </div>
+            <div class="py-4 flex items-start gap-4">
+                <span class="p-3 rounded-xl bg-purple-50 text-purple-500 mt-1">
+                    <i class="fi fi-rr-graduation-cap"></i>
+                </span>
+                <div>
+                    <h3 class="font-bold text-sm text-secondary">Nouvelle inscription</h3>
+                    <p class="text-xs text-secondary-light mt-1">Sophie Martin s'est inscrite à votre cours de Spring Security.</p>
+                    <span class="text-[10px] text-text-muted font-bold mt-2 block">Il y a 3 heures</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

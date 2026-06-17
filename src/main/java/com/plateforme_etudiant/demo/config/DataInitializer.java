@@ -27,6 +27,7 @@ public class DataInitializer implements CommandLineRunner {
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
     private final ReponseRepository reponseRepository;
+    private final InscriptionRepository inscriptionRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(UtilisateurRepository utilisateurRepository,
@@ -38,6 +39,7 @@ public class DataInitializer implements CommandLineRunner {
                            QuizRepository quizRepository,
                            QuestionRepository questionRepository,
                            ReponseRepository reponseRepository,
+                           InscriptionRepository inscriptionRepository,
                            PasswordEncoder passwordEncoder) {
         this.utilisateurRepository = utilisateurRepository;
         this.professeurRepository = professeurRepository;
@@ -48,6 +50,7 @@ public class DataInitializer implements CommandLineRunner {
         this.quizRepository = quizRepository;
         this.questionRepository = questionRepository;
         this.reponseRepository = reponseRepository;
+        this.inscriptionRepository = inscriptionRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -90,9 +93,12 @@ public class DataInitializer implements CommandLineRunner {
                 "Développeur Full-Stack et Data Scientist.");
 
         // ── Étudiants ─────────────────────────────────────────────────────────
-        creerUtilisateur("ana_ravelo",  "ana@etudiant.mg",  "etudiant123", "Ana",  "Ravelo",         Role.APPRENANT);
-        creerUtilisateur("solo_andria", "solo@etudiant.mg", "etudiant123", "Solo", "Andriamahefa",   Role.APPRENANT);
-        creerUtilisateur("koto_rabe",   "koto@etudiant.mg", "etudiant123", "Koto", "Rabemananjara",  Role.APPRENANT);
+        Utilisateur ana = creerUtilisateur("ana_ravelo",  "ana@etudiant.mg",  "etudiant123", "Ana",  "Ravelo",         Role.APPRENANT);
+        Utilisateur solo = creerUtilisateur("solo_andria", "solo@etudiant.mg", "etudiant123", "Solo", "Andriamahefa",   Role.APPRENANT);
+        Utilisateur koto = creerUtilisateur("koto_rabe",   "koto@etudiant.mg", "etudiant123", "Koto", "Rabemananjara",  Role.APPRENANT);
+
+        // ── Admin ───────────────────────────────────────────────────────────
+        creerUtilisateur("admin", "admin@erudition.mg", "admin123", "Super", "Admin", Role.ADMINISTRATEUR);
 
         // ═══════════════════════════════════════════════════════════════════════
         //  COURS 1 : MBA Management
@@ -267,6 +273,12 @@ public class DataInitializer implements CommandLineRunner {
         ajouterQuestion(qMarketing, "Le taux de rebond (bounce rate) indique :",
                 new String[]{"Le nombre de partages", "Le pourcentage de visiteurs quittant le site après une seule page", "Le nombre de clics sur une pub", "La durée moyenne de visite"}, 1);
 
+        // ── Inscriptions (pour peupler les dashboards professeurs) ───────────
+        inscrireEtudiant(ana, coursMBA);
+        inscrireEtudiant(solo, coursMBA);
+        inscrireEtudiant(ana, coursWeb);
+        inscrireEtudiant(koto, coursMarketing);
+
         log.info("✅ Initialisation terminée :");
         log.info("   → {} cours créés", coursRepository.count());
         log.info("   → {} utilisateurs (dont {} professeurs, {} étudiants)",
@@ -281,6 +293,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("   Professeur : rakoto@erudition.mg       / prof1234");
         log.info("   Étudiant   : ana@etudiant.mg           / etudiant123");
         log.info("   Étudiant   : solo@etudiant.mg          / etudiant123");
+        log.info("   Admin      : admin@erudition.mg        / admin123");
         log.info("=== INITIALISATION TERMINÉE ===");
     }
 
@@ -386,6 +399,22 @@ public class DataInitializer implements CommandLineRunner {
             r.setTexteReponse(choices[i]);
             r.setEstCorrecte(i == bonneReponseIndex);
             reponseRepository.save(r);
+        }
+    }
+
+    private void inscrireEtudiant(Utilisateur etudiant, Cours cours) {
+        if (!inscriptionRepository.existsByApprenantAndCours(etudiant, cours)) {
+            Inscription ins = new Inscription();
+            ins.setApprenant(etudiant);
+            ins.setCours(cours);
+            ins.setDateInscription(LocalDateTime.now());
+            ins.setTermine(false);
+            inscriptionRepository.save(ins);
+            
+            // Mettre à jour le nombre d'apprenants du cours
+            int count = (cours.getNombreApprenants() != null ? cours.getNombreApprenants() : 0) + 1;
+            cours.setNombreApprenants(count);
+            coursRepository.save(cours);
         }
     }
 }

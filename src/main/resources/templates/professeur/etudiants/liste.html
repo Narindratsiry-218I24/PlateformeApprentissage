@@ -1,388 +1,162 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title th:text="${pageTitle} + ' - L\'Érudition Augmentée'">Suivi Étudiants - L'Érudition Augmentée</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#003178",
-                        "primary-container": "#0d47a1",
-                        tertiary: "#003d28",
-                        background: "#f7f9fb",
-                        "surface-container-low": "#f2f4f6",
-                        "on-surface": "#191c1e",
-                        "on-primary": "#ffffff",
-                    },
-                },
-            },
-        }
-    </script>
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
+    <title>Suivi étudiants - L'Érudition</title>
 </head>
-<body class="bg-background text-on-surface">
-
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-16 bg-white/80 backdrop-blur-md border-b shadow-sm">
-    <div class="flex items-center gap-8">
-        <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
-        <div class="hidden md:flex gap-6 items-center">
-            <a href="/professeur/dashboard" class="text-slate-500 hover:text-primary transition-colors px-3 py-1 rounded">Tableau de bord</a>
-            <a href="/professeur/etudiants" class="text-primary font-bold border-b-2 border-primary px-3 py-1">Étudiants</a>
-            <a href="/professeur/cours" class="text-slate-500 hover:text-primary transition-colors px-3 py-1 rounded">Cours</a>
-        </div>
+<body>
+<div layout:fragment="content" class="animate-fade">
+    <div class="mb-10">
+        <h1 class="text-4xl font-black text-secondary">Suivi des étudiants</h1>
+        <p class="text-muted font-medium mt-1">Analysez l'engagement et la progression de vos apprenants</p>
     </div>
-    <div class="flex items-center gap-4">
-        <button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors material-symbols-outlined">notifications</button>
-        <button class="p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors material-symbols-outlined">mail</button>
-        <div class="flex items-center gap-3">
-            <div class="h-8 w-8 rounded-full bg-primary-container flex items-center justify-center text-white">
-                <span class="material-symbols-outlined text-sm">account_circle</span>
-            </div>
-            <span class="text-sm font-medium" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</span>
-        </div>
-    </div>
-</nav>
 
-<!-- Sidebar -->
-<aside class="h-screen w-80 fixed left-0 top-0 z-40 bg-surface-container-low flex flex-col pt-20 px-6 gap-6 shadow-lg">
-    <div class="flex flex-col gap-1 mb-4">
-        <h2 class="text-xs tracking-widest uppercase text-slate-600">Mon Sanctuaire</h2>
-        <div class="flex items-center gap-3 mt-2">
-            <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-white">
-                <span class="material-symbols-outlined">school</span>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-blue-100 text-blue-600">
+                <i class="fi fi-br-users-alt"></i>
             </div>
             <div>
-                <p class="font-bold text-primary text-sm" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
-                <p class="text-[10px] text-slate-500 uppercase tracking-wider">Professeur</p>
+                <p class="text-muted text-[10px] font-bold uppercase tracking-wider">Total Étudiants</p>
+                <p class="text-2xl font-black text-secondary" th:text="${etudiants != null ? etudiants.size() : 0}">0</p>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-accent/10 text-accent">
+                <i class="fi fi-br-chart-line"></i>
+            </div>
+            <div>
+                <p class="text-muted text-[10px] font-bold uppercase tracking-wider">Progression Moy.</p>
+                <p class="text-2xl font-black text-secondary" id="avgProgression">0%</p>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-primary/10 text-primary">
+                <i class="fi fi-br-book-alt"></i>
+            </div>
+            <div>
+                <p class="text-muted text-[10px] font-bold uppercase tracking-wider">Cours Actifs</p>
+                <p class="text-2xl font-black text-secondary" th:text="${coursList != null ? coursList.size() : 0}">0</p>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-5">
+            <div class="stat-icon bg-orange-100 text-orange-500">
+                <i class="fi fi-br-time-past"></i>
+            </div>
+            <div>
+                <p class="text-muted text-[10px] font-bold uppercase tracking-wider">Actifs / 7j</p>
+                <p class="text-2xl font-black text-secondary" id="activeCount">0</p>
             </div>
         </div>
     </div>
 
-    <!-- Search -->
-    <div class="relative">
-        <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
-        <input type="text" id="searchInput" onkeyup="searchEtudiants()"
-               class="w-full bg-white border-none rounded-lg py-2 pl-10 text-sm focus:ring-2 focus:ring-primary transition-all"
-               placeholder="Rechercher un étudiant..."/>
-    </div>
-
-    <!-- Student List -->
-    <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-2" id="studentList">
-        <div th:each="etudiant : ${etudiants}" class="student-item" th:data-id="${etudiant.id}">
-            <a th:href="@{/professeur/etudiants/{id}(id=${etudiant.id})}"
-               class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary hover:bg-white rounded-lg transition-all group">
-                <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white">
-                    <span class="material-symbols-outlined text-sm">person</span>
+    <div class="card-premium !p-0 overflow-hidden">
+        <div class="px-8 py-6 border-b border-border-color flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-50/30">
+            <h2 class="text-xl font-bold text-secondary">Liste des apprenants</h2>
+            <div class="flex flex-wrap gap-3 w-full md:w-auto">
+                <div class="relative flex-1 md:flex-none">
+                    <i class="fi fi-br-search absolute left-4 top-1/2 -translate-y-1/2 text-muted text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Rechercher un nom..." class="w-full pl-11 pr-4 py-2.5 bg-white border border-border-color rounded-xl text-sm focus:outline-none focus:border-primary">
                 </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm truncate font-medium" th:text="${etudiant.nomComplet}">Étudiant</p>
-                    <div class="flex gap-2 mt-1">
-                        <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tight"
-                              th:classappend="${etudiant.progressionMoyenne >= 75 ? 'bg-green-100 text-green-700' : (etudiant.progressionMoyenne >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}"
-                              th:text="${etudiant.progressionMoyenne >= 75 ? 'Excellent' : (etudiant.progressionMoyenne >= 50 ? 'En progression' : 'À risque')}">
-                            Excellent
-                        </span>
-                        <span class="text-[10px] text-slate-400" th:text="${etudiant.nombreCours} + ' cours'">0 cours</span>
-                    </div>
-                </div>
-                <span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-all">chevron_right</span>
-            </a>
-        </div>
-        <div th:if="${etudiants == null or etudiants.empty}" class="text-center py-8 text-slate-500">
-            Aucun étudiant inscrit à vos cours
-        </div>
-    </div>
-
-    <div class="mt-auto border-t border-slate-200 pt-4 pb-6 flex flex-col gap-2">
-        <a href="/logout" class="flex items-center gap-3 text-slate-600 hover:text-primary transition-all py-2">
-            <span class="material-symbols-outlined text-xl">logout</span>
-            <span class="text-[10px] tracking-widest uppercase">Déconnexion</span>
-        </a>
-    </div>
-</aside>
-
-<!-- Main Content -->
-<main class="ml-80 pt-24 px-12 pb-12">
-    <div th:if="${error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" th:text="${error}"></div>
-
-    <!-- Header -->
-    <header class="flex flex-col md:flex-row justify-between items-end gap-8 mb-12">
-        <div class="max-w-xl">
-            <p class="text-xs tracking-[0.1em] uppercase text-slate-500 mb-2">Vue d'ensemble</p>
-            <h1 class="text-4xl font-black tracking-tighter text-on-surface leading-none mb-4">Suivi des étudiants</h1>
-            <p class="text-slate-600 leading-relaxed">
-                Consultez la progression de vos étudiants à travers tous vos cours.
-                <span th:if="${etudiants != null}" th:text="'(' + ${etudiants.size()} + ' étudiants)'" class="font-bold text-primary"></span>
-            </p>
-        </div>
-    </header>
-
-    <!-- Stats Summary - Version simplifiée sans expressions complexes -->
-    <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="material-symbols-outlined text-primary">groups</span>
-                <span class="text-xs uppercase tracking-wider text-slate-500">Total Étudiants</span>
-            </div>
-            <p class="text-3xl font-black" th:text="${etudiants != null ? etudiants.size() : 0}">0</p>
-        </div>
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="material-symbols-outlined text-primary">trending_up</span>
-                <span class="text-xs uppercase tracking-wider text-slate-500">Progression Moyenne</span>
-            </div>
-            <p class="text-3xl font-black" id="avgProgression">0%</p>
-        </div>
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="material-symbols-outlined text-primary">menu_book</span>
-                <span class="text-xs uppercase tracking-wider text-slate-500">Total Cours</span>
-            </div>
-            <p class="text-3xl font-black" th:text="${coursList != null ? coursList.size() : 0}">0</p>
-        </div>
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="material-symbols-outlined text-primary">schedule</span>
-                <span class="text-xs uppercase tracking-wider text-slate-500">Actifs cette semaine</span>
-            </div>
-            <p class="text-3xl font-black" id="activeCount">0</p>
-        </div>
-    </section>
-
-    <!-- Student List Table -->
-    <section>
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-on-surface">Liste des étudiants</h2>
-            <div class="flex gap-2">
-                <select id="filterProgression" onchange="filterByProgression()" class="px-4 py-2 border rounded-lg text-sm bg-white">
-                    <option value="">Toute progression</option>
-                    <option value="high">Progression élevée (≥75%)</option>
-                    <option value="medium">Progression moyenne (50-74%)</option>
-                    <option value="low">Progression faible (&lt;50%)</option>
+                <select id="filterProgression" class="bg-white border border-border-color rounded-xl px-4 py-2.5 text-sm font-bold text-secondary focus:outline-none focus:border-primary">
+                    <option value="">Tous les niveaux</option>
+                    <option value="high">Excellente (≥75%)</option>
+                    <option value="medium">Moyenne (50-74%)</option>
+                    <option value="low">À risque (<50%)</option>
                 </select>
             </div>
         </div>
-
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
             <table class="w-full">
-                <thead class="bg-surface-container-low">
-                <tr class="text-left text-sm text-slate-600">
-                    <th class="px-6 py-4 font-semibold">Étudiant</th>
-                    <th class="px-6 py-4 font-semibold">Email</th>
-                    <th class="px-6 py-4 font-semibold text-center">Cours suivis</th>
-                    <th class="px-6 py-4 font-semibold text-center">Progression</th>
-                    <th class="px-6 py-4 font-semibold">Dernière activité</th>
-                    <th class="px-6 py-4 font-semibold text-center">Actions</th>
-                </tr>
+                <thead>
+                    <tr class="text-left bg-gray-50/50">
+                        <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Étudiant</th>
+                        <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Contact</th>
+                        <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-center">Cours</th>
+                        <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Progression</th>
+                        <th class="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-center">Action</th>
+                    </tr>
                 </thead>
-                <tbody id="studentTableBody" class="divide-y divide-slate-100">
-                <tr th:each="etudiant : ${etudiants}" class="student-row"
-                    th:data-progression="${etudiant.progressionMoyenne}"
-                    th:data-cours-count="${etudiant.nombreCours}">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white">
-                                <span class="material-symbols-outlined text-sm">person</span>
-                            </div>
-                            <span class="font-medium" th:text="${etudiant.nomComplet}">Nom</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-slate-600" th:text="${etudiant.email}">email@example.com</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold" th:text="${etudiant.nombreCours}">0</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full transition-all duration-500"
-                                     th:classappend="${etudiant.progressionMoyenne >= 75 ? 'bg-green-500' : (etudiant.progressionMoyenne >= 50 ? 'bg-yellow-500' : 'bg-red-500')}"
-                                     th:style="'width: ' + ${etudiant.progressionMoyenne} + '%'"></div>
-                            </div>
-                            <span class="text-sm font-semibold min-w-[45px]" th:text="${etudiant.progressionMoyenne} + '%'">0%</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-slate-500 text-sm">
-                        <span th:if="${etudiant.derniereActivite != null}" th:text="${#temporals.format(etudiant.derniereActivite, 'dd/MM/yyyy HH:mm')}">-</span>
-                        <span th:unless="${etudiant.derniereActivite != null}">Jamais</span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <a th:href="@{/professeur/etudiants/{id}(id=${etudiant.id})}"
-                           class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                            <span class="material-symbols-outlined text-sm">visibility</span>
-                            Détail
-                        </a>
-                    </td>
-                </tr>
-                <tr th:if="${etudiants == null or etudiants.empty}">
-                    <td colspan="6" class="px-6 py-12 text-center text-slate-500">
-                        <span class="material-symbols-outlined text-4xl mb-2">sentiment_dissatisfied</span>
-                        <p>Aucun étudiant inscrit à vos cours pour le moment.</p>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-</main>
-
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    // Passer les données Java à JavaScript
-    const etudiantsData = /*[[${etudiants}]]*/ [];
-
-    // Calculer et afficher la progression moyenne
-    function updateStats() {
-        if (etudiantsData && etudiantsData.length > 0) {
-            let totalProgression = 0;
-            let activeCount = 0;
-            const now = new Date();
-            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-            for (let i = 0; i < etudiantsData.length; i++) {
-                totalProgression += etudiantsData[i].progressionMoyenne || 0;
-
-                // Vérifier si l'étudiant a été actif dans les 7 derniers jours
-                if (etudiantsData[i].derniereActivite) {
-                    const lastActivity = new Date(etudiantsData[i].derniereActivite);
-                    if (lastActivity >= sevenDaysAgo) {
-                        activeCount++;
-                    }
-                }
-            }
-
-            const avgProgression = Math.round(totalProgression / etudiantsData.length);
-            document.getElementById('avgProgression').innerText = avgProgression + '%';
-            document.getElementById('activeCount').innerText = activeCount;
-        }
-    }
-
-    // Recherche d'étudiants via AJAX
-    function searchEtudiants() {
-        let keyword = document.getElementById('searchInput').value;
-
-        if (keyword.length < 2) {
-            location.reload();
-            return;
-        }
-
-        fetch('/professeur/etudiants/recherche?keyword=' + encodeURIComponent(keyword))
-            .then(response => response.json())
-            .then(data => {
-                const studentList = document.getElementById('studentList');
-                const tableBody = document.getElementById('studentTableBody');
-
-                if (data.length === 0) {
-                    studentList.innerHTML = '<div class="text-center py-8 text-slate-500">Aucun résultat</div>';
-                    tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-slate-500">Aucun étudiant trouvé</td></tr>';
-                    return;
-                }
-
-                // Mettre à jour la sidebar
-                studentList.innerHTML = data.map(etudiant => `
-                    <div class="student-item" data-id="${etudiant.id}">
-                        <a href="/professeur/etudiants/${etudiant.id}"
-                           class="flex items-center gap-3 p-3 text-slate-600 hover:text-primary hover:bg-white rounded-lg transition-all group">
-                            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white">
-                                <span class="material-symbols-outlined text-sm">person</span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm truncate font-medium">${etudiant.nomComplet || ''}</p>
-                                <div class="flex gap-2 mt-1">
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-tight ${etudiant.progressionMoyenne >= 75 ? 'bg-green-100 text-green-700' : (etudiant.progressionMoyenne >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')}">
-                                        ${etudiant.progressionMoyenne >= 75 ? 'Excellent' : (etudiant.progressionMoyenne >= 50 ? 'En progression' : 'À risque')}
-                                    </span>
-                                    <span class="text-[10px] text-slate-400">${etudiant.nombreCours || 0} cours</span>
-                                </div>
-                            </div>
-                            <span class="material-symbols-outlined text-sm opacity-0 group-hover:opacity-100 transition-all">chevron_right</span>
-                        </a>
-                    </div>
-                `).join('');
-
-                // Mettre à jour le tableau
-                tableBody.innerHTML = data.map(etudiant => `
-                    <tr class="student-row" data-progression="${etudiant.progressionMoyenne || 0}" data-cours-count="${etudiant.nombreCours || 0}">
-                        <td class="px-6 py-4">
+                <tbody id="studentTableBody" class="divide-y divide-border-color">
+                    <tr th:each="e : ${etudiants}" class="student-row hover:bg-primary/5 transition-colors" th:data-progression="${e.progressionMoyenne}">
+                        <td class="px-8 py-5">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white">
-                                    <span class="material-symbols-outlined text-sm">person</span>
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                    <span th:text="${#strings.substring(e.nomComplet,0,1)}">E</span>
                                 </div>
-                                <span class="font-medium">${etudiant.nomComplet || ''}</span>
+                                <span class="font-bold text-secondary" th:text="${e.nomComplet}">Nom</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-slate-600">${etudiant.email || '-'}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">${etudiant.nombreCours || 0}</span>
+                        <td class="px-8 py-5 text-sm text-muted font-medium" th:text="${e.email}">email@example.com</td>
+                        <td class="px-8 py-5 text-center">
+                            <span class="px-3 py-1 bg-primary/5 text-primary rounded-full text-[10px] font-black uppercase" th:text="${e.nombreCours} + ' cours'">0</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full ${etudiant.progressionMoyenne >= 75 ? 'bg-green-500' : (etudiant.progressionMoyenne >= 50 ? 'bg-yellow-500' : 'bg-red-500')}" style="width: ${etudiant.progressionMoyenne || 0}%"></div>
+                        <td class="px-8 py-5">
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-1000 shadow-sm" 
+                                         th:classappend="${e.progressionMoyenne >= 75 ? 'bg-accent' : (e.progressionMoyenne >= 50 ? 'bg-primary' : 'bg-red-400')}" 
+                                         th:style="'width:' + ${e.progressionMoyenne} + '%'"></div>
                                 </div>
-                                <span class="text-sm font-semibold min-w-[45px]">${etudiant.progressionMoyenne || 0}%</span>
+                                <span class="text-xs font-black text-secondary" th:text="${e.progressionMoyenne} + '%'">0%</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-slate-500 text-sm">-</td>
-                        <td class="px-6 py-4 text-center">
-                            <a href="/professeur/etudiants/${etudiant.id}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                                <span class="material-symbols-outlined text-sm">visibility</span>
-                                Détail
+                        <td class="px-8 py-5 text-center">
+                            <a th:href="'/professeur/etudiants/' + ${e.id}" class="w-10 h-10 inline-flex items-center justify-center bg-white border border-border-color rounded-xl text-muted hover:text-primary hover:border-primary transition-all">
+                                <i class="fi fi-br-eye"></i>
                             </a>
                         </td>
                     </tr>
-                `).join('');
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-            });
+                    <tr th:if="${#lists.isEmpty(etudiants)}">
+                        <td colspan="5" class="px-8 py-20 text-center">
+                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-muted opacity-20">
+                                <i class="fi fi-br-users-alt text-3xl"></i>
+                            </div>
+                            <p class="font-bold text-muted">Aucun étudiant inscrit à vos cours</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+    const etudiantsData = /*[[${etudiants}]]*/ [];
+    
+    function updateStats() {
+        if(etudiantsData && etudiantsData.length) {
+            let total = 0, active = 0, now = new Date(), sevenDaysAgo = new Date(now - 7*24*60*60*1000);
+            for(let e of etudiantsData) {
+                total += e.progressionMoyenne || 0;
+                if(e.derniereActivite && new Date(e.derniereActivite) >= sevenDaysAgo) active++;
+            }
+            $('#avgProgression').text(Math.round(total/etudiantsData.length) + '%');
+            $('#activeCount').text(active);
+        }
     }
 
-    // Filtrage par progression
-    function filterByProgression() {
-        const filter = document.getElementById('filterProgression').value;
-        const rows = document.querySelectorAll('.student-row');
-
-        rows.forEach(row => {
-            const progression = parseInt(row.dataset.progression);
+    $('#filterProgression').on('change', function() {
+        let filter = $(this).val();
+        $('.student-row').each(function() {
+            let p = parseInt($(this).data('progression'));
             let show = true;
-
-            if (filter === 'high' && progression < 75) show = false;
-            if (filter === 'medium' && (progression < 50 || progression >= 75)) show = false;
-            if (filter === 'low' && progression >= 50) show = false;
-
-            row.style.display = show ? '' : 'none';
+            if(filter === 'high' && p < 75) show = false;
+            if(filter === 'medium' && (p < 50 || p >= 75)) show = false;
+            if(filter === 'low' && p >= 50) show = false;
+            $(this).toggle(show);
         });
-    }
-
-    // Debounce pour la recherche
-    let searchTimeout;
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(searchEtudiants, 300);
-        });
-    }
-
-    // Initialiser les stats au chargement
-    document.addEventListener('DOMContentLoaded', function() {
-        updateStats();
     });
-    /*]]>*/
-</script>
 
+    $('#searchInput').on('input', function() {
+        let val = $(this).val().toLowerCase();
+        $('.student-row').each(function() {
+            let name = $(this).find('.font-bold').text().toLowerCase();
+            $(this).toggle(name.includes(val));
+        });
+    });
+
+    $(document).ready(updateStats);
+</script>
 </body>
 </html>

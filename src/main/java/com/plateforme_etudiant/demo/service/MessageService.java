@@ -18,10 +18,14 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
+    private final org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
 
-    public MessageService(MessageRepository messageRepository, ConversationRepository conversationRepository) {
+    public MessageService(MessageRepository messageRepository, 
+                          ConversationRepository conversationRepository,
+                          org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -51,7 +55,13 @@ public class MessageService {
         conversationRepository.save(conv);
 
         message.setConversation(conv);
-        return messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+
+        // Notify both participants via WebSocket
+        messagingTemplate.convertAndSend("/topic/messages/" + conversationId, savedMessage);
+        messagingTemplate.convertAndSend("/topic/notifications/" + message.getReceiverId(), "NEW_MESSAGE");
+        
+        return savedMessage;
     }
 
     @Transactional(readOnly = true)

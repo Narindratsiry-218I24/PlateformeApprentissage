@@ -3,14 +3,14 @@ package com.plateforme_etudiant.demo.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "message")
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class Message {
@@ -38,6 +38,8 @@ public class Message {
     private boolean read;
     
     private String type;
+    private String fileUrl;
+    private String fileName;
 
     public String getFormattedTime() {
         if (timestamp == null) return "";
@@ -145,5 +147,21 @@ public class Message {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }

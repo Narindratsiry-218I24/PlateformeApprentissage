@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{Etudiant/layout}" 
+      lang="fr">
+<head>
+  <title>Centre d'Aide - L'Érudition</title>
+</head>
+<body>
+<div layout:fragment="content">
+  <!-- Header Section -->
+  <div class="mb-12">
+    <div class="flex items-center gap-4 mb-3">
+      <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+        <span class="material-symbols-outlined font-bold">help</span>
+      </div>
+      <div>
+        <h1 class="text-4xl font-black text-slate-900 tracking-tighter">Centre d'Aide</h1>
+        <p class="text-slate-500 font-medium">Tout ce que vous devez savoir pour bien utiliser la plateforme</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- FAQ Section -->
+    <div class="space-y-6">
+      <h2 class="text-2xl font-black text-slate-900 mb-6">Questions Fréquentes</h2>
+      
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <h3 class="font-bold text-primary mb-2">Comment s'inscrire à un cours ?</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Allez dans le "Catalogue", choisissez le cours qui vous intéresse et cliquez sur le bouton "S'inscrire". Le cours apparaîtra immédiatement dans votre tableau de bord.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <h3 class="font-bold text-primary mb-2">Comment obtenir mon certificat ?</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Vous devez terminer tous les chapitres d'un cours et réussir le quiz final avec un score de 100%. Une fois réussi, le bouton de téléchargement apparaîtra sur la page du cours.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <h3 class="font-bold text-primary mb-2">Comment contacter un professeur ?</h3>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          Utilisez l'onglet "Messages" dans votre barre latérale. Vous y trouverez la liste de vos professeurs pour engager une discussion en temps réel.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contact Support Section -->
+    <div class="space-y-6">
+      <h2 class="text-2xl font-black text-slate-900 mb-6">Support Technique</h2>
+      
+      <div class="bg-primary rounded-[2rem] p-10 text-white shadow-xl">
+        <h3 class="text-xl font-black mb-4">Besoin d'une assistance directe ?</h3>
+        <p class="text-white/70 mb-8 leading-relaxed">
+          Notre équipe technique est disponible pour vous aider en cas de problème de connexion ou d'accès aux cours.
+        </p>
+        
+        <div class="space-y-4">
+          <div class="flex items-center gap-4 p-4 bg-white/10 rounded-2xl border border-white/10">
+            <span class="material-symbols-outlined">mail</span>
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-white/50">Email</p>
+              <p class="font-bold">support@lerudition.com</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4 p-4 bg-white/10 rounded-2xl border border-white/10">
+            <span class="material-symbols-outlined">call</span>
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-white/50">Téléphone</p>
+              <p class="font-bold">+261 34 00 000 00</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

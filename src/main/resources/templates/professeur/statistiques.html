@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
+<head>
+    <title>Statistiques & Rapports</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-secondary">Tableau des Statistiques</h1>
+        <p class="text-secondary-light font-medium mt-1">Analysez l'engagement des étudiants et les performances de vos cours.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="card-premium flex items-center gap-4">
+            <div class="stat-icon bg-blue-50 text-blue-500 text-2xl">
+                <i class="fi fi-br-users-alt"></i>
+            </div>
+            <div>
+                <p class="text-xs text-text-muted font-bold uppercase tracking-wider">Taux d'achèvement</p>
+                <h3 class="text-xl font-bold text-secondary mt-1">74.2%</h3>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-4">
+            <div class="stat-icon bg-green-50 text-green-500 text-2xl">
+                <i class="fi fi-br-checkbox"></i>
+            </div>
+            <div>
+                <p class="text-xs text-text-muted font-bold uppercase tracking-wider">Moyenne des Quiz</p>
+                <h3 class="text-xl font-bold text-secondary mt-1">14.8 / 20</h3>
+            </div>
+        </div>
+        <div class="card-premium flex items-center gap-4">
+            <div class="stat-icon bg-purple-50 text-purple-500 text-2xl">
+                <i class="fi fi-br-time-past"></i>
+            </div>
+            <div>
+                <p class="text-xs text-text-muted font-bold uppercase tracking-wider">Temps d'apprentissage</p>
+                <h3 class="text-xl font-bold text-secondary mt-1">45h / Étudiant</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-premium p-6">
+        <h2 class="text-lg font-bold text-secondary mb-4 flex items-center gap-2">
+            <i class="fi fi-br-chart-histogram text-primary"></i> Évolution de l'engagement des étudiants
+        </h2>
+        <div class="h-64 bg-slate-50 border border-border-color rounded-2xl flex items-center justify-center">
+            <span class="text-sm text-text-muted font-semibold flex items-center gap-2">
+                <i class="fi fi-rr-chart-line-up"></i> Représentation graphique des statistiques mensuelles.
+            </span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

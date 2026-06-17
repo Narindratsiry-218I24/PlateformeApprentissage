@@ -1,10 +1,11 @@
 package com.plateforme_etudiant.demo.controller.web;
 
-import com.plateforme_etudiant.demo.model.Professeur;
 import com.plateforme_etudiant.demo.model.Utilisateur;
 import com.plateforme_etudiant.demo.model.enums.Role;
-import com.plateforme_etudiant.demo.repository.ProfesseurRepository;
 import com.plateforme_etudiant.demo.repository.UtilisateurRepository;
+import com.plateforme_etudiant.demo.service.MailService;
+import com.plateforme_etudiant.demo.service.VerificationCodeService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,108 +27,292 @@ public class InscriptionController {
     private UtilisateurRepository utilisateurRepository;
 
     @Autowired
-    private ProfesseurRepository professeurRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MailService mailService;
+
+    @Autowired
+    private VerificationCodeService verificationCodeService;
+
+    // ==========================================
+    // PAGE D'INSCRIPTION - ÉTAPE 1
+    // ==========================================
+
     @GetMapping("/inscription")
-    public String inscriptionPage() {
+    public String inscriptionPage(HttpSession session) {
+        nettoyerSession(session);
         return "inscription";
     }
 
-    @PostMapping("/inscription")
-    public String inscription(@RequestParam String prenom,
-                              @RequestParam String nom,
-                              @RequestParam String email,
-                              @RequestParam String nomUtilisateur,
-                              @RequestParam String motDePasse,
-                              @RequestParam String confirmMotDePasse,
-                              @RequestParam(required = false) String role,  // NOUVEAU: rôle choisi
-                              @RequestParam(required = false) String specialite,
-                              @RequestParam(required = false) String biographie,
-                              Model model) {
+    /**
+     * Étape 1 : Nom et Prénom
+     */
+    @PostMapping("/inscription/etape1")
+    public String etape1(@RequestParam String prenom,
+                         @RequestParam String nom,
+                         HttpSession session,
+                         Model model) {
 
-        log.info("=== TENTATIVE D'INSCRIPTION ===");
-        log.info("Email: {}", email);
-        log.info("Prénom: {}", prenom);
-        log.info("Nom: {}", nom);
-        log.info("Rôle choisi: {}", role);
+        log.info("=== ÉTAPE 1 : INFOS PERSONNELLES ===");
+        log.info("Prénom: {}, Nom: {}", prenom, nom);
 
-        // 1. Vérifier que les mots de passe correspondent
+        // Validation prénom
+        if (prenom == null || prenom.trim().length() < 2) {
+            model.addAttribute("error", "Le prénom doit contenir au moins 2 caractères");
+            return "inscription";
+        }
+
+        // Validation nom
+        if (nom == null || nom.trim().length() < 2) {
+            model.addAttribute("error", "Le nom doit contenir au moins 2 caractères");
+            return "inscription";
+        }
+
+        // Stocker en session
+        session.setAttribute("inscription_prenom", prenom.trim());
+        session.setAttribute("inscription_nom", nom.trim());
+        session.setAttribute("inscription_etape", 1);
+
+        return "redirect:/inscription/etape2";
+    }
+
+    // ==========================================
+    // ÉTAPE 2 : Email, Username, Mot de passe
+    // ==========================================
+
+    @GetMapping("/inscription/etape2")
+    public String etape2Page(HttpSession session, Model model) {
+        Integer etape = (Integer) session.getAttribute("inscription_etape");
+        if (etape == null || etape < 1) {
+            return "redirect:/inscription";
+        }
+
+        model.addAttribute("prenom", session.getAttribute("inscription_prenom"));
+        model.addAttribute("nom", session.getAttribute("inscription_nom"));
+
+        return "inscription-etape2";
+    }
+
+    /**
+     * Étape 2 : Validation email, username, mot de passe
+     */
+    @PostMapping("/inscription/etape2")
+    public String etape2(@RequestParam String email,
+                         @RequestParam String nomUtilisateur,
+                         @RequestParam String motDePasse,
+                         @RequestParam String confirmMotDePasse,
+                         HttpSession session,
+                         Model model) {
+
+        log.info("=== ÉTAPE 2 : IDENTIFIANTS ===");
+        log.info("Email: {}, Username: {}", email, nomUtilisateur);
+
+        // Validation email
+        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            model.addAttribute("error", "Format d'email invalide");
+            chargerDonneesEtape1(session, model);
+            return "inscription-etape2";
+        }
+
+        // Validation nom d'utilisateur
+        if (nomUtilisateur == null || nomUtilisateur.trim().length() < 3) {
+            model.addAttribute("error", "Le nom d'utilisateur doit contenir au moins 3 caractères");
+            chargerDonneesEtape1(session, model);
+            return "inscription-etape2";
+        }
+
+        // Validation mots de passe
         if (!motDePasse.equals(confirmMotDePasse)) {
-            log.warn("❌ Les mots de passe ne correspondent pas");
             model.addAttribute("error", "Les mots de passe ne correspondent pas");
-            return "inscription";
+            chargerDonneesEtape1(session, model);
+            return "inscription-etape2";
         }
 
-        // 2. Vérifier la longueur du mot de passe
         if (motDePasse.length() < 6) {
-            log.warn("❌ Mot de passe trop court");
             model.addAttribute("error", "Le mot de passe doit contenir au moins 6 caractères");
-            return "inscription";
+            chargerDonneesEtape1(session, model);
+            return "inscription-etape2";
         }
 
-        // 3. Vérifier si l'email existe déjà
-        if (utilisateurRepository.existsByEmail(email)) {
-            log.warn("❌ Email déjà utilisé: {}", email);
+        // Vérifier unicité email
+        if (utilisateurRepository.existsByEmail(email.trim().toLowerCase())) {
             model.addAttribute("error", "Cet email est déjà utilisé");
-            return "inscription";
+            chargerDonneesEtape1(session, model);
+            return "inscription-etape2";
         }
 
-        // 4. Vérifier si le nom d'utilisateur existe déjà
-        if (utilisateurRepository.existsByNomUtilisateur(nomUtilisateur)) {
-            log.warn("❌ Nom d'utilisateur déjà pris: {}", nomUtilisateur);
+        // Vérifier unicité username
+        if (utilisateurRepository.existsByNomUtilisateur(nomUtilisateur.trim())) {
             model.addAttribute("error", "Ce nom d'utilisateur est déjà pris");
-            return "inscription";
+            chargerDonneesEtape1(session, model);
+            return "inscription-etape2";
         }
+
+        // Stocker en session
+        session.setAttribute("inscription_email", email.trim().toLowerCase());
+        session.setAttribute("inscription_nomUtilisateur", nomUtilisateur.trim());
+        session.setAttribute("inscription_motDePasse", motDePasse);
+        session.setAttribute("inscription_etape", 2);
+
+        return "redirect:/inscription/etape3";
+    }
+
+    // ==========================================
+    // ÉTAPE 3 : Vérification email
+    // ==========================================
+
+    @GetMapping("/inscription/etape3")
+    public String etape3Page(HttpSession session, Model model) {
+        Integer etape = (Integer) session.getAttribute("inscription_etape");
+        if (etape == null || etape < 2) {
+            return "redirect:/inscription";
+        }
+
+        String email = (String) session.getAttribute("inscription_email");
 
         try {
-            // 5. Déterminer le rôle (par défaut APPRENANT)
-            Role userRole;
-            if ("PROFESSEUR".equalsIgnoreCase(role)) {
-                userRole = Role.PROFESSEUR;
-            } else {
-                userRole = Role.APPRENANT;  // Par défaut: étudiant
+            // Générer et envoyer le code
+            String code = verificationCodeService.generateCode();
+            verificationCodeService.storeCode(email, code);
+
+            log.info("📧 Code pour {}: {}", email, code);
+
+            boolean sent = mailService.sendVerificationCode(email, code);
+
+            model.addAttribute("emailMasque", masquerEmail(email));
+            model.addAttribute("codeEnvoye", sent);
+
+            if (!sent) {
+                model.addAttribute("error", "Erreur lors de l'envoi du code.");
             }
 
-            // 6. Créer l'utilisateur avec mot de passe ENCODÉ
+        } catch (Exception e) {
+            log.error("❌ Erreur envoi code: {}", e.getMessage());
+            model.addAttribute("emailMasque", masquerEmail(email));
+            model.addAttribute("error", "Erreur: " + e.getMessage());
+        }
+
+        return "inscription-etape3";
+    }
+
+    /**
+     * Étape 3 : Vérification du code et création du compte
+     */
+    @PostMapping("/inscription/etape3")
+    public String etape3(@RequestParam String code,
+                         HttpSession session,
+                         Model model) {
+
+        String email = (String) session.getAttribute("inscription_email");
+
+        if (email == null) {
+            return "redirect:/inscription";
+        }
+
+        log.info("=== ÉTAPE 3 : VÉRIFICATION ===");
+        log.info("Code saisi: {}", code);
+
+        // Vérifier le code
+        boolean codeValide = verificationCodeService.verifyCode(email, code);
+
+        if (!codeValide) {
+            model.addAttribute("emailMasque", masquerEmail(email));
+            model.addAttribute("error", "Code invalide ou expiré. Veuillez réessayer.");
+            model.addAttribute("codeEnvoye", true);
+            return "inscription-etape3";
+        }
+
+        // ✅ Code valide → Créer le compte étudiant
+        try {
+            String prenom = (String) session.getAttribute("inscription_prenom");
+            String nom = (String) session.getAttribute("inscription_nom");
+            String nomUtilisateur = (String) session.getAttribute("inscription_nomUtilisateur");
+            String motDePasse = (String) session.getAttribute("inscription_motDePasse");
+
+            // Créer l'utilisateur (toujours APPRENANT)
             Utilisateur utilisateur = new Utilisateur();
             utilisateur.setEmail(email);
             utilisateur.setNomUtilisateur(nomUtilisateur);
             utilisateur.setMotDePasse(passwordEncoder.encode(motDePasse));
             utilisateur.setPrenom(prenom);
             utilisateur.setNom(nom);
-            utilisateur.setRole(userRole);
+            utilisateur.setRole(Role.APPRENANT); // Toujours étudiant
             utilisateur.setActif(true);
             utilisateur.setDateCreation(LocalDateTime.now());
 
             Utilisateur savedUser = utilisateurRepository.save(utilisateur);
-            log.info("✅ Utilisateur créé avec ID: {} et rôle: {}", savedUser.getId(), userRole);
+            log.info("✅ Compte étudiant créé ID: {}", savedUser.getId());
 
-            // 7. Si c'est un professeur, créer l'entité Professeur associée
-            if (userRole == Role.PROFESSEUR) {
-                Professeur professeur = new Professeur();
-                professeur.setUtilisateur(savedUser);
-                professeur.setSpecialite(specialite != null && !specialite.isEmpty() ? specialite : "Non spécifiée");
-                professeur.setBiographie(biographie != null ? biographie : "");
-                professeur.setVerifie(true);
-                professeur.setDateCreation(LocalDateTime.now());
+            // Envoyer email de bienvenue
+            mailService.sendWelcomeEmail(email, prenom);
 
-                professeurRepository.save(professeur);
-                log.info("✅ Professeur créé avec succès");
-                model.addAttribute("success", "✅ Inscription professeur réussie ! Vous pouvez maintenant vous connecter.");
-            } else {
-                log.info("✅ Étudiant créé avec succès");
-                model.addAttribute("success", "✅ Inscription étudiante réussie ! Vous pouvez maintenant vous connecter.");
-            }
+            // Nettoyer la session
+            nettoyerSession(session);
+
+            // Rediriger vers login avec message de succès
+            return "redirect:/login?success=Inscription+r%C3%A9ussie+!+Vous+pouvez+maintenant+vous+connecter.";
 
         } catch (Exception e) {
-            log.error("❌ Erreur lors de l'inscription: {}", e.getMessage(), e);
-            model.addAttribute("error", "Erreur: " + e.getMessage());
-            return "inscription";
+            log.error("❌ Erreur création compte: {}", e.getMessage(), e);
+            model.addAttribute("emailMasque", masquerEmail(email));
+            model.addAttribute("error", "Erreur lors de la création du compte: " + e.getMessage());
+            return "inscription-etape3";
+        }
+    }
+
+    // ==========================================
+    // RENVOYER LE CODE
+    // ==========================================
+
+    @PostMapping("/inscription/renvoyer-code")
+    public String renvoyerCode(HttpSession session, Model model) {
+        String email = (String) session.getAttribute("inscription_email");
+
+        if (email == null) {
+            return "redirect:/inscription";
         }
 
-        return "inscription";
+        String code = verificationCodeService.generateCode();
+        verificationCodeService.storeCode(email, code);
+
+        log.info("📧 Nouveau code pour {}: {}", email, code);
+
+        boolean sent = mailService.sendVerificationCode(email, code);
+
+        model.addAttribute("emailMasque", masquerEmail(email));
+        model.addAttribute("codeEnvoye", true);
+
+        if (sent) {
+            model.addAttribute("success", "✅ Nouveau code envoyé !");
+        } else {
+            model.addAttribute("error", "❌ Erreur lors de l'envoi.");
+        }
+
+        return "inscription-etape3";
+    }
+
+    // ==========================================
+    // MÉTHODES UTILITAIRES
+    // ==========================================
+
+    private String masquerEmail(String email) {
+        int atIndex = email.indexOf('@');
+        if (atIndex <= 2) return email;
+        return email.substring(0, 2) + "***" + email.substring(atIndex);
+    }
+
+    private void chargerDonneesEtape1(HttpSession session, Model model) {
+        model.addAttribute("prenom", session.getAttribute("inscription_prenom"));
+        model.addAttribute("nom", session.getAttribute("inscription_nom"));
+    }
+
+    private void nettoyerSession(HttpSession session) {
+        session.removeAttribute("inscription_prenom");
+        session.removeAttribute("inscription_nom");
+        session.removeAttribute("inscription_email");
+        session.removeAttribute("inscription_nomUtilisateur");
+        session.removeAttribute("inscription_motDePasse");
+        session.removeAttribute("inscription_etape");
     }
 }

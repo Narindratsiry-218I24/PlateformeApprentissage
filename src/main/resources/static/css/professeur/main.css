@@ -3,10 +3,10 @@
    ======================================== */
 :root {
     /* Colors */
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #818cf8;
-    --secondary: #ec489a;
+    --primary: #a855f7;
+    --primary-dark: #9333ea;
+    --primary-light: #c084fc;
+    --secondary: #d946ef;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
@@ -133,7 +133,7 @@ h1, h2, h3, h4, h5, h6 {
     top: 0;
     height: 100vh;
     width: 280px;
-    background: linear-gradient(180deg, #1e1b4b 0%, #2e1065 100%);
+    background: var(--primary);
     color: white;
     transition: width var(--transition-normal);
     z-index: 1000;

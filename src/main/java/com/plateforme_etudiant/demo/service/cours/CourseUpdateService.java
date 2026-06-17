@@ -52,8 +52,10 @@ public class CourseUpdateService {
         log.info("Mise a jour du cours ID: {}", coursId);
 
         Cours cours = getCours(coursId);
-        cours.setTitre(request.getTitre());
-        cours.setSlug(slugGeneratorService.genererSlugCours(request.getTitre()));
+        if (cours.getTitre() == null || !cours.getTitre().equals(request.getTitre())) {
+            cours.setTitre(request.getTitre());
+            cours.setSlug(slugGeneratorService.genererSlugCours(request.getTitre()));
+        }
         cours.setDescriptionCourte(request.getDescriptionCourte());
         cours.setDescription(request.getDescription());
         cours.setImageCouverture(request.getImageCouverture());

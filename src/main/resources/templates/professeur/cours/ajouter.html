@@ -1,735 +1,617 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Ajouter un cours - L'Érudition Augmentée</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <title>Ajouter un cours - L'Érudition</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .step-pill {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+        .step-pill.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.05);
         }
-
-        /* Couleurs principales - MITOMY AMIN'NY DASHBOARD */
-        .bg-primary { background-color: #003178; }
-        .text-primary { color: #003178; }
-        .border-primary { border-color: #003178; }
-        .hover\:bg-primary\/90:hover { background-color: rgba(0, 49, 120, 0.9); }
-        .hover\:text-primary:hover { color: #003178; }
-
-        /* Navigation fixe */
-        .navbar-fixed {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #e5e7eb;
+        .step-pill.completed {
+            background: #E6FFFA;
+            color: #01B574;
         }
-
-        /* Sidebar fixe */
-        .sidebar-fixed {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 280px;
-            background-color: #f8fafc;
-            border-right: 1px solid #e5e7eb;
-            z-index: 900;
-            overflow-y: auto;
+        .input-premium {
+            background: #F4F7FE;
+            border: 2px solid #E0E5F2;
+            border-radius: 16px;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-weight: 500;
         }
-
-        /* Main content */
-        .main-content {
-            margin-left: 280px;
-            padding-top: 72px;
-            min-height: 100vh;
+        .input-premium:focus {
+            border-color: var(--primary);
+            background: white;
+            outline: none;
+            box-shadow: 0px 10px 20px rgba(67, 24, 255, 0.05);
         }
-
-        /* Stepper */
-        .step {
-            transition: all 0.3s ease;
+        .input-premium::placeholder {
+            color: #A3AED0;
         }
-        .step-active {
-            background-color: #003178;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 49, 120, 0.2);
+        .section-card {
+            border-left: 4px solid var(--primary);
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
         }
-        .step-completed {
-            background-color: #10b981;
-            color: white;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
-
-        /* Modal */
-        .modal {
+        .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
             z-index: 1100;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
         }
-        .modal-content {
-            background-color: white;
-            border-radius: 16px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #003178;
-            border-radius: 3px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar-fixed {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            .sidebar-fixed.open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
-        .section-card {
-            transition: all 0.2s ease;
-            border: 1px solid #e5e7eb;
-        }
-        .section-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .chapitre-item {
-            background-color: #f8fafc;
-            border-left: 3px solid #003178;
-            transition: all 0.2s ease;
-        }
-        .chapitre-item:hover {
-            background-color: #f1f5f9;
-        }
+        .modal-overlay.active { display: flex; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
+<div layout:fragment="content" class="animate-fade">
+    <div class="mb-8">
+        <a href="/professeur/cours" class="inline-flex items-center gap-2 text-muted hover:text-primary transition-colors mb-4 font-bold text-sm">
+            <i class="fi fi-br-arrow-left"></i>
+            <span>Retour aux cours</span>
+        </a>
+        <h1 class="text-4xl font-black text-secondary">Créer une formation</h1>
+        <p class="text-muted font-medium mt-2">Partagez votre savoir avec des milliers d'étudiants</p>
+    </div>
 
-<!-- Navigation Fixe - MITOMY AMIN'NY DASHBOARD -->
-<nav class="navbar-fixed">
-    <div class="flex justify-between items-center px-4 md:px-8 h-16">
-        <div class="flex items-center gap-8">
-            <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
-            <div class="hidden md:flex items-center gap-6">
-                <a href="/professeur/dashboard" class="text-gray-500 hover:text-primary transition-colors">Dashboard</a>
-                <a href="/professeur/cours" class="text-primary font-bold border-b-2 border-primary pb-2">Mes cours</a>
-                <a href="/professeur/etudiants" class="text-gray-500 hover:text-primary transition-colors">Étudiants</a>
+    <!-- Stepper Premium -->
+    <div class="card-premium mb-8 flex flex-wrap gap-4">
+        <div class="step-pill active flex-1 py-4 px-6 rounded-2xl flex items-center gap-4 cursor-pointer" data-step="1">
+            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold shadow-sm">1</div>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Étape 1</p>
+                <p class="font-bold whitespace-nowrap">Infos Générales</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <button class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-                <span class="material-symbols-outlined">notifications</span>
+        <div class="step-pill flex-1 py-4 px-6 rounded-2xl flex items-center gap-4 cursor-pointer" data-step="2">
+            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold shadow-sm">2</div>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Étape 2</p>
+                <p class="font-bold whitespace-nowrap">Curriculum</p>
+            </div>
+        </div>
+        <div class="step-pill flex-1 py-4 px-6 rounded-2xl flex items-center gap-4 cursor-pointer" data-step="3">
+            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-bold shadow-sm">3</div>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Étape 3</p>
+                <p class="font-bold whitespace-nowrap">Aperçu & Publication</p>
+            </div>
+        </div>
+    </div>
+
+    <form id="courseForm" class="space-y-8">
+        <!-- Étape 1: Infos Générales -->
+        <div id="step-1" class="step-content animate-fade">
+            <div class="card-premium space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-secondary">Titre de la formation <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fi fi-br-book-alt absolute left-5 top-1/2 -translate-y-1/2 text-muted"></i>
+                            <input type="text" id="titre" required class="input-premium pl-14" placeholder="Ex: Masterclass Java Spring Boot">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-secondary">Description courte <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fi fi-br-chat-bubble-quote absolute left-5 top-1/2 -translate-y-1/2 text-muted"></i>
+                            <input type="text" id="descriptionCourte" required class="input-premium pl-14" placeholder="Ex: Un guide complet pour débutants">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-secondary">Catégorie <span class="text-red-500">*</span></label>
+                    <div class="relative font-bold text-secondary">
+                        <i class="fi fi-br-apps absolute left-5 top-1/2 -translate-y-1/2 text-muted"></i>
+                        <select id="categorieId" required class="input-premium pl-14 appearance-none">
+                            <option value="" disabled selected>Choisir une catégorie...</option>
+                            <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.nom}">Catégorie</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-sm font-bold text-secondary">Description détaillée <span class="text-red-500">*</span></label>
+                    <textarea id="description" required rows="6" class="input-premium resize-none" placeholder="Décrivez les objectifs du cours, les prérequis..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-secondary">Durée estimée (minutes)</label>
+                        <div class="relative">
+                            <i class="fi fi-br-time-past absolute left-5 top-1/2 -translate-y-1/2 text-muted"></i>
+                            <input type="number" id="dureeEstimee" class="input-premium pl-14" placeholder="Ex: 480">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-secondary">Image de couverture</label>
+                        <div class="relative">
+                            <input type="file" id="imageCouverture" accept="image/*" class="input-premium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary file:text-white hover:file:bg-primary-dark">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-secondary">Quiz initial (optionnel)</label>
+                        <div class="relative">
+                            <i class="fi fi-br-quiz-alt absolute left-5 top-1/2 -translate-y-1/2 text-muted"></i>
+                            <input type="text" id="quizTitre" class="input-premium pl-14" placeholder="Ex: Quiz de validation">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <label class="block text-sm font-bold text-secondary">Description quiz (optionnel)</label>
+                        <input type="text" id="quizDescription" class="input-premium" placeholder="Ex: 10 questions">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 2: Curriculum -->
+        <div id="step-2" class="step-content hidden animate-fade">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-secondary">Structure du Curriculum</h2>
+                <button type="button" id="addSectionBtn" class="btn-primary flex items-center gap-2">
+                    <i class="fi fi-br-add"></i>
+                    <span>Ajouter une Section</span>
+                </button>
+            </div>
+            <div id="sectionsContainer" class="space-y-6">
+                <!-- Les sections seront injectées ici -->
+            </div>
+        </div>
+
+        <!-- Étape 3: Publication -->
+        <div id="step-3" class="step-content hidden animate-fade">
+            <div class="card-premium text-center py-12">
+                <div class="w-24 h-24 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+                    <i class="fi fi-br-rocket-lunch"></i>
+                </div>
+                <h2 class="text-3xl font-black text-secondary mb-4">Prêt pour le lancement ?</h2>
+                <p class="text-muted max-w-lg mx-auto mb-10">Votre formation est presque prête. Vous pouvez la sauvegarder pour plus tard ou la publier immédiatement.</p>
+                
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button type="button" id="saveDraftBtn" class="px-8 py-4 bg-white border-2 border-border-color text-secondary font-bold rounded-2xl hover:border-primary transition-all">
+                        Sauvegarder en brouillon
+                    </button>
+                    <button type="button" id="publishBtn" class="btn-primary px-12 py-4">
+                        Publier ma formation
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-10">
+                <h3 class="text-xl font-bold text-secondary mb-6">Aperçu de la structure</h3>
+                <div id="previewContainer" class="card-premium">
+                    <!-- Aperçu -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons de Navigation -->
+        <div class="flex justify-between items-center pt-10">
+            <button type="button" id="prevBtn" class="hidden px-8 py-3 bg-white text-secondary font-bold rounded-xl border border-border-color hover:bg-gray-50 transition-all flex items-center gap-2">
+                <i class="fi fi-br-arrow-left"></i> Précédent
             </button>
-            <div class="flex items-center gap-3">
-                <div class="text-right hidden md:block">
-                    <p class="text-sm font-bold text-gray-900" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
-                    <p class="text-xs text-gray-500" th:text="${professeur != null ? professeur.specialite : 'Formateur'}">Formateur</p>
-                </div>
-                <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shadow-md">
-                    <span th:text="${professeur != null ? #strings.substring(professeur.prenom, 0, 1) + #strings.substring(professeur.nom, 0, 1) : 'P'}">P</span>
-                </div>
-            </div>
+            <button type="button" id="nextBtn" class="btn-primary ml-auto flex items-center gap-2">
+                <span>Étape Suivante</span> <i class="fi fi-br-arrow-right"></i>
+            </button>
         </div>
-    </div>
-</nav>
-
-<!-- Sidebar Fixe - MITOMY AMIN'NY DASHBOARD -->
-<aside class="sidebar-fixed pt-20">
-    <div class="p-6">
-        <div class="mb-8">
-            <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Menu principal</p>
-            <div class="h-px bg-gray-200 mb-4"></div>
-        </div>
-        <nav class="space-y-1">
-            <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg transition-all">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="text-sm font-semibold">Tableau de bord</span>
-            </a>
-            <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-primary font-bold bg-white rounded-lg shadow-sm transition-all">
-                <span class="material-symbols-outlined">menu_book</span>
-                <span class="text-sm font-semibold">Mes cours</span>
-            </a>
-            <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg transition-all">
-                <span class="material-symbols-outlined">groups</span>
-                <span class="text-sm font-semibold">Étudiants</span>
-            </a>
-            <a href="/messages" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-primary hover:bg-white/50 rounded-lg transition-all">
-                <span class="material-symbols-outlined">chat</span>
-                <span class="text-sm font-semibold">Messagerie</span>
-            </a>
-            <div class="pt-8 mt-8 border-t border-gray-200">
-                <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                    <span class="material-symbols-outlined">logout</span>
-                    <span class="text-sm font-semibold">Déconnexion</span>
-                </a>
-            </div>
-        </nav>
-    </div>
-</aside>
-
-<!-- Main Content -->
-<main class="main-content">
-    <div class="p-4 md:p-8 max-w-7xl mx-auto">
-
-        <form id="courseForm">
-            <!-- Header -->
-            <div class="mb-8">
-                <a href="/professeur/cours" class="flex items-center gap-2 text-primary hover:underline mb-4">
-                    <span class="material-symbols-outlined text-sm">arrow_back</span>
-                    <span class="text-sm">Retour aux cours</span>
-                </a>
-                <h1 class="text-3xl md:text-4xl font-black text-gray-900">Ajouter un nouveau cours</h1>
-                <p class="text-gray-500 mt-2">Créez votre cours et organisez son contenu</p>
-            </div>
-
-            <!-- Stepper -->
-            <div class="bg-white rounded-xl p-4 mb-8 shadow-sm border border-gray-100">
-                <div class="flex flex-wrap md:flex-nowrap gap-2">
-                    <div class="step step-1 flex-1 text-center py-3 px-4 rounded-lg bg-primary text-white cursor-pointer transition-all" data-step="1">
-                        <span class="font-bold text-sm uppercase tracking-wider">1. Infos Générales</span>
-                    </div>
-                    <div class="step step-2 flex-1 text-center py-3 px-4 rounded-lg bg-gray-100 text-gray-500 cursor-pointer transition-all" data-step="2">
-                        <span class="font-medium text-sm uppercase tracking-wider">2. Structure</span>
-                    </div>
-                    <div class="step step-3 flex-1 text-center py-3 px-4 rounded-lg bg-gray-100 text-gray-500 cursor-pointer transition-all" data-step="3">
-                        <span class="font-medium text-sm uppercase tracking-wider">3. Aperçu</span>
-                    </div>
-                    <div class="step step-4 flex-1 text-center py-3 px-4 rounded-lg bg-gray-100 text-gray-500 cursor-pointer transition-all" data-step="4">
-                        <span class="font-medium text-sm uppercase tracking-wider">4. Publication</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Étape 1: Infos générales -->
-            <div id="step1" class="step-content">
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Informations générales</h2>
-                    <div class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Titre du cours *</label>
-                            <input type="text" id="titre" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Ex: Développement Web Moderne"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Description courte</label>
-                            <input type="text" id="descriptionCourte" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Brève description du cours"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Description complète</label>
-                            <textarea id="description" rows="5" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="Description détaillée du cours, objectifs pédagogiques..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Durée estimée (minutes)</label>
-                            <input type="number" id="dureeEstimee" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" placeholder="480"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Image de couverture</label>
-                            <input type="file" id="imageCouverture" accept="image/*" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3"/>
-                            <p class="text-xs text-gray-400 mt-1">Format recommandé: JPG ou PNG, 1280x720px</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Étape 2: Structure -->
-            <div id="step2" class="step-content" style="display:none;">
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Structure du cours</h2>
-                        <button type="button" id="addSectionBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
-                            <span class="material-symbols-outlined text-sm">add</span>
-                            Ajouter une section
-                        </button>
-                    </div>
-                    <div id="sectionsContainer" class="space-y-4"></div>
-                </div>
-            </div>
-
-            <!-- Étape 3: Aperçu -->
-            <div id="step3" class="step-content" style="display:none;">
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Aperçu du contenu</h2>
-                    <div id="previewContainer" class="max-h-96 overflow-y-auto"></div>
-                </div>
-            </div>
-
-            <!-- Étape 4: Publication -->
-            <div id="step4" class="step-content" style="display:none;">
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Publication</h2>
-                    <div class="bg-primary/5 p-6 rounded-xl border border-primary/20">
-                        <h3 class="font-bold text-lg text-gray-900 mb-2">Prêt à publier ?</h3>
-                        <p class="text-gray-600 mb-4">Votre cours sera visible par tous les apprenants après publication.</p>
-                        <div class="flex flex-wrap gap-4">
-                            <button type="button" id="saveDraftBtn" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition-colors">Sauvegarder en brouillon</button>
-                            <button type="button" id="publishBtn" class="px-8 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary/90 transition-colors">Publier le cours</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Navigation buttons -->
-            <div class="flex justify-between pt-8 mt-8 border-t border-gray-200">
-                <button type="button" id="prevBtn" class="px-8 py-3 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors" style="display:none;">
-                    ← Précédent
-                </button>
-                <button type="button" id="nextBtn" class="px-10 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary/90 transition-colors ml-auto">
-                    Étape suivante →
-                </button>
-            </div>
-        </form>
-    </div>
-</main>
-
-<!-- Modal pour chapitre -->
-<div id="chapitreModal" class="modal">
-    <div class="modal-content p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Ajouter un chapitre</h3>
-        <input type="hidden" id="currentSectionId">
-        <input type="hidden" id="currentChapitreId">
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Titre du chapitre *</label>
-                <input type="text" id="chapitreTitre" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Ex: Introduction">
-            </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Description</label>
-                <textarea id="chapitreDescription" rows="3" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Description du chapitre"></textarea>
-            </div>
-        </div>
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" id="closeModalBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Annuler</button>
-            <button type="button" id="saveChapitreBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">Enregistrer</button>
-        </div>
-    </div>
+    </form>
 </div>
 
-<!-- Modal pour contenu -->
-<div id="contenuModal" class="modal">
-    <div class="modal-content p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Ajouter un contenu</h3>
-        <input type="hidden" id="currentContenuSectionId">
-        <input type="hidden" id="currentContenuChapitreId">
-        <input type="hidden" id="currentContenuId">
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Titre du contenu *</label>
-                <input type="text" id="contenuTitre" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Ex: Vidéo d'introduction">
+<!-- Modals Modifiés -->
+<div layout:fragment="modals">
+    <!-- Modal Chapitre -->
+    <div id="chapitreModal" class="modal-overlay">
+        <div class="bg-white rounded-[32px] p-8 w-full max-w-xl shadow-2xl animate-fade">
+            <h3 class="text-2xl font-black text-secondary mb-6">Ajouter un chapitre</h3>
+            <input type="hidden" id="currentSectionId">
+            <input type="hidden" id="currentChapitreId">
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold text-secondary mb-2">Titre du chapitre <span class="text-red-500">*</span></label>
+                    <input type="text" id="chapitreTitre" class="input-premium" placeholder="Ex: Introduction aux fondamentaux">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-secondary mb-2">Description</label>
+                    <textarea id="chapitreDescription" rows="3" class="input-premium resize-none" placeholder="Que vont apprendre vos étudiants ?"></textarea>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-2">Type de contenu</label>
-                <select id="contenuType" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary">
-                    <option value="VIDEO">🎬 Vidéo</option>
-                    <option value="TEXTE">📝 Texte</option>
-                    <option value="PDF">📑 PDF</option>
-                    <option value="IMAGE">🖼️ Image</option>
-                    <option value="LIEN">🔗 Lien externe</option>
-                </select>
+            <div class="flex justify-end gap-3 mt-8">
+                <button type="button" class="closeModalBtn px-6 py-3 bg-gray-100 text-secondary font-bold rounded-xl">Annuler</button>
+                <button type="button" id="saveChapitreBtn" class="btn-primary">Enregistrer</button>
             </div>
-            <div id="videoFields">
-                <label class="block text-sm font-bold text-gray-700 mb-2">URL de la vidéo</label>
-                <input type="text" id="videoUrl" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="https://www.youtube.com/embed/...">
-            </div>
-            <div id="texteFields" style="display:none;">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Contenu texte</label>
-                <textarea id="contenuTexte" rows="6" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Écrivez votre contenu..."></textarea>
-            </div>
-            <div id="fichierFields" style="display:none;">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Fichier (PDF/Image)</label>
-                <input type="file" id="fichierFile" class="w-full border border-gray-200 rounded-lg p-3" accept=".pdf,image/*">
-            </div>
-            <div id="lienFields" style="display:none;">
-                <label class="block text-sm font-bold text-gray-700 mb-2">URL externe</label>
-                <input type="text" id="lienUrl" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="https://...">
-                <label class="block text-sm font-bold text-gray-700 mt-3 mb-2">Texte du lien</label>
-                <input type="text" id="lienTexte" class="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Cliquez ici">
-            </div>
-            <div>
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="apercuGratuit" class="w-4 h-4 text-primary focus:ring-primary">
-                    <span class="text-sm text-gray-700">Aperçu gratuit</span>
+        </div>
+    </div>
+
+    <!-- Modal Contenu -->
+    <div id="contenuModal" class="modal-overlay">
+        <div class="bg-white rounded-[32px] p-8 w-full max-w-2xl shadow-2xl animate-fade">
+            <h3 class="text-2xl font-black text-secondary mb-6">Ajouter une ressource</h3>
+            <input type="hidden" id="currentContenuSectionId">
+            <input type="hidden" id="currentContenuChapitreId">
+            <input type="hidden" id="currentContenuId">
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-secondary mb-2">Titre du contenu <span class="text-red-500">*</span></label>
+                        <input type="text" id="contenuTitre" class="input-premium" placeholder="Ex: Vidéo explicative">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-secondary mb-2">Type de ressource</label>
+                        <select id="contenuType" class="input-premium">
+                            <option value="VIDEO"> Vidéo (YouTube/Vimeo)</option>
+                            <option value="TEXTE"> Article / Texte</option>
+                            <option value="PDF"> Document PDF</option>
+                            <option value="IMAGE">️ Illustration Image</option>
+                            <option value="LIEN"> Lien externe</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="videoFields" class="animate-fade">
+                    <label class="block text-sm font-bold text-secondary mb-2">URL de la vidéo</label>
+                    <input type="text" id="videoUrl" class="input-premium" placeholder="https://www.youtube.com/embed/...">
+                </div>
+                <div id="texteFields" style="display:none;" class="animate-fade">
+                    <label class="block text-sm font-bold text-secondary mb-2">Contenu textuel</label>
+                    <textarea id="contenuTexte" rows="6" class="input-premium resize-none" placeholder="Rédigez votre cours ici..."></textarea>
+                </div>
+                <div id="fichierFields" style="display:none;" class="animate-fade">
+                    <label class="block text-sm font-bold text-secondary mb-2">Importer le fichier</label>
+                    <input type="file" id="fichierFile" class="input-premium" accept=".pdf,image/*">
+                </div>
+                <div id="lienFields" style="display:none;" class="animate-fade">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-secondary mb-2">URL externe</label>
+                            <input type="text" id="lienUrl" class="input-premium" placeholder="https://...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-secondary mb-2">Texte du bouton</label>
+                            <input type="text" id="lienTexte" class="input-premium" placeholder="Accéder à la ressource">
+                        </div>
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl cursor-pointer hover:bg-primary/10 transition-colors">
+                    <input type="checkbox" id="apercuGratuit" class="w-5 h-5 accent-primary">
+                    <span class="text-sm font-bold text-secondary">Autoriser l'aperçu gratuit pour les non-inscrits</span>
                 </label>
             </div>
-        </div>
-        <div class="flex justify-end gap-3 mt-6">
-            <button type="button" id="closeContenuModalBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">Annuler</button>
-            <button type="button" id="saveContenuBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">Enregistrer</button>
+            <div class="flex justify-end gap-3 mt-8">
+                <button type="button" class="closeModalBtn px-6 py-3 bg-gray-100 text-secondary font-bold rounded-xl">Annuler</button>
+                <button type="button" id="saveContenuBtn" class="btn-primary">Enregistrer la ressource</button>
+            </div>
         </div>
     </div>
 </div>
 
-<script>
+<script layout:fragment="script">
     $(document).ready(function() {
         let currentStep = 1;
         let sectionsData = [];
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            return String(text).replace(/[&<>]/g, function(m) {
-                return m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;');
-            });
-        }
-
         function updateStepUI() {
-            $('.step').removeClass('bg-primary text-white').addClass('bg-gray-100 text-gray-500');
-            $(`.step-${currentStep}`).removeClass('bg-gray-100 text-gray-500').addClass('bg-primary text-white');
+            $('.step-pill').removeClass('active completed');
+            $('.step-pill').each(function(i) {
+                const step = i + 1;
+                if (step === currentStep) $(this).addClass('active');
+                else if (step < currentStep) $(this).addClass('completed');
+            });
 
-            $('#prevBtn').toggle(currentStep > 1);
-            $('#nextBtn').text(currentStep === 4 ? 'Publier' : 'Étape suivante →');
+            $('.step-content').addClass('hidden');
+            $(`#step-${currentStep}`).removeClass('hidden');
 
-            if (currentStep === 4) {
-                $('#nextBtn').addClass('bg-green-600 hover:bg-green-700');
-            } else {
-                $('#nextBtn').removeClass('bg-green-600 hover:bg-green-700').addClass('bg-primary hover:bg-primary/90');
-            }
-        }
-
-        function showStep(step) {
-            $('.step-content').hide();
-            $(`#step${step}`).show();
-            currentStep = step;
-            updateStepUI();
-
-            if (step === 3) {
+            $('#prevBtn').toggleClass('hidden', currentStep === 1);
+            if (currentStep === 3) {
+                $('#nextBtn').addClass('hidden');
                 updatePreview();
+            } else {
+                $('#nextBtn').removeClass('hidden');
             }
         }
 
-        function updatePreview() {
-            let html = '<div class="space-y-4">';
-            for (let i = 0; i < sectionsData.length; i++) {
-                const section = sectionsData[i];
-                html += `<div class="border-l-4 border-primary pl-4 py-2">
-                        <h3 class="font-bold text-gray-900">${escapeHtml(section.titre || `Section ${i+1}`)}</h3>`;
-                if (section.chapitres && section.chapitres.length > 0) {
-                    for (const ch of section.chapitres) {
-                        html += `<div class="ml-4 mt-3">
-                                <p class="font-medium text-gray-700">📖 ${escapeHtml(ch.titre)}</p>`;
-                        if (ch.contenus && ch.contenus.length > 0) {
-                            for (const c of ch.contenus) {
-                                let icon = '📄';
-                                if (c.typeContenu === 'VIDEO') icon = '🎬';
-                                else if (c.typeContenu === 'TEXTE') icon = '📝';
-                                else if (c.typeContenu === 'PDF') icon = '📑';
-                                else if (c.typeContenu === 'IMAGE') icon = '🖼️';
-                                else if (c.typeContenu === 'LIEN') icon = '🔗';
-                                html += `<div class="ml-4 text-sm text-gray-500">${icon} ${escapeHtml(c.titre)}</div>`;
-                            }
-                        }
-                        html += `</div>`;
-                    }
+        function validateStep(step) {
+            if (step === 1) {
+                const titre = $('#titre').val().trim();
+                const desc = $('#descriptionCourte').val().trim();
+                const fullDesc = $('#description').val().trim();
+                if (!titre || !desc || !fullDesc) {
+                    alert("Veuillez remplir tous les champs obligatoires (*)");
+                    return false;
                 }
-                html += `</div>`;
             }
-            $('#previewContainer').html(html || '<p class="text-center text-gray-400 py-8">Aucun contenu pour le moment</p>');
+            return true;
         }
 
-        function toggleContenuFields() {
-            let type = $('#contenuType').val();
-            $('#videoFields, #texteFields, #fichierFields, #lienFields').hide();
-            if (type === 'VIDEO') $('#videoFields').show();
-            else if (type === 'TEXTE') $('#texteFields').show();
-            else if (type === 'PDF' || type === 'IMAGE') $('#fichierFields').show();
-            else if (type === 'LIEN') $('#lienFields').show();
-        }
+        $('#nextBtn').click(function() {
+            if (validateStep(currentStep)) {
+                currentStep++;
+                updateStepUI();
+            }
+        });
 
-        function refreshSectionsDisplay() {
+        $('#prevBtn').click(function() {
+            currentStep--;
+            updateStepUI();
+        });
+
+        $('.step-pill').click(function() {
+            const step = $(this).data('step');
+            if (step < currentStep || validateStep(currentStep)) {
+                currentStep = step;
+                updateStepUI();
+            }
+        });
+
+        // Gestion Sections / Chapitres / Contenus (Repris et amélioré)
+        function refreshSections() {
             const container = $('#sectionsContainer');
             container.empty();
 
             if (sectionsData.length === 0) {
-                container.html('<div class="text-center py-12 text-gray-400"><span class="material-symbols-outlined text-5xl mb-3">folder_empty</span><p>Aucune section. Cliquez sur "Ajouter une section"</p></div>');
+                container.html(`
+                    <div class="card-premium text-center py-20 text-muted">
+                        <i class="fi fi-br-folder-open text-6xl mb-4 block"></i>
+                        <p class="text-xl font-bold">Curriculum vide</p>
+                        <p>Commencez par ajouter une section pour organiser vos cours.</p>
+                    </div>
+                `);
                 return;
             }
 
-            for (let idx = 0; idx < sectionsData.length; idx++) {
-                const section = sectionsData[idx];
+            sectionsData.forEach((section, sIdx) => {
                 let chapitresHtml = '';
+                section.chapitres.forEach((ch, chIdx) => {
+                    let contenusHtml = '';
+                    ch.contenus.forEach((c, cIdx) => {
+                        let icon = '';
+                        if (c.typeContenu === 'VIDEO') icon = '';
+                        else if (c.typeContenu === 'TEXTE') icon = '';
+                        else if (c.typeContenu === 'PDF') icon = '';
+                        else if (c.typeContenu === 'IMAGE') icon = '️';
+                        else if (c.typeContenu === 'LIEN') icon = '';
 
-                if (section.chapitres && section.chapitres.length > 0) {
-                    chapitresHtml = '<div class="mt-3 space-y-2">';
-                    for (let chIdx = 0; chIdx < section.chapitres.length; chIdx++) {
-                        const chapitre = section.chapitres[chIdx];
-                        let contenusHtml = '';
+                        contenusHtml += `
+                            <div class="flex items-center justify-between p-3 bg-white border border-border-color rounded-xl group hover:border-primary transition-all">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-lg">${icon}</span>
+                                    <span class="text-sm font-bold text-secondary">${c.titre}</span>
+                                    ${c.apercuGratuit ? '<span class="text-[9px] bg-accent/10 text-accent px-2 py-0.5 rounded-full uppercase font-black">Gratuit</span>' : ''}
+                                </div>
+                                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button type="button" class="edit-contenu text-primary" data-s="${sIdx}" data-ch="${chIdx}" data-c="${cIdx}"><i class="fi fi-br-pencil"></i></button>
+                                    <button type="button" class="delete-contenu text-red-500" data-s="${sIdx}" data-ch="${chIdx}" data-c="${cIdx}"><i class="fi fi-br-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
 
-                        if (chapitre.contenus && chapitre.contenus.length > 0) {
-                            contenusHtml = '<div class="ml-6 mt-2 space-y-1">';
-                            for (let cIdx = 0; cIdx < chapitre.contenus.length; cIdx++) {
-                                const contenu = chapitre.contenus[cIdx];
-                                let typeIcon = '📄';
-                                if (contenu.typeContenu === 'VIDEO') typeIcon = '🎬';
-                                else if (contenu.typeContenu === 'TEXTE') typeIcon = '📝';
-                                else if (contenu.typeContenu === 'PDF') typeIcon = '📑';
-                                else if (contenu.typeContenu === 'IMAGE') typeIcon = '🖼️';
-                                else if (contenu.typeContenu === 'LIEN') typeIcon = '🔗';
-
-                                contenusHtml += `<div class="flex justify-between items-center p-2 bg-white rounded border border-gray-200">
-                                <span class="text-sm">${typeIcon} ${escapeHtml(contenu.titre)}</span>
+                    chapitresHtml += `
+                        <div class="bg-gray-50/50 rounded-2xl p-4 border border-dashed border-border-color">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h4 class="font-bold text-secondary flex items-center gap-2">
+                                        <i class="fi fi-br-book-open text-primary"></i> ${ch.titre}
+                                    </h4>
+                                    <p class="text-xs text-muted mt-1">${ch.description || 'Pas de description'}</p>
+                                </div>
                                 <div class="flex gap-2">
-                                    <button type="button" class="edit-contenu text-blue-500 hover:text-blue-700 text-sm" data-section-idx="${idx}" data-chapitre-idx="${chIdx}" data-contenu-idx="${cIdx}">✏️</button>
-                                    <button type="button" class="delete-contenu text-red-500 hover:text-red-700 text-sm" data-section-idx="${idx}" data-chapitre-idx="${chIdx}" data-contenu-idx="${cIdx}">🗑️</button>
+                                    <button type="button" class="add-contenu text-accent font-bold text-xs" data-s="${sIdx}" data-ch="${chIdx}">+ Contenu</button>
+                                    <button type="button" class="edit-chapitre text-primary text-xs" data-s="${sIdx}" data-ch="${chIdx}"><i class="fi fi-br-pencil"></i></button>
+                                    <button type="button" class="delete-chapitre text-red-500 text-xs" data-s="${sIdx}" data-ch="${chIdx}"><i class="fi fi-br-trash"></i></button>
                                 </div>
-                            </div>`;
-                            }
-                            contenusHtml += '</div>';
-                        }
-
-                        chapitresHtml += `
-                        <div class="chapitre-item p-3 rounded-lg">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1">
-                                    <strong class="text-gray-800">📖 ${escapeHtml(chapitre.titre)}</strong>
-                                    ${chapitre.description ? `<p class="text-sm text-gray-500 mt-1">${escapeHtml(chapitre.description)}</p>` : ''}
-                                    <p class="text-xs text-gray-400 mt-1">${chapitre.contenus ? chapitre.contenus.length : 0} contenu(s)</p>
-                                    ${contenusHtml}
-                                </div>
-                                <div class="flex gap-2 ml-2">
-                                    <button type="button" class="edit-chapitre text-blue-500 hover:text-blue-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">✏️</button>
-                                    <button type="button" class="delete-chapitre text-red-500 hover:text-red-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">🗑️</button>
-                                    <button type="button" class="add-contenu text-green-500 hover:text-green-700" data-section-idx="${idx}" data-chapitre-idx="${chIdx}">+ Contenu</button>
-                                </div>
+                            </div>
+                            <div class="space-y-2 pl-4 border-l-2 border-primary/10">
+                                ${contenusHtml}
                             </div>
                         </div>
                     `;
-                    }
-                    chapitresHtml += '</div>';
-                }
+                });
 
-                const sectionCard = $(`
-                <div class="section-card bg-gray-50 rounded-lg p-4 mb-4" data-section-idx="${idx}">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-900">Section ${idx + 1}</h3>
-                        <button type="button" class="remove-section text-red-500 hover:text-red-700 text-sm" data-index="${idx}">Supprimer</button>
-                    </div>
-                    <div class="grid grid-cols-1 gap-3">
-                        <input type="text" placeholder="Titre de la section" class="section-title w-full p-2 border border-gray-200 rounded-lg" value="${escapeHtml(section.titre)}">
-                        <textarea placeholder="Description de la section" class="section-description w-full p-2 border border-gray-200 rounded-lg" rows="2">${escapeHtml(section.description || '')}</textarea>
-                        <div>
-                            <button type="button" class="add-chapitre-btn bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 text-sm" data-section-idx="${idx}">+ Ajouter un chapitre</button>
+                container.append(`
+                    <div class="section-card">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex-1">
+                                <input type="text" value="${section.titre}" class="section-title text-xl font-black text-secondary bg-transparent border-b-2 border-transparent focus:border-primary outline-none transition-all w-full" data-s="${sIdx}">
+                            </div>
+                            <button type="button" class="delete-section text-red-500 font-bold text-xs ml-4" data-s="${sIdx}">Supprimer Section</button>
                         </div>
-                        ${chapitresHtml}
+                        <div class="space-y-4">
+                            ${chapitresHtml}
+                            <button type="button" class="add-chapitre-btn w-full py-3 border-2 border-dashed border-border-color rounded-2xl text-muted font-bold hover:border-primary hover:text-primary transition-all text-sm" data-s="${sIdx}">
+                                + Ajouter un chapitre
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `);
-                container.append(sectionCard);
-            }
-            attachEvents();
+                `);
+            });
+            attachDynamicEvents();
         }
 
-        function attachEvents() {
-            $('.section-title').off('input').on('input', function() {
-                const idx = $(this).closest('.section-card').data('section-idx');
-                if (idx !== undefined && sectionsData[idx]) sectionsData[idx].titre = $(this).val();
+        function attachDynamicEvents() {
+            $('.section-title').on('change', function() {
+                sectionsData[$(this).data('s')].titre = $(this).val();
             });
-            $('.section-description').off('input').on('input', function() {
-                const idx = $(this).closest('.section-card').data('section-idx');
-                if (idx !== undefined && sectionsData[idx]) sectionsData[idx].description = $(this).val();
+            $('.delete-section').click(function() {
+                if(confirm('Supprimer cette section ?')) { sectionsData.splice($(this).data('s'), 1); refreshSections(); }
             });
-            $('.remove-section').off('click').on('click', function() {
-                const idx = $(this).data('index');
-                if (confirm('Supprimer cette section ?')) { sectionsData.splice(idx, 1); refreshSectionsDisplay(); }
-            });
-            $('.add-chapitre-btn').off('click').on('click', function() {
-                $('#currentSectionId').val($(this).data('section-idx'));
+            $('.add-chapitre-btn').click(function() {
+                $('#currentSectionId').val($(this).data('s'));
                 $('#currentChapitreId').val('');
                 $('#chapitreTitre, #chapitreDescription').val('');
-                $('#chapitreModal').css('display', 'flex');
+                $('#chapitreModal').addClass('active');
             });
-            $('.edit-chapitre').off('click').on('click', function() {
-                const sectionIdx = $(this).data('section-idx');
-                const chapitreIdx = $(this).data('chapitre-idx');
-                const chapitre = sectionsData[sectionIdx].chapitres[chapitreIdx];
-                $('#currentSectionId').val(sectionIdx);
-                $('#currentChapitreId').val(chapitreIdx);
-                $('#chapitreTitre').val(chapitre.titre);
-                $('#chapitreDescription').val(chapitre.description || '');
-                $('#chapitreModal').css('display', 'flex');
+            $('.edit-chapitre').click(function() {
+                const s = $(this).data('s'), ch = $(this).data('ch');
+                const data = sectionsData[s].chapitres[ch];
+                $('#currentSectionId').val(s);
+                $('#currentChapitreId').val(ch);
+                $('#chapitreTitre').val(data.titre);
+                $('#chapitreDescription').val(data.description);
+                $('#chapitreModal').addClass('active');
             });
-            $('.delete-chapitre').off('click').on('click', function() {
-                const sectionIdx = $(this).data('section-idx');
-                const chapitreIdx = $(this).data('chapitre-idx');
-                if (confirm('Supprimer ce chapitre ?')) { sectionsData[sectionIdx].chapitres.splice(chapitreIdx, 1); refreshSectionsDisplay(); }
+            $('.delete-chapitre').click(function() {
+                sectionsData[$(this).data('s')].chapitres.splice($(this).data('ch'), 1);
+                refreshSections();
             });
-            $('.add-contenu').off('click').on('click', function() {
-                $('#currentContenuSectionId').val($(this).data('section-idx'));
-                $('#currentContenuChapitreId').val($(this).data('chapitre-idx'));
+            $('.add-contenu').click(function() {
+                $('#currentContenuSectionId').val($(this).data('s'));
+                $('#currentContenuChapitreId').val($(this).data('ch'));
                 $('#currentContenuId').val('');
                 $('#contenuTitre, #videoUrl, #contenuTexte, #lienUrl, #lienTexte').val('');
-                $('#fichierFile').val('');
-                $('#apercuGratuit').prop('checked', false);
-                $('#contenuType').val('VIDEO');
-                toggleContenuFields();
-                $('#contenuModal').css('display', 'flex');
+                $('#contenuModal').addClass('active');
+                toggleFields();
             });
-            $('.edit-contenu').off('click').on('click', function() {
-                const sectionIdx = $(this).data('section-idx');
-                const chapitreIdx = $(this).data('chapitre-idx');
-                const contenuIdx = $(this).data('contenu-idx');
-                const contenu = sectionsData[sectionIdx].chapitres[chapitreIdx].contenus[contenuIdx];
-                $('#currentContenuSectionId').val(sectionIdx);
-                $('#currentContenuChapitreId').val(chapitreIdx);
-                $('#currentContenuId').val(contenuIdx);
-                $('#contenuTitre').val(contenu.titre);
-                $('#contenuType').val(contenu.typeContenu);
-                $('#videoUrl').val(contenu.videoUrl || '');
-                $('#contenuTexte').val(contenu.contenuTexte || '');
-                $('#lienUrl').val(contenu.lienExterne || '');
-                $('#lienTexte').val(contenu.lienTexte || '');
-                $('#apercuGratuit').prop('checked', contenu.apercuGratuit || false);
-                toggleContenuFields();
-                $('#contenuModal').css('display', 'flex');
+            $('.edit-contenu').click(function() {
+                const s = $(this).data('s'), ch = $(this).data('ch'), c = $(this).data('c');
+                const data = sectionsData[s].chapitres[ch].contenus[c];
+                $('#currentContenuSectionId').val(s);
+                $('#currentContenuChapitreId').val(ch);
+                $('#currentContenuId').val(c);
+                $('#contenuTitre').val(data.titre);
+                $('#contenuType').val(data.typeContenu);
+                $('#videoUrl').val(data.videoUrl);
+                $('#contenuTexte').val(data.contenuTexte);
+                $('#apercuGratuit').prop('checked', data.apercuGratuit);
+                $('#contenuModal').addClass('active');
+                toggleFields();
             });
-            $('.delete-contenu').off('click').on('click', function() {
-                const sectionIdx = $(this).data('section-idx');
-                const chapitreIdx = $(this).data('chapitre-idx');
-                const contenuIdx = $(this).data('contenu-idx');
-                if (confirm('Supprimer ce contenu ?')) { sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.splice(contenuIdx, 1); refreshSectionsDisplay(); }
+            $('.delete-contenu').click(function() {
+                sectionsData[$(this).data('s')].chapitres[$(this).data('ch')].contenus.splice($(this).data('c'), 1);
+                refreshSections();
             });
         }
 
-        function addSection() {
-            sectionsData.push({ titre: `Section ${sectionsData.length + 1}`, description: '', ordre: sectionsData.length, chapitres: [] });
-            refreshSectionsDisplay();
-        }
+        $('#addSectionBtn').click(function() {
+            sectionsData.push({ titre: 'Nouvelle Section', chapitres: [] });
+            refreshSections();
+        });
 
-        $('#saveChapitreBtn').off('click').on('click', function() {
-            const sectionIdx = parseInt($('#currentSectionId').val());
-            const chapitreIdx = $('#currentChapitreId').val();
+        $('#saveChapitreBtn').click(function() {
+            const s = $('#currentSectionId').val(), ch = $('#currentChapitreId').val();
             const titre = $('#chapitreTitre').val().trim();
-            if (!titre) { alert('Le titre du chapitre est obligatoire'); return; }
-            if (!sectionsData[sectionIdx]) sectionsData[sectionIdx] = { titre: '', description: '', chapitres: [] };
-            if (!sectionsData[sectionIdx].chapitres) sectionsData[sectionIdx].chapitres = [];
-            const existingContenus = (chapitreIdx !== '' && sectionsData[sectionIdx].chapitres[parseInt(chapitreIdx)]) ? sectionsData[sectionIdx].chapitres[parseInt(chapitreIdx)].contenus : [];
-            const newChapitre = { titre: titre, description: $('#chapitreDescription').val(), ordre: sectionsData[sectionIdx].chapitres.length, contenus: existingContenus };
-            if (chapitreIdx === '') sectionsData[sectionIdx].chapitres.push(newChapitre);
-            else sectionsData[sectionIdx].chapitres[parseInt(chapitreIdx)] = newChapitre;
-            refreshSectionsDisplay();
-            $('#chapitreModal').css('display', 'none');
+            if(!titre) return alert('Titre requis');
+            if(ch === '') sectionsData[s].chapitres.push({ titre, description: $('#chapitreDescription').val(), contenus: [] });
+            else sectionsData[s].chapitres[ch] = { ...sectionsData[s].chapitres[ch], titre, description: $('#chapitreDescription').val() };
+            $('#chapitreModal').removeClass('active');
+            refreshSections();
         });
 
-        $('#saveContenuBtn').off('click').on('click', function() {
-            const sectionIdx = parseInt($('#currentContenuSectionId').val());
-            const chapitreIdx = parseInt($('#currentContenuChapitreId').val());
-            const contenuIdx = $('#currentContenuId').val();
+        $('#saveContenuBtn').click(function() {
+            const s = $('#currentContenuSectionId').val(), ch = $('#currentContenuChapitreId').val(), c = $('#currentContenuId').val();
             const titre = $('#contenuTitre').val().trim();
-            const type = $('#contenuType').val();
-            if (!titre) { alert('Le titre du contenu est obligatoire'); return; }
-            if (!sectionsData[sectionIdx] || !sectionsData[sectionIdx].chapitres[chapitreIdx]) { alert('Chapitre non trouvé'); return; }
-            const contenu = { titre: titre, typeContenu: type, apercuGratuit: $('#apercuGratuit').is(':checked'), ordre: sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.length, videoUrl: null, contenuTexte: null, lienExterne: null, lienTexte: null, fichierUrl: null };
-            if (type === 'VIDEO') contenu.videoUrl = $('#videoUrl').val();
-            else if (type === 'TEXTE') contenu.contenuTexte = $('#contenuTexte').val();
-            else if (type === 'LIEN') { contenu.lienExterne = $('#lienUrl').val(); contenu.lienTexte = $('#lienTexte').val(); }
-            else if (type === 'PDF' || type === 'IMAGE') { const file = $('#fichierFile')[0].files[0]; if (file) contenu.fichierUrl = file.name; }
-            if (!sectionsData[sectionIdx].chapitres[chapitreIdx].contenus) sectionsData[sectionIdx].chapitres[chapitreIdx].contenus = [];
-            if (contenuIdx === '') sectionsData[sectionIdx].chapitres[chapitreIdx].contenus.push(contenu);
-            else sectionsData[sectionIdx].chapitres[chapitreIdx].contenus[parseInt(contenuIdx)] = contenu;
-            refreshSectionsDisplay();
-            $('#contenuModal').css('display', 'none');
+            if(!titre) return alert('Titre requis');
+            const data = {
+                titre, 
+                typeContenu: $('#contenuType').val(),
+                videoUrl: $('#videoUrl').val(),
+                contenuTexte: $('#contenuTexte').val(),
+                apercuGratuit: $('#apercuGratuit').is(':checked')
+            };
+            if(c === '') sectionsData[s].chapitres[ch].contenus.push(data);
+            else sectionsData[s].chapitres[ch].contenus[c] = data;
+            $('#contenuModal').removeClass('active');
+            refreshSections();
         });
 
-        function collectFormData(publier) {
-            const formData = new FormData();
-            formData.append('titre', $('#titre').val() || '');
-            formData.append('descriptionCourte', $('#descriptionCourte').val() || '');
-            formData.append('description', $('#description').val() || '');
-            formData.append('dureeEstimee', $('#dureeEstimee').val() || '0');
-            formData.append('publier', publier);
-            const img = $('#imageCouverture')[0].files[0];
-            if (img) formData.append('imageCouverture', img);
-            const cleanedSections = sectionsData.map((s, i) => ({
-                titre: s.titre || `Section ${i+1}`,
-                description: s.description || '',
-                ordre: i,
-                chapitres: (s.chapitres || []).map((c, ci) => ({
-                    titre: c.titre,
-                    description: c.description || '',
-                    ordre: ci,
-                    contenus: (c.contenus || []).map((ct, cti) => ({
-                        titre: ct.titre,
-                        typeContenu: ct.typeContenu,
-                        apercuGratuit: ct.apercuGratuit || false,
-                        ordre: cti,
-                        videoUrl: ct.videoUrl || null,
-                        contenuTexte: ct.contenuTexte || null,
-                        lienExterne: ct.lienExterne || null,
-                        lienTexte: ct.lienTexte || null,
-                        fichierUrl: ct.fichierUrl || null
-                    }))
-                }))
-            }));
-            formData.append('sections', JSON.stringify(cleanedSections));
-            return formData;
+        function toggleFields() {
+            const t = $('#contenuType').val();
+            $('#videoFields, #texteFields, #fichierFields, #lienFields').hide();
+            if(t === 'VIDEO') $('#videoFields').show();
+            else if(t === 'TEXTE') $('#texteFields').show();
+            else if(t === 'PDF' || t === 'IMAGE') $('#fichierFields').show();
+            else if(t === 'LIEN') $('#lienFields').show();
+        }
+        $('#contenuType').change(toggleFields);
+
+        $('.closeModalBtn').click(function() { $('.modal-overlay').removeClass('active'); });
+
+        function updatePreview() {
+            let html = '<div class="space-y-4">';
+            sectionsData.forEach(s => {
+                html += `<div class="font-black text-secondary border-b-2 border-primary/10 pb-2">${s.titre}</div>`;
+                s.chapitres.forEach(ch => {
+                    html += `<div class="ml-4 text-sm font-bold text-muted mt-2"> ${ch.titre} (${ch.contenus.length} ressources)</div>`;
+                });
+            });
+            $('#previewContainer').html(html || 'Aucun contenu créé.');
         }
 
-        function publish(publier) {
+        function publish(isPublie) {
             const titre = $('#titre').val().trim();
-            if (!titre) { alert('Le titre du cours est obligatoire'); showStep(1); return; }
-            const formData = collectFormData(publier);
-            const btn = publier ? $('#publishBtn') : $('#saveDraftBtn');
-            const originalText = btn.text();
-            btn.prop('disabled', true).text(publier ? 'Publication...' : 'Sauvegarde...');
+            if(!titre) { alert('Titre requis'); currentStep = 1; updateStepUI(); return; }
+            
+            const formData = new FormData();
+            formData.append('titre', titre);
+            formData.append('descriptionCourte', $('#descriptionCourte').val());
+            formData.append('description', $('#description').val());
+            formData.append('dureeEstimee', $('#dureeEstimee').val() || 0);
+            formData.append('quizTitre', $('#quizTitre').val() || '');
+            formData.append('quizDescription', $('#quizDescription').val() || '');
+            formData.append('publier', isPublie);
+            formData.append('categorieId', $('#categorieId').val() || '');
+            
+            const img = $('#imageCouverture')[0].files[0];
+            if(img) formData.append('imageCouverture', img);
+            
+            formData.append('sections', JSON.stringify(sectionsData.map((s, i) => ({
+                ...s, ordre: i, chapitres: s.chapitres.map((ch, ci) => ({
+                    ...ch, ordre: ci, contenus: ch.contenus.map((c, cti) => ({ ...c, ordre: cti }))
+                }))
+            }))));
+
+            const btn = isPublie ? $('#publishBtn') : $('#saveDraftBtn');
+            btn.prop('disabled', true).html('<i class="fi fi-br-spinner animate-spin"></i> Traitement...');
+
             $.ajax({
                 url: '/professeur/cours/api/creer-avec-fichier',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function(response) {
-                    if (response.success) {
-                        alert(publier ? '✅ Cours publié avec succès !' : '✅ Cours sauvegardé en brouillon !');
+                success: function(r) {
+                    if(r.success) {
+                        alert('Succès !');
                         window.location.href = '/professeur/cours';
-                    } else { alert('❌ Erreur: ' + (response.message || 'Erreur inconnue')); btn.prop('disabled', false).text(originalText); }
+                    } else {
+                        alert('Erreur: ' + r.message);
+                        btn.prop('disabled', false).text(isPublie ? 'Publier ma formation' : 'Sauvegarder en brouillon');
+                    }
                 },
-                error: function() { alert('Erreur serveur'); btn.prop('disabled', false).text(originalText); }
+                error: function() {
+                    alert('Erreur serveur');
+                    btn.prop('disabled', false).text(isPublie ? 'Publier ma formation' : 'Sauvegarder en brouillon');
+                }
             });
         }
 
-        $('#addSectionBtn').click(addSection);
-        $('#nextBtn').click(function() { if (currentStep === 4) publish(true); else if (currentStep < 4) showStep(currentStep + 1); });
-        $('#prevBtn').click(function() { if (currentStep > 1) showStep(currentStep - 1); });
-        $('#publishBtn').click(function() { publish(true); });
-        $('#saveDraftBtn').click(function() { publish(false); });
-        $('.step').click(function() { const step = $(this).data('step'); if (step) showStep(step); });
-        $('#closeModalBtn, #closeContenuModalBtn').click(function() { $('#chapitreModal, #contenuModal').css('display', 'none'); });
-        $('#contenuType').change(toggleContenuFields);
-        $(window).click(function(e) { if ($(e.target).hasClass('modal')) $('.modal').css('display', 'none'); });
+        $('#publishBtn').click(() => publish(true));
+        $('#saveDraftBtn').click(() => publish(false));
 
-        showStep(1);
-        refreshSectionsDisplay();
+        updateStepUI();
+        refreshSections();
     });
 </script>
 </body>

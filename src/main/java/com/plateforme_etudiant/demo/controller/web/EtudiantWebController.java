@@ -6,6 +6,9 @@ import com.plateforme_etudiant.demo.service.EtudiantService;
 import com.plateforme_etudiant.demo.service.EtudiantCoursDetailService;
 import com.plateforme_etudiant.demo.service.ProgressionService;
 import com.plateforme_etudiant.demo.service.QuizService;
+import com.plateforme_etudiant.demo.model.Quiz;
+import com.plateforme_etudiant.demo.model.ResultatQuiz;
+import com.plateforme_etudiant.demo.repository.ResultatQuizRepository;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,15 +32,23 @@ public class EtudiantWebController {
     private final EtudiantCoursDetailService coursDetailService;
     private final ProgressionService progressionService;
     private final QuizService quizService;
+    private final ResultatQuizRepository resultatQuizRepository;
 
     public EtudiantWebController(EtudiantService etudiantService,
                                  EtudiantCoursDetailService coursDetailService,
                                  ProgressionService progressionService,
-                                 QuizService quizService) {
+                                 QuizService quizService,
+                                 ResultatQuizRepository resultatQuizRepository) {
         this.etudiantService = etudiantService;
         this.coursDetailService = coursDetailService;
         this.progressionService = progressionService;
         this.quizService = quizService;
+        this.resultatQuizRepository = resultatQuizRepository;
+    }
+
+    @GetMapping({"", "/"})
+    public String index() {
+        return "redirect:/etudiant/dashboard";
     }
 
     @GetMapping("/dashboard")
@@ -126,6 +138,7 @@ public class EtudiantWebController {
             model.addAttribute("progressionCours", progressionCours);
             model.addAttribute("chartLabels", chartLabels);
             model.addAttribute("chartValues", chartValues);
+            model.addAttribute("statistiques", etudiantService.getStatistiques(utilisateurId));
 
             return "Etudiant/progression";
 
@@ -137,14 +150,20 @@ public class EtudiantWebController {
     }
 
     @GetMapping("/catalogue")
-    public String catalogue(Model model, HttpSession session) {
-        log.info("=== ACCÈS CATALOGUE COURS ===");
+    public String catalogue(@RequestParam(required = false) String keyword, Model model, HttpSession session) {
+        log.info("=== ACCÈS CATALOGUE COURS, keyword: {} ===", keyword);
 
         Long utilisateurId = (Long) session.getAttribute("userId");
 
         try {
-            List<CoursEtudiantDTO> coursDisponibles = etudiantService.getCoursRecommandes(utilisateurId);
+            List<CoursEtudiantDTO> coursDisponibles;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                coursDisponibles = etudiantService.searchCours(keyword.trim(), utilisateurId);
+            } else {
+                coursDisponibles = etudiantService.getCoursRecommandes(utilisateurId);
+            }
             model.addAttribute("cours", coursDisponibles);
+            model.addAttribute("keyword", keyword);
 
             return "Etudiant/catalogue";
 
@@ -154,8 +173,42 @@ public class EtudiantWebController {
         }
     }
 
+    @PostMapping("/cours/{coursId}/favori")
+    public String toggleFavoriCours(@PathVariable Long coursId, HttpSession session, RedirectAttributes redirectAttributes) {
+        Long utilisateurId = (Long) session.getAttribute("userId");
+        if (utilisateurId == null) {
+            return "redirect:/login";
+        }
+        try {
+            boolean favori = etudiantService.toggleFavori(utilisateurId, coursId);
+            String message = favori ? "Cours ajouté aux favoris !" : "Cours retiré des favoris !";
+            redirectAttributes.addFlashAttribute("success", message);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la modification des favoris: " + e.getMessage());
+        }
+        return "redirect:/etudiant/mes-cours";
+    }
+
+    @GetMapping("/aide")
+    public String aide(Model model, HttpSession session) {
+        Long utilisateurId = (Long) session.getAttribute("userId");
+        if (utilisateurId == null) return "redirect:/login";
+        
+        try {
+            EtudiantResponseDTO etudiant = etudiantService.getEtudiantById(utilisateurId);
+            model.addAttribute("etudiant", etudiant);
+            model.addAttribute("currentPage", "aide");
+            return "Etudiant/aide";
+        } catch (Exception e) {
+            return "redirect:/etudiant/dashboard";
+        }
+    }
+
     @PostMapping("/cours/{coursId}/inscrire")
-    public String inscrireCours(@PathVariable Long coursId, HttpSession session) {
+    public String inscrireCours(@PathVariable Long coursId, 
+                                 @RequestParam(value = "from", required = false) String from,
+                                 HttpSession session, 
+                                 RedirectAttributes redirectAttributes) {
         log.info("=== INSCRIPTION AU COURS {} ===", coursId);
 
         Long utilisateurId = (Long) session.getAttribute("userId");
@@ -165,11 +218,21 @@ public class EtudiantWebController {
         }
 
         try {
+            // Vérifier si l'inscription est autorisée
+            String erreur = etudiantService.peutSInscrire(utilisateurId, coursId);
+            if (erreur != null) {
+                redirectAttributes.addFlashAttribute("error", erreur);
+                String redirectUrl = (from != null && from.equals("catalogue")) ? "/etudiant/catalogue" : "/etudiant/mes-cours";
+                return "redirect:" + redirectUrl;
+            }
+
             etudiantService.inscrireCours(utilisateurId, coursId);
             log.info("✅ Inscription réussie au cours {}", coursId);
+            redirectAttributes.addFlashAttribute("success", "Inscription réussie au cours !");
 
         } catch (Exception e) {
             log.error("❌ Erreur inscription: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'inscription: " + e.getMessage());
         }
 
         return "redirect:/etudiant/mes-cours";
@@ -220,8 +283,27 @@ public class EtudiantWebController {
             EtudiantResponseDTO etudiant = etudiantService.getEtudiantById(utilisateurId);
             model.addAttribute("cours", coursDetail);
             model.addAttribute("etudiant", etudiant);
-            model.addAttribute("quizzes", quizService.getQuizByCours(coursId));
-            log.info("✅ Cours chargé avec {} sections", coursDetail.getSections() != null ? coursDetail.getSections().size() : 0);
+            List<Quiz> quizzes = quizService.getQuizByCours(coursId);
+            model.addAttribute("quizzes", quizzes);
+
+            // Vérifier si un certificat est disponible (score 100 sur un des quiz du cours)
+            boolean certificatDispo = false;
+            Long resultId = null;
+            for (Quiz q : quizzes) {
+                List<ResultatQuiz> res = resultatQuizRepository.findByEtudiantIdAndQuizIdOrderByDatePassageDesc(utilisateurId, q.getId());
+                if (!res.isEmpty() && res.get(0).getScore() != null && res.get(0).getScore() >= 100.0) {
+                    certificatDispo = true;
+                    resultId = res.get(0).getId();
+                    break;
+                }
+            }
+            model.addAttribute("certificatDisponible", certificatDispo);
+            if (certificatDispo) {
+                model.addAttribute("certificatUrl", "/etudiant/certificat/" + resultId + "/telecharger");
+            }
+
+            log.info("✅ Cours chargé avec {} sections. Certificat: {}", 
+                coursDetail.getSections() != null ? coursDetail.getSections().size() : 0, certificatDispo);
 
             return "Etudiant/visionner-cours";
 

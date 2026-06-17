@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UtilisateurService {
@@ -72,5 +73,37 @@ public class UtilisateurService {
 
     public boolean emailExiste(String email) {
         return utilisateurRepository.existsByEmail(email);
+    }
+
+    public List<Utilisateur> findAllApprenants() {
+        return utilisateurRepository.findByRole(Role.APPRENANT);
+    }
+
+    public List<Utilisateur> findAllProfesseurs() {
+        return utilisateurRepository.findByRole(Role.PROFESSEUR);
+    }
+
+    @Transactional
+    public Utilisateur updateUtilisateur(Long id, String prenom, String nom, String email, Boolean actif) {
+        Utilisateur utilisateur = findById(id);
+        utilisateur.setPrenom(prenom);
+        utilisateur.setNom(nom);
+        utilisateur.setEmail(email);
+        utilisateur.setActif(actif);
+        return utilisateurRepository.save(utilisateur);
+    }
+
+    @Transactional
+    public void deleteUtilisateur(Long id) {
+        Utilisateur utilisateur = findById(id);
+        utilisateurRepository.delete(utilisateur);
+    }
+
+    public long countAllApprenants() {
+        return utilisateurRepository.findByRole(Role.APPRENANT).size();
+    }
+
+    public long countAllProfesseurs() {
+        return utilisateurRepository.findByRole(Role.PROFESSEUR).size();
     }
 }

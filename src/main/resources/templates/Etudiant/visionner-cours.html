@@ -4,454 +4,403 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${cours.titre} + ' - Apprentissage'">Apprentissage</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1e3a8a',
+            secondary: '#ca8a04',
+            surface: {
+              lowest: '#ffffff',
+              low: '#f8fafc',
+              dim: '#e2e8f0',
+            }
+          },
+          borderRadius: {
+            'card': '2rem',
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, #edf4ff 0%, #f8fafc 55%, #eef7f3 100%); }
-    .bg-primary { background-color: #123a78; }
-    .text-primary { color: #123a78; }
-    .border-primary { border-color: #123a78; }
-    .progress-bar { transition: width 0.4s ease; }
-    .sidebar-card { backdrop-filter: blur(14px); background: rgba(255,255,255,0.92); }
-    .content-shell { background: rgba(255,255,255,0.92); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08); }
-    .chapter-item.active { border-color: #123a78; background: rgba(18,58,120,0.08); }
-    .chapter-item { transition: all 0.2s ease; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .progress-bar { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+    .sidebar-glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-right: 1px solid #e2e8f0; }
+    .chapter-item.active { background: #f1f5f9; border-left: 4px solid #1e3a8a; }
+    .content-card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); }
+    .video-container iframe, .video-container video { aspect-ratio: 16/9; width: 100%; border-radius: 1rem; }
+    .prose h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem; color: #1e3a8a; }
+    .prose p { margin-bottom: 1.5rem; line-height: 1.8; color: #334155; }
+    .prose ul, .prose ol { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+    .prose li { margin-bottom: 0.5rem; }
+    
+    /* Style spécial pour les exemples */
+    .exemple-box {
+      background: #f5f7ff;
+      border-left: 4px solid #4f46e5;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      margin: 1.5rem 0;
+      font-style: italic;
+    }
   </style>
 </head>
 <body class="text-slate-900">
-<nav class="fixed inset-x-0 top-0 z-50 h-16 border-b border-white/80 bg-white/80 backdrop-blur-xl">
-  <div class="h-full max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <a href="/etudiant/mes-cours" class="inline-flex items-center gap-2 text-slate-500 hover:text-primary">
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span class="hidden md:inline">Mes cours</span>
+
+<!-- Navigation -->
+<nav class="fixed inset-x-0 top-0 z-50 h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200">
+  <div class="h-full max-w-[1600px] mx-auto px-6 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <a href="/etudiant/mes-cours" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors">
+        <span class="material-symbols-outlined text-slate-600">arrow_back</span>
       </a>
-      <div>
-        <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Lecture guidee</p>
-        <p class="text-lg font-extrabold tracking-tight text-primary">L'Erudition</p>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-2xl font-bold">school</span>
+        </div>
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Salle de cours</p>
+          <p class="text-lg font-black text-primary tracking-tighter" th:text="${cours.titre}">Titre du cours</p>
+        </div>
       </div>
     </div>
-    <div class="flex items-center gap-3">
-      <div class="hidden md:block text-right">
-        <p class="text-sm font-bold" th:text="${etudiant.nomComplet}">Etudiant</p>
-        <p class="text-xs text-slate-500">Progression synchronisee</p>
+    <div class="flex items-center gap-4">
+      <div class="text-right hidden sm:block">
+        <p class="text-sm font-black text-slate-800" th:text="${etudiant.nomComplet}">Nom Étudiant</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Progression en temps réel</p>
       </div>
-      <div class="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center font-bold">
-        <span th:text="${etudiant != null ? #strings.substring(etudiant.prenom, 0, 1) : 'E'} + ${etudiant != null ? #strings.substring(etudiant.nom, 0, 1) : 'T'}">ET</span>
+      <div class="h-12 w-12 rounded-2xl bg-primary/5 border-2 border-primary/10 flex items-center justify-center text-primary font-black">
+        <span th:text="${#strings.substring(etudiant.prenom, 0, 1)} + ${#strings.substring(etudiant.nom, 0, 1)}">ET</span>
       </div>
     </div>
   </div>
 </nav>
 
-<div class="max-w-7xl mx-auto px-4 md:px-8 pt-24 pb-8">
-  <div class="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-6">
-    <aside class="sidebar-card rounded-[28px] border border-white/70 p-5 h-fit xl:sticky xl:top-24">
-      <div class="pb-5 border-b border-slate-100">
-        <p class="text-xs uppercase tracking-[0.24em] text-slate-400">Cours</p>
-        <h1 class="text-xl font-extrabold mt-2 leading-tight" th:text="${cours.titre}">Titre du cours</h1>
-        <div class="mt-5">
-          <div class="flex justify-between text-sm text-slate-500 mb-2">
-            <span>Progression globale</span>
-            <span id="globalProgression" th:text="${cours.progression} + '%'">0%</span>
-          </div>
-          <div class="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
-            <div id="globalProgressBar" class="progress-bar bg-primary h-full rounded-full" th:style="'width:' + ${cours.progression} + '%'"></div>
-          </div>
-        </div>
+<div class="max-w-[1600px] mx-auto flex min-h-screen pt-20">
+  
+  <!-- Sidebar -->
+  <aside class="w-80 sidebar-glass fixed left-0 top-20 bottom-0 overflow-y-auto hidden xl:block p-6">
+    <div class="mb-10">
+      <div class="flex justify-between items-end mb-3">
+        <span class="text-xs font-black uppercase tracking-widest text-slate-400">Votre progression</span>
+        <span id="globalProgression" class="text-lg font-black text-primary" th:text="${cours.progression} + '%'">0%</span>
+      </div>
+      <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div id="globalProgressBar" class="h-full bg-primary progress-bar" th:style="'width:' + ${cours.progression} + '%'"></div>
+      </div>
+    </div>
+
+    <div class="space-y-8">
+      <div id="sidebarContent" class="space-y-6">
+        <!-- Contenu injecté par JS -->
       </div>
 
-      <div id="sidebarContent" class="pt-5 space-y-4"></div>
+      <div th:if="${certificatDisponible}" class="p-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50">
+        <p class="text-[11px] font-black uppercase tracking-widest text-emerald-700 mb-2">Certificat disponible</p>
+        <a th:href="${certificatUrl}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-emerald-600 text-emerald-700 rounded-xl font-black hover:bg-emerald-600 hover:text-white transition-all">
+          <span class="material-symbols-outlined text-base">download</span>
+          TELECHARGER
+        </a>
+      </div>
 
-      <div th:if="${quizzes != null and not #lists.isEmpty(quizzes)}" class="mt-5 pt-5 border-t border-slate-100">
-        <p class="text-xs uppercase tracking-[0.24em] text-slate-400 mb-3">Quiz du cours</p>
-        <div class="space-y-2">
+      <!-- Quizzes -->
+      <div th:if="${quizzes != null and not #lists.isEmpty(quizzes)}" class="pt-8 border-t border-slate-200">
+        <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Quiz du cours</p>
+        <div class="space-y-3">
           <a th:each="quiz : ${quizzes}" th:href="'/etudiant/cours/' + ${cours.id} + '/quiz/' + ${quiz.id}"
-             class="flex items-center justify-between rounded-2xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 text-indigo-700 hover:bg-indigo-100/80">
-            <span class="inline-flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">quiz</span>
-              <span class="text-sm font-semibold" th:text="${quiz.titre}">Quiz</span>
-            </span>
-            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+             class="flex items-center justify-between p-4 bg-secondary/5 border-2 border-secondary/10 rounded-2xl text-secondary hover:bg-secondary/10 transition-all group">
+            <div class="flex items-center gap-3">
+              <i class="fas fa-clipboard-list font-bold"></i>
+              <span class="text-sm font-black" th:text="${quiz.titre}">Quiz</span>
+            </div>
+            <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
           </a>
         </div>
       </div>
-    </aside>
-
-    <main class="space-y-6">
-      <section class="content-shell rounded-[32px] border border-white/70 p-6 md:p-8">
-        <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <div class="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-              <span id="currentSectionName"></span>
-              <span class="material-symbols-outlined text-sm">chevron_right</span>
-              <span id="currentChapitreName"></span>
-            </div>
-            <h2 id="currentContentTitle" class="text-2xl md:text-3xl font-extrabold mt-3"></h2>
-            <div class="flex flex-wrap items-center gap-3 mt-3">
-              <span id="currentContentType" class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"></span>
-              <span id="contentCounter" class="text-sm text-slate-400"></span>
-            </div>
-          </div>
-          <div class="rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 min-w-[220px]">
-            <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Ordre de lecture</p>
-            <p id="currentPathHint" class="text-sm font-semibold text-slate-700 mt-2">Chapitre</p>
-          </div>
+      <div th:if="${quizzes == null or #lists.isEmpty(quizzes)}" class="pt-8 border-t border-slate-200">
+        <p class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">Quiz du cours</p>
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-500 font-bold">
+          Aucun quiz n’est disponible pour ce cours pour le moment.
         </div>
+      </div>
+    </div>
+  </aside>
 
-        <div id="contentArea" class="mt-8 min-h-[500px] rounded-[28px] border border-slate-100 bg-white p-5 md:p-8">
-          <div class="text-center text-slate-400 py-20">
-            <span class="material-symbols-outlined text-5xl mb-3">menu_book</span>
-            <p>Chargement du cours...</p>
-          </div>
+  <!-- Main Content -->
+  <main class="flex-1 xl:ml-80 p-6 md:p-12">
+    <div class="max-w-4xl mx-auto space-y-10">
+      
+      <!-- Chapter Header -->
+      <header class="space-y-4">
+        <div class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400">
+          <span id="currentSectionName">Section</span>
+          <span class="material-symbols-outlined text-sm">chevron_right</span>
+          <span id="chapterCounter">Chapitre 1/1</span>
         </div>
-      </section>
+        <h2 id="currentChapterTitle" class="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-tight">Chargement...</h2>
+        <div class="h-1.5 w-20 bg-primary rounded-full"></div>
+      </header>
 
-      <section class="content-shell rounded-[28px] border border-white/70 p-5 md:p-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <button id="prevContentBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50">
-            <span class="material-symbols-outlined">chevron_left</span>
-            Precedent
+      <!-- All contents of the current chapter will be rendered here -->
+      <div id="chapterContentsArea" class="space-y-12">
+        <div class="flex flex-col items-center justify-center py-40 text-slate-300">
+          <span class="material-symbols-outlined text-7xl animate-pulse">auto_stories</span>
+          <p class="mt-4 font-bold uppercase tracking-widest text-sm">Initialisation du parcours...</p>
+        </div>
+      </div>
+
+      <!-- Navigation Controls -->
+      <footer class="pt-10 border-t border-slate-200">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <button id="prevBtn" class="w-full sm:w-auto px-8 py-4 flex items-center justify-center gap-3 bg-white border-2 border-slate-200 rounded-2xl font-black text-slate-600 hover:bg-slate-50 transition-all disabled:opacity-30">
+            <span class="material-symbols-outlined font-bold">chevron_left</span>
+            PRÉCÉDENT
           </button>
-          <div class="flex flex-col sm:flex-row gap-3">
-            <button id="markCompleteBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700">
-              <span class="material-symbols-outlined">check_circle</span>
-              Marquer comme termine
+          
+          <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <button id="markChapterCompleteBtn" class="px-10 py-5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-3">
+              <span class="material-symbols-outlined font-bold">check_circle</span>
+              VALIDER LE CHAPITRE
             </button>
-            <button id="nextContentBtn" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 font-semibold text-white hover:opacity-95">
-              Suivant
-              <span class="material-symbols-outlined">chevron_right</span>
+            <button id="nextBtn" class="px-10 py-5 bg-primary hover:bg-primary/95 text-white font-black rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3">
+              SUIVANT
+              <span class="material-symbols-outlined font-bold">chevron_right</span>
             </button>
           </div>
         </div>
-      </section>
-    </main>
-  </div>
+      </footer>
+    </div>
+  </main>
 </div>
 
 <script th:inline="javascript">
   const coursData = /*[[${cours}]]*/ null;
   const coursId = coursData ? coursData.id : null;
-  let sections = [];
   let chapitresListe = [];
-  let currentChapitreIndex = 0;
-  let currentContenuIndex = 0;
-  let currentContenuId = null;
-  let currentContenuComplete = false;
+  let currentChapterIndex = 0;
 
   function escapeHtml(text) {
     if (!text) return '';
-    return String(text).replace(/[&<>]/g, function(m) {
-      return m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;');
-    });
+    return String(text).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
   }
 
-  function getTypeLabel(type) {
-    switch (type) {
-      case 'VIDEO': return 'Video';
-      case 'TEXTE': return 'Texte';
-      case 'PDF': return 'PDF';
-      case 'LIEN': return 'Lien externe';
-      case 'IMAGE': return 'Image';
-      default: return 'Contenu';
-    }
-  }
-
-  function genererHtmlContenu(contenu) {
-    const titre = contenu.titre || '';
+  function renderContenu(contenu) {
+    const isComplete = contenu.estComplete;
+    const htmlRich = contenu.htmlContent || contenu.contenuPrincipal || '';
+    let html = `<div class="content-card p-8 space-y-6 border-l-8 ${isComplete ? 'border-emerald-500' : 'border-slate-100'} transition-all">`;
+    
+    html += `
+      <div class="flex justify-between items-start">
+        <div class="space-y-1">
+          <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">${contenu.typeContenu}</span>
+          <h3 class="text-2xl font-black text-slate-900 tracking-tight">${escapeHtml(contenu.titre)}</h3>
+        </div>
+        ${isComplete ? '<span class="material-symbols-outlined text-emerald-500 font-bold">check_circle</span>' : ''}
+      </div>
+    `;
 
     if (contenu.typeContenu === 'VIDEO') {
-      if (!contenu.videoUrl) return "<div class='text-center py-16 text-slate-400'>Video non disponible</div>";
-      return `
-        <div class="space-y-5">
-          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
-          <video controls class="w-full rounded-3xl border border-slate-200 bg-slate-950" controlsList="nodownload">
-            <source src="${contenu.videoUrl}" type="video/mp4">
-            Votre navigateur ne supporte pas la video.
-          </video>
-        </div>`;
-    }
-
-    if (contenu.typeContenu === 'TEXTE') {
-      const texte = contenu.contenuTexte || contenu.htmlContent || '';
-      if (!texte) return "<div class='text-center py-16 text-slate-400'>Texte non disponible</div>";
-      return `
-        <article class="prose prose-slate max-w-none">
-          <h3>${escapeHtml(titre)}</h3>
-          <div>${texte}</div>
-        </article>`;
-    }
-
-    if (contenu.typeContenu === 'PDF') {
-      if (!contenu.fichierUrl) return "<div class='text-center py-16 text-slate-400'>PDF non disponible</div>";
-      return `
-        <div class="space-y-5">
-          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
-          <iframe src="${contenu.fichierUrl}" class="w-full h-[680px] rounded-3xl border border-slate-200"></iframe>
-          <a href="${contenu.fichierUrl}" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-white font-semibold">
-            <span class="material-symbols-outlined text-sm">download</span>
-            Telecharger le PDF
-          </a>
-        </div>`;
-    }
-
-    if (contenu.typeContenu === 'IMAGE') {
-      if (!contenu.fichierUrl) return "<div class='text-center py-16 text-slate-400'>Image non disponible</div>";
-      return `
-        <div class="space-y-5">
-          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
-          <img src="${contenu.fichierUrl}" alt="${escapeHtml(titre)}" class="w-full rounded-3xl border border-slate-200">
-        </div>`;
-    }
-
-    if (contenu.typeContenu === 'LIEN') {
-      if (!contenu.lienExterne) return "<div class='text-center py-16 text-slate-400'>Lien non disponible</div>";
-      return `
-        <div class="space-y-5">
-          <h3 class="text-xl font-bold">${escapeHtml(titre)}</h3>
-          <a href="${contenu.lienExterne}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-blue-50 px-4 py-3 text-primary font-semibold">
-            <span class="material-symbols-outlined text-sm">open_in_new</span>
-            ${escapeHtml(contenu.lienTexte || contenu.titre || 'Ouvrir le lien')}
-          </a>
-        </div>`;
-    }
-
-    return "<div class='text-center py-16 text-slate-400'>Contenu non pris en charge</div>";
-  }
-
-  function ajouterChapitre(section, chapitre, parentPath) {
-    const path = parentPath ? parentPath + ' / ' + (chapitre.titre || 'Chapitre') : (chapitre.titre || 'Chapitre');
-    const chapitreData = {
-      id: chapitre.id,
-      titre: chapitre.titre || 'Chapitre',
-      path: path,
-      sectionNom: section.titre || 'Section',
-      contenus: []
-    };
-
-    const contenus = [...(chapitre.contenus || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
-    contenus.forEach(contenu => {
-      chapitreData.contenus.push({
-        id: contenu.id,
-        titre: contenu.titre,
-        typeContenu: contenu.typeContenu,
-        estComplete: contenu.estComplete || false,
-        videoUrl: contenu.videoUrl,
-        contenuTexte: contenu.contenuTexte,
-        fichierUrl: contenu.fichierUrl,
-        lienExterne: contenu.lienExterne,
-        lienTexte: contenu.lienTexte,
-        htmlContent: contenu.htmlContent
-      });
-    });
-
-    if (chapitreData.contenus.length > 0) {
-      chapitresListe.push(chapitreData);
-    }
-
-    const sousChapitres = [...(chapitre.sousChapitres || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
-    sousChapitres.forEach(sousChapitre => ajouterChapitre(section, sousChapitre, path));
-  }
-
-  function organiserDonnees() {
-    if (!coursData || !coursData.sections) {
-      return false;
-    }
-
-    sections = [...coursData.sections].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
-    chapitresListe = [];
-
-    sections.forEach(section => {
-      const chapitres = [...(section.chapitres || [])].sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
-      chapitres.forEach(chapitre => ajouterChapitre(section, chapitre, ''));
-    });
-
-    return chapitresListe.length > 0;
-  }
-
-  function initSidebar() {
-    const sidebar = document.getElementById('sidebarContent');
-    if (chapitresListe.length === 0) {
-      sidebar.innerHTML = "<div class='rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500'>Aucun contenu disponible.</div>";
-      return;
-    }
-
-    const sectionsMap = new Map();
-    chapitresListe.forEach((chapitre, index) => {
-      if (!sectionsMap.has(chapitre.sectionNom)) {
-        sectionsMap.set(chapitre.sectionNom, []);
+      html += `<div class="video-container">${htmlRich || `<video controls class="w-full rounded-xl"><source src="${contenu.videoUrl || ''}" type="video/mp4"></video>`}</div>`;
+    } else if (contenu.typeContenu === 'TEXTE') {
+      let formattedHtml = String(htmlRich || '');
+      
+      // 1. Si ce n'est pas déjà du HTML (pas de balises <p> ou <div>), on traite les retours à la ligne
+      if (!formattedHtml.includes('<p>') && !formattedHtml.includes('<div>')) {
+          // Transformer les + en nouveaux paragraphes pour aérer
+          formattedHtml = formattedHtml.replace(/\+/g, '<br><br>+');
+          // Transformer les retours à la ligne simples en <br>
+          formattedHtml = formattedHtml.replace(/\n/g, '<br>');
       }
-      sectionsMap.get(chapitre.sectionNom).push({ ...chapitre, globalIndex: index });
-    });
 
+      // 2. Détection des exemples
+      if (formattedHtml.includes('Exemple :')) {
+          formattedHtml = formattedHtml.replace(/Exemple\s*:/g, '<div class="exemple-box"><span class="font-black text-primary not-italic">Exemple :</span>');
+          if (!formattedHtml.includes('</div>')) formattedHtml += '</div>';
+      }
+
+      html += `<div class="prose prose-slate max-w-none prose-p:leading-relaxed break-words whitespace-normal">${formattedHtml}</div>`;
+    } else if (contenu.typeContenu === 'PDF') {
+      html += `
+        <div class="space-y-4">
+          <iframe src="${contenu.fichierUrl}" class="w-full h-[600px] rounded-xl border border-slate-200"></iframe>
+          <a href="${contenu.fichierUrl}" download class="inline-flex items-center gap-2 px-6 py-3 bg-primary/5 text-primary rounded-xl font-black text-sm hover:bg-primary/10 transition-colors">
+            <span class="material-symbols-outlined text-sm">download</span> TÉLÉCHARGER LE DOCUMENT
+          </a>
+        </div>`;
+    } else if (contenu.typeContenu === 'IMAGE') {
+      html += `<img src="${contenu.fichierUrl}" class="w-full rounded-xl shadow-sm border border-slate-100">`;
+    } else if (contenu.typeContenu === 'LIEN') {
+      html += `
+        <a href="${contenu.lienExterne}" target="_blank" class="flex items-center justify-between p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 hover:border-primary/30 transition-all group">
+          <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-primary">link</span>
+            <span class="font-bold text-slate-700">${escapeHtml(contenu.lienTexte || 'Ouvrir la ressource')}</span>
+          </div>
+          <span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">open_in_new</span>
+        </a>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  function flattenChapters(sections) {
+    let flat = [];
+    (sections || []).sort((a, b) => (a?.ordre || 0) - (b?.ordre || 0)).forEach(section => {
+      const stack = [...(section.chapitres || [])]
+        .sort((a, b) => (a?.ordre || 0) - (b?.ordre || 0))
+        .map(chap => ({ ...chap, sectionTitre: section.titre }));
+
+      while (stack.length > 0) {
+        const chap = stack.shift();
+        flat.push({
+          ...chap,
+          globalIndex: flat.length
+        });
+
+        const sous = (chap.sousChapitres || [])
+          .sort((a, b) => (a?.ordre || 0) - (b?.ordre || 0))
+          .map(sc => ({ ...sc, sectionTitre: section.titre }));
+        stack.unshift(...sous);
+      }
+    });
+    return flat;
+  }
+
+  function updateSidebar() {
+    const container = document.getElementById('sidebarContent');
     let html = '';
-    sectionsMap.forEach((chapitres, sectionName) => {
-      html += `<div class="rounded-3xl border border-slate-100 bg-slate-50/80 p-3">
-        <div class="px-2 pb-2">
-          <p class="text-xs uppercase tracking-[0.22em] text-slate-400">${escapeHtml(sectionName)}</p>
-        </div>`;
-
-      chapitres.forEach(item => {
-        const doneCount = item.contenus.filter(c => c.estComplete).length;
-        const progress = item.contenus.length ? Math.round((doneCount / item.contenus.length) * 100) : 0;
-        const activeClass = item.globalIndex === currentChapitreIndex ? 'active' : '';
-        html += `<button type="button" class="chapter-item ${activeClass} w-full text-left rounded-2xl border border-transparent px-3 py-3 mb-2 last:mb-0" onclick="goToChapitre(${item.globalIndex})">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-slate-800">${escapeHtml(item.path)}</p>
-              <p class="text-xs text-slate-400 mt-1">${doneCount}/${item.contenus.length} contenu(s) termines</p>
-            </div>
-            <span class="text-xs text-slate-400">${progress}%</span>
-          </div>
-          <div class="mt-3 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-            <div class="h-full rounded-full bg-primary" style="width:${progress}%"></div>
-          </div>
-        </button>`;
-      });
-
-      html += '</div>';
-    });
-
-    sidebar.innerHTML = html;
-  }
-
-  function chargerContenuCourant() {
-    const chapitre = chapitresListe[currentChapitreIndex];
-    if (!chapitre) return;
-    const contenu = chapitre.contenus[currentContenuIndex];
-    if (!contenu) return;
-
-    currentContenuId = contenu.id;
-    currentContenuComplete = contenu.estComplete || false;
-
-    document.getElementById('currentSectionName').textContent = chapitre.sectionNom;
-    document.getElementById('currentChapitreName').textContent = chapitre.path;
-    document.getElementById('currentPathHint').textContent = chapitre.path;
-    document.getElementById('currentContentTitle').textContent = contenu.titre || 'Contenu';
-    document.getElementById('currentContentType').textContent = getTypeLabel(contenu.typeContenu);
-    document.getElementById('contentCounter').textContent = `Contenu ${currentContenuIndex + 1} / ${chapitre.contenus.length}`;
-    document.getElementById('contentArea').innerHTML = genererHtmlContenu(contenu);
-
-    updateButtonsState();
-    initSidebar();
-  }
-
-  function updateButtonsState() {
-    const prevBtn = document.getElementById('prevContentBtn');
-    const nextBtn = document.getElementById('nextContentBtn');
-    const markBtn = document.getElementById('markCompleteBtn');
-    const chapitre = chapitresListe[currentChapitreIndex];
-
-    prevBtn.disabled = currentChapitreIndex === 0 && currentContenuIndex === 0;
-    prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
-
-    markBtn.disabled = currentContenuComplete;
-    markBtn.classList.toggle('opacity-50', markBtn.disabled);
-
-    const isLastContent = currentContenuIndex === chapitre.contenus.length - 1;
-    const isLastChapter = currentChapitreIndex === chapitresListe.length - 1;
-    nextBtn.disabled = isLastContent && isLastChapter;
-    nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
-  }
-
-  function goToChapitre(index) {
-    currentChapitreIndex = index;
-    currentContenuIndex = 0;
-    chargerContenuCourant();
-  }
-
-  function goToPrevious() {
-    if (currentContenuIndex > 0) {
-      currentContenuIndex--;
-    } else if (currentChapitreIndex > 0) {
-      currentChapitreIndex--;
-      currentContenuIndex = chapitresListe[currentChapitreIndex].contenus.length - 1;
-    }
-    chargerContenuCourant();
-  }
-
-  function goToNext() {
-    const chapitre = chapitresListe[currentChapitreIndex];
-    if (!currentContenuComplete) {
-      alert("Veuillez d'abord marquer ce contenu comme termine.");
-      return;
-    }
-
-    if (currentContenuIndex < chapitre.contenus.length - 1) {
-      currentContenuIndex++;
-    } else if (currentChapitreIndex < chapitresListe.length - 1) {
-      currentChapitreIndex++;
-      currentContenuIndex = 0;
-    }
-
-    chargerContenuCourant();
-  }
-
-  function markContentComplete() {
-    if (!currentContenuId || !coursId || currentContenuComplete) return;
-
-    $.ajax({
-      url: '/etudiant/cours/' + coursId + '/contenu/' + currentContenuId + '/completer',
-      method: 'POST',
-      success: function(response) {
-        if (!response.success) {
-          alert(response.message || 'Erreur de mise a jour');
-          return;
-        }
-
-        chapitresListe[currentChapitreIndex].contenus[currentContenuIndex].estComplete = true;
-        currentContenuComplete = true;
-        document.getElementById('globalProgression').textContent = response.progression + '%';
-        document.getElementById('globalProgressBar').style.width = response.progression + '%';
-        updateButtonsState();
-        initSidebar();
-
-        setTimeout(function() {
-          const chapitre = chapitresListe[currentChapitreIndex];
-          const isLastContent = currentContenuIndex === chapitre.contenus.length - 1;
-          const isLastChapter = currentChapitreIndex === chapitresListe.length - 1;
-          if (!(isLastContent && isLastChapter)) {
-            goToNext();
-          }
-        }, 500);
-      },
-      error: function() {
-        alert('Erreur lors de la mise a jour de la progression.');
+    
+    let currentSection = '';
+    chapitresListe.forEach((chap, idx) => {
+      if (chap.sectionTitre !== currentSection) {
+        currentSection = chap.sectionTitre;
+        html += `<p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mt-8 mb-4">${escapeHtml(currentSection)}</p>`;
       }
+      
+      const isActive = idx === currentChapterIndex;
+      const isComplete = chap.estComplete;
+      
+      html += `
+        <button onclick="goToChapter(${idx})" class="w-full text-left p-4 rounded-2xl transition-all border-2 ${isActive ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'} flex items-center justify-between">
+          <div class="flex items-center gap-3 overflow-hidden">
+            <span class="text-xs font-black opacity-40">${idx + 1}</span>
+            <span class="text-sm font-bold truncate">${escapeHtml(chap.titre)}</span>
+          </div>
+          ${isComplete ? `<span class="material-symbols-outlined text-sm ${isActive ? 'text-white' : 'text-emerald-500'} font-bold">check_circle</span>` : ''}
+        </button>
+      `;
     });
+    
+    container.innerHTML = html;
   }
 
-  function trouverPremierContenuNonComplete() {
-    for (let i = 0; i < chapitresListe.length; i++) {
-      for (let j = 0; j < chapitresListe[i].contenus.length; j++) {
-        if (!chapitresListe[i].contenus[j].estComplete) {
-          return { chapitreIdx: i, contenuIdx: j };
+  function loadCurrentChapter() {
+    const chap = chapitresListe[currentChapterIndex];
+    if (!chap) return;
+
+    document.getElementById('currentChapterTitle').textContent = chap.titre;
+    document.getElementById('currentSectionName').textContent = chap.sectionTitre;
+    document.getElementById('chapterCounter').textContent = `Chapitre ${currentChapterIndex + 1}/${chapitresListe.length}`;
+
+    const contentsArea = document.getElementById('chapterContentsArea');
+    if (chap.contenus && chap.contenus.length > 0) {
+      contentsArea.innerHTML = chap.contenus.map(c => renderContenu(c)).join('');
+    } else {
+      contentsArea.innerHTML = '<div class="p-20 text-center text-slate-400 font-bold uppercase tracking-widest bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">Aucun contenu dans ce chapitre</div>';
+    }
+
+    updateControls();
+    updateSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateControls() {
+    const chap = chapitresListe[currentChapterIndex];
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const markBtn = document.getElementById('markChapterCompleteBtn');
+
+    prevBtn.disabled = currentChapterIndex === 0;
+    nextBtn.disabled = currentChapterIndex === chapitresListe.length - 1;
+    
+    // Si le chapitre est déjà complet, on grise le bouton valider
+    markBtn.disabled = chap.estComplete;
+    markBtn.classList.toggle('opacity-50', chap.estComplete);
+    markBtn.innerHTML = chap.estComplete ? '<span class="material-symbols-outlined font-bold">check_circle</span> CHAPITRE COMPLÉTÉ' : '<span class="material-symbols-outlined font-bold">check_circle</span> VALIDER LE CHAPITRE';
+  }
+
+  function goToChapter(idx) {
+    currentChapterIndex = idx;
+    loadCurrentChapter();
+  }
+
+  async function markChapterAsComplete() {
+    const chap = chapitresListe[currentChapterIndex];
+    if (!chap.contenus || chap.contenus.length === 0) return;
+
+    const btn = document.getElementById('markChapterCompleteBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> VALIDATION...';
+
+    try {
+      // On boucle sur tous les contenus du chapitre pour les marquer comme terminés
+      for (const contenu of chap.contenus) {
+        if (!contenu.estComplete) {
+          await $.post(`/etudiant/cours/${coursId}/contenu/${contenu.id}/completer`);
         }
       }
+
+      // Mise à jour de l'UI locale
+      chap.estComplete = true;
+      chap.contenus.forEach(c => c.estComplete = true);
+      
+      // Récupérer la nouvelle progression globale
+      const progResponse = await $.get(`/etudiant/cours/${coursId}/progression`);
+      if (progResponse.success) {
+        document.getElementById('globalProgression').textContent = progResponse.progression + '%';
+        document.getElementById('globalProgressBar').style.width = progResponse.progression + '%';
+      }
+
+      loadCurrentChapter();
+      
+      // Notification de succès
+      const toast = document.createElement('div');
+      toast.className = "fixed bottom-10 right-10 bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black shadow-2xl z-[100] animate-bounce";
+      toast.textContent = "Chapitre validé avec succès !";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la validation du chapitre");
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-outlined font-bold">check_circle</span> RÉESSAYER';
     }
-    return { chapitreIdx: 0, contenuIdx: 0 };
   }
 
-  function init() {
-    const hasData = organiserDonnees();
-    if (!hasData) {
-      document.getElementById('contentArea').innerHTML = "<div class='text-center py-20 text-slate-400'><span class='material-symbols-outlined text-5xl mb-3'>menu_book</span><p>Aucun contenu disponible pour ce cours.</p></div>";
-      initSidebar();
-      return;
-    }
-
-    const first = trouverPremierContenuNonComplete();
-    currentChapitreIndex = first.chapitreIdx;
-    currentContenuIndex = first.contenuIdx;
-    chargerContenuCourant();
+  // Initialisation
+  if (coursData && coursData.sections) {
+    chapitresListe = flattenChapters(coursData.sections);
+    
+    // Trouver le premier chapitre non complété
+    const firstIncomplete = chapitresListe.findIndex(c => !c.estComplete);
+    currentChapterIndex = firstIncomplete !== -1 ? firstIncomplete : 0;
+    
+    loadCurrentChapter();
   }
 
-  document.getElementById('prevContentBtn').addEventListener('click', goToPrevious);
-  document.getElementById('nextContentBtn').addEventListener('click', goToNext);
-  document.getElementById('markCompleteBtn').addEventListener('click', markContentComplete);
-  window.goToChapitre = goToChapitre;
-  init();
+  document.getElementById('prevBtn').onclick = () => { if (currentChapterIndex > 0) goToChapter(currentChapterIndex - 1); };
+  document.getElementById('nextBtn').onclick = () => { if (currentChapterIndex < chapitresListe.length - 1) goToChapter(currentChapterIndex + 1); };
+  document.getElementById('markChapterCompleteBtn').onclick = markChapterAsComplete;
 </script>
+
 </body>
 </html>

@@ -44,6 +44,9 @@ public class Inscription {
     @Column(name = "notes_personnelles", columnDefinition = "TEXT")
     private String notesPersonnelles;
 
+    @Column(name = "score")
+    private Integer score;
+
     @Transient
     private Integer progressionPourcentage;
 
@@ -75,6 +78,7 @@ public class Inscription {
     public Boolean getFavori() { return favori; }
     public String getNotesPersonnelles() { return notesPersonnelles; }
     public Integer getProgressionPourcentage() { return progressionPourcentage; }
+    public Integer getScore() { return score; }
 
     // ========== SETTERS ==========
     public void setId(Long id) { this.id = id; }
@@ -87,6 +91,7 @@ public class Inscription {
     public void setFavori(Boolean favori) { this.favori = favori; }
     public void setNotesPersonnelles(String notesPersonnelles) { this.notesPersonnelles = notesPersonnelles; }
     public void setProgressionPourcentage(Integer progressionPourcentage) { this.progressionPourcentage = progressionPourcentage; }
+    public void setScore(Integer score) { this.score = score; }
 
     // ========== MÉTHODES UTILITAIRES ==========
     public void mettreAJourAcces() {

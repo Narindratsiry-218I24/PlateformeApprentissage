@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plateforme_etudiant.demo.dto.CourseRequestDTO;
 import com.plateforme_etudiant.demo.dto.CourseResponseDTO;
 import com.plateforme_etudiant.demo.model.Professeur;
+import com.plateforme_etudiant.demo.model.Quiz;
 import com.plateforme_etudiant.demo.repository.ProfesseurRepository;
+import com.plateforme_etudiant.demo.repository.CategoryRepository;
 import com.plateforme_etudiant.demo.service.CourseServiceFacade;
 import com.plateforme_etudiant.demo.service.ProfesseurService;
 import com.plateforme_etudiant.demo.service.FileUploadService;
+import com.plateforme_etudiant.demo.service.QuizService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +49,12 @@ public class CourseController {
     @Autowired
     private ProfesseurService professeurService;
 
+    @Autowired
+    private QuizService quizService;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping
@@ -62,6 +71,7 @@ public class CourseController {
         Professeur prof = getProfesseurFromSession(session);
         if (prof == null) return "redirect:/login";
         model.addAttribute("professeur", professeurService.getProfesseurById(prof.getId()));
+        model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("isEditMode", false);
         return "professeur/cours/ajouter";
     }
@@ -73,10 +83,13 @@ public class CourseController {
             @RequestParam(value = "descriptionCourte", required = false) String descriptionCourte,
             @RequestParam(value = "description", required = false) String description,
             @RequestParam(value = "dureeEstimee", required = false) Integer dureeEstimee,
+            @RequestParam(value = "quizTitre", required = false) String quizTitre,
+            @RequestParam(value = "quizDescription", required = false) String quizDescription,
             @RequestParam(value = "imageCouverture", required = false) MultipartFile imageCouverture,
             @RequestParam(value = "sections", required = false) String sectionsJson,
             @RequestParam(value = "publier", required = false, defaultValue = "false") boolean publier,
             @RequestParam(value = "fichiers", required = false) List<MultipartFile> fichiers,
+            @RequestParam(value = "categorieId", required = false) Long categorieId,
             HttpSession session) {
 
         Map<String, Object> response = new HashMap<>();
@@ -97,8 +110,16 @@ public class CourseController {
             CourseRequestDTO request = buildCourseRequest(
                     titre, descriptionCourte, description, dureeEstimee, imageUrl, sectionsJson, publier, fichiers
             );
+            request.setCategorieId(categorieId);
 
             CourseResponseDTO coursCree = courseService.creerCours(request, professeur.getId());
+
+            if (quizTitre != null && !quizTitre.isBlank()) {
+                Quiz quiz = new Quiz();
+                quiz.setTitre(quizTitre.trim());
+                quiz.setDescription(quizDescription != null ? quizDescription.trim() : "");
+                quizService.creerQuiz(coursCree.getId(), quiz);
+            }
 
             response.put("success", true);
             response.put("message", publier ? "Cours publie avec succes !" : "Cours sauvegarde en brouillon");
@@ -140,6 +161,7 @@ public class CourseController {
             CourseResponseDTO cours = courseService.getCoursParIdPourProfesseur(coursId, prof.getId());
             model.addAttribute("cours", cours);
             model.addAttribute("professeur", professeurService.getProfesseurById(prof.getId()));
+            model.addAttribute("categories", categoryRepository.findAll());
             model.addAttribute("isEditMode", true);
             return "professeur/cours/modifier";
         } catch (Exception e) {
@@ -161,6 +183,7 @@ public class CourseController {
             @RequestParam(value = "sections", required = false) String sectionsJson,
             @RequestParam(value = "publier", required = false, defaultValue = "false") boolean publier,
             @RequestParam(value = "fichiers", required = false) List<MultipartFile> fichiers,
+            @RequestParam(value = "categorieId", required = false) Long categorieId,
             HttpSession session) {
 
         Map<String, Object> response = new HashMap<>();
@@ -185,6 +208,7 @@ public class CourseController {
             CourseRequestDTO request = buildCourseRequest(
                     titre, descriptionCourte, description, dureeEstimee, imageUrl, sectionsJson, publier, fichiers
             );
+            request.setCategorieId(categorieId);
 
             CourseResponseDTO coursModifie = courseService.mettreAJourCours(coursId, request);
             if (publier && !Boolean.TRUE.equals(coursModifie.getPublie())) {

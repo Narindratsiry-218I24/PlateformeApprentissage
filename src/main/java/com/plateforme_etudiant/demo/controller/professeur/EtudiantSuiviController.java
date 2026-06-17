@@ -163,12 +163,58 @@ public class EtudiantSuiviController {
             if (inscriptions.isEmpty()) {
                 log.warn("Acces refuse au detail etudiant {} pour le professeur {}", etudiantId, professeur.getId());
                 model.addAttribute("professeur", professeurService.getProfesseurById(professeur.getId()));
-                model.addAttribute("error", "Cet etudiant n'est inscrit a aucun de vos cours.");
+                model.addAttribute("etudiant", etudiant);
+                model.addAttribute("error", "Cet étudiant n'est inscrit à aucun de vos cours.");
                 model.addAttribute("progressionCours", new ArrayList<>());
                 model.addAttribute("statistiques", new StatistiquesEtudiantDTO());
                 model.addAttribute("pageTitle", "Detail etudiant");
                 return "professeur/etudiants/detail";
             }
+
+            // Progression par cours (limitée aux cours du professeur)
+            List<ProgressionCoursDTO> progressionCours = new ArrayList<>();
+            for (Inscription inscription : inscriptions) {
+                Cours cours = inscription.getCours();
+                if (cours == null) continue;
+                if (!coursIdsProfesseur.isEmpty() && !coursIdsProfesseur.contains(cours.getId())) continue;
+
+                Long totalContenus = contenuItemRepository.countByCoursId(cours.getId());
+                Long contenusCompletes = progressionRepository.countCompletedByApprenantAndCours(etudiantId, cours.getId());
+
+                int progression = calculerProgressionEtudiantCours(etudiantId, cours.getId());
+
+                ProgressionCoursDTO dto = new ProgressionCoursDTO();
+                dto.setCoursId(cours.getId());
+                dto.setCoursTitre(cours.getTitre());
+                dto.setCoursDescriptionCourte(cours.getDescriptionCourte());
+                dto.setImageCouverture(cours.getImageCouverture());
+                dto.setProgression(progression);
+                dto.setContenusTotal(totalContenus == null ? 0 : totalContenus.intValue());
+                dto.setContenusCompletes(contenusCompletes == null ? 0 : contenusCompletes.intValue());
+                dto.setDateDernierAcces(inscription.getDateDernierAcces());
+                dto.setEstTermine(progression >= 100);
+                progressionCours.add(dto);
+            }
+
+            int totalCours = progressionCours.size();
+            int totalHeures = calculerHeuresTotalEtudiees(etudiantId, coursIdsProfesseur);
+            int progressionMoyenne = 0;
+            if (totalCours > 0) {
+                int sum = progressionCours.stream().mapToInt(p -> p.getProgression() != null ? p.getProgression() : 0).sum();
+                progressionMoyenne = Math.round(sum / (float) totalCours);
+            }
+
+            StatistiquesEtudiantDTO statistiques = new StatistiquesEtudiantDTO();
+            statistiques.setTotalCours(totalCours);
+            statistiques.setTotalHeures(totalHeures);
+            statistiques.setProgressionMoyenne(progressionMoyenne);
+            statistiques.setCertificats(0);
+
+            model.addAttribute("professeur", professeurService.getProfesseurById(professeur.getId()));
+            model.addAttribute("etudiant", etudiant);
+            model.addAttribute("progressionCours", progressionCours);
+            model.addAttribute("statistiques", statistiques);
+            model.addAttribute("pageTitle", "Detail etudiant");
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage(), e);

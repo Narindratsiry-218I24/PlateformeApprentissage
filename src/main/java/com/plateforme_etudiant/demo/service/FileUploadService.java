@@ -32,7 +32,8 @@ public class FileUploadService {
     // Types de fichiers autorisés
     private static final String[] ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"};
     private static final String[] ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/ogg"};
-    private static final String[] ALLOWED_DOC_TYPES = {"application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"};
+    private static final String[] ALLOWED_DOC_TYPES = {"application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "text/plain"};
+    private static final String[] ALLOWED_MESSAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "video/mp4"};
 
     /**
      * Upload d'une image
@@ -151,6 +152,13 @@ public class FileUploadService {
      */
     public String uploadLessonPDF(MultipartFile file) throws IOException {
         return uploadDocument(file);
+    }
+
+    /**
+     * Upload d'un fichier joint à un message
+     */
+    public String uploadMessageFile(MultipartFile file) throws IOException {
+        return uploadFile(file, "messages", ALLOWED_MESSAGE_TYPES);
     }
 
     /**

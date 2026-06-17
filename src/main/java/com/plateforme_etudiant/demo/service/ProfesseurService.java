@@ -89,6 +89,32 @@ public class ProfesseurService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public ProfesseurResponseDTO updateProfesseur(Long id, ProfesseurRequestDTO request) {
+        Professeur professeur = professeurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Professeur non trouvé avec l'ID: " + id));
+        
+        Utilisateur utilisateur = professeur.getUtilisateur();
+        utilisateur.setPrenom(request.getPrenom());
+        utilisateur.setNom(request.getNom());
+        utilisateur.setEmail(request.getEmail());
+        utilisateurRepository.save(utilisateur);
+
+        professeur.setSpecialite(request.getSpecialite());
+        professeur.setBiographie(request.getBiographie());
+        professeur.setVerifie(request.getVerifie() != null ? request.getVerifie() : professeur.getVerifie());
+        
+        return convertirEnResponse(professeurRepository.save(professeur));
+    }
+
+    @Transactional
+    public void deleteProfesseur(Long id) {
+        Professeur professeur = professeurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Professeur non trouvé avec l'ID: " + id));
+        professeurRepository.delete(professeur);
+        utilisateurRepository.delete(professeur.getUtilisateur());
+    }
+
     private ProfesseurResponseDTO convertirEnResponse(Professeur professeur) {
         ProfesseurResponseDTO dto = new ProfesseurResponseDTO();
         dto.setId(professeur.getId());

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{professeur/layout}" lang="fr">
+<head>
+    <title>Mon Profil</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-8">
+        <h1 class="text-3xl font-black text-secondary">Mon Profil Professionnel</h1>
+        <p class="text-secondary-light font-medium mt-1">Gérez vos informations personnelles et publiques de formateur.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="card-premium p-6 flex flex-col items-center text-center">
+            <div class="w-24 h-24 rounded-3xl bg-primary/10 text-primary flex items-center justify-center font-black text-4xl mb-4">
+                <span th:text="${#strings.substring(professeur.prenom, 0, 1)}">P</span>
+            </div>
+            <h2 class="text-xl font-bold text-secondary" th:text="${professeur.prenom + ' ' + professeur.nom}">Professeur</h2>
+            <p class="text-xs text-primary font-bold uppercase tracking-wider mt-1" th:text="${professeur.specialite}">Spécialité</p>
+            <p class="text-xs text-text-muted mt-4 font-medium" th:text="${professeur.email}">email@domain.com</p>
+            
+            <div class="w-full h-px bg-border-color my-6"></div>
+            
+            <div class="flex items-center justify-around w-full">
+                <div>
+                    <h4 class="text-lg font-bold text-secondary">Auteur</h4>
+                    <p class="text-[10px] text-text-muted font-bold uppercase">Rôle</p>
+                </div>
+                <div class="w-px h-8 bg-border-color"></div>
+                <div>
+                    <h4 class="text-lg font-bold text-secondary" th:text="${professeur.biographie != null ? 'Active' : 'N/A'}">Active</h4>
+                    <p class="text-[10px] text-text-muted font-bold uppercase">Bio Status</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-premium lg:col-span-2 p-6">
+            <h3 class="text-lg font-bold text-secondary mb-6">Informations du Compte</h3>
+            <form class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Prénom</label>
+                        <input type="text" class="w-full bg-slate-50 border border-border-color rounded-xl p-3 text-sm text-secondary font-medium" th:value="${professeur.prenom}" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Nom</label>
+                        <input type="text" class="w-full bg-slate-50 border border-border-color rounded-xl p-3 text-sm text-secondary font-medium" th:value="${professeur.nom}" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Adresse Email</label>
+                    <input type="email" class="w-full bg-slate-50 border border-border-color rounded-xl p-3 text-sm text-secondary font-medium" th:value="${professeur.email}" readonly>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Spécialité</label>
+                    <input type="text" class="w-full bg-slate-50 border border-border-color rounded-xl p-3 text-sm text-secondary font-medium" th:value="${professeur.specialite}" readonly>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Biographie</label>
+                    <textarea class="w-full bg-slate-50 border border-border-color rounded-xl p-3 text-sm text-secondary font-medium h-24" th:text="${professeur.biographie ?: 'Aucune biographie fournie.'}" readonly></textarea>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

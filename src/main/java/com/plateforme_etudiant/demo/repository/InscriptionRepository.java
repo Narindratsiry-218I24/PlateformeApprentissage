@@ -32,6 +32,7 @@ public interface InscriptionRepository extends JpaRepository<Inscription, Long> 
     @Query("SELECT COUNT(i) FROM Inscription i WHERE i.apprenant.id = :apprenantId")
     long countByApprenantId(@Param("apprenantId") Long apprenantId);
 
+
     // Récupérer les inscriptions pour un cours spécifique avec les apprenants
     @Query("SELECT i FROM Inscription i JOIN FETCH i.apprenant WHERE i.cours.id = :coursId")
     List<Inscription> findByCoursIdWithApprenant(@Param("coursId") Long coursId);
@@ -39,4 +40,11 @@ public interface InscriptionRepository extends JpaRepository<Inscription, Long> 
     // Récupérer les inscriptions d'un étudiant pour les cours d'un professeur
     @Query("SELECT i FROM Inscription i JOIN FETCH i.cours c WHERE i.apprenant.id = :apprenantId AND c.professeur.id = :professeurId")
     List<Inscription> findByApprenantIdAndProfesseurId(@Param("apprenantId") Long apprenantId, @Param("professeurId") Long professeurId);
+
+    // Récupérer tous les étudiants inscrits aux cours d'un professeur spécifique
+    @Query("SELECT DISTINCT i.apprenant FROM Inscription i WHERE i.cours.professeur.id = :professeurId")
+    List<com.plateforme_etudiant.demo.model.Utilisateur> findApprenantsByProfesseurId(@Param("professeurId") Long professeurId);
+
+    // Pour le DataInitializer
+    boolean existsByApprenantAndCours(com.plateforme_etudiant.demo.model.Utilisateur apprenant, com.plateforme_etudiant.demo.model.Cours cours);
 }

@@ -50,14 +50,15 @@ public class ProfesseurDashboardController {
             long coursPublies = cours.stream().filter(CourseResponseDTO::getPublie).count();
 
             model.addAttribute("professeur", professeur);
-            model.addAttribute("cours", cours);
+            model.addAttribute("derniersCours", cours);
+            model.addAttribute("cours", cours); // keep for compatibility if needed
             model.addAttribute("totalCours", cours.size());
             model.addAttribute("coursPublies", coursPublies);
             model.addAttribute("totalEtudiants", totalEtudiants);
             model.addAttribute("progressionMoyenne", 78);
             model.addAttribute("pageTitle", "Dashboard Professeur");
 
-            log.info("✅ Dashboard affiché pour le professeur: {}", professeur.getEmail());
+            log.info("✅ Dashboard affiché pour le professeur: {}, {} étudiants", professeur.getEmail(), totalEtudiants);
             return "professeur/dashboard";
 
         } catch (Exception e) {
