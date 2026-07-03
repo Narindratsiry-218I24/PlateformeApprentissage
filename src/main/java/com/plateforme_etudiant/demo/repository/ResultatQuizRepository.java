@@ -10,11 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import java.util.Optional;
+
 @Repository
 public interface ResultatQuizRepository extends JpaRepository<ResultatQuiz, Long> {
     List<ResultatQuiz> findByEtudiantId(Long etudiantId);
     List<ResultatQuiz> findByQuizId(Long quizId);
     List<ResultatQuiz> findByEtudiantIdAndQuizIdOrderByDatePassageDesc(Long etudiantId, Long quizId);
+    Optional<ResultatQuiz> findFirstByEtudiantIdAndQuizIdOrderByDatePassageDesc(Long etudiantId, Long quizId);
 
     @Transactional
     @Modifying

@@ -66,6 +66,12 @@ public class Utilisateur {
     @Column(name = "date_modification")
     private LocalDateTime dateModification;
 
+    @Column(name = "derniere_activite")
+    private LocalDateTime derniereActivite;
+
+    @Column(name = "cours_actif_id")
+    private Long coursActifId;
+
     // Relations
     @OneToOne(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -124,6 +130,14 @@ public class Utilisateur {
         return dateModification;
     }
 
+    public LocalDateTime getDerniereActivite() {
+        return derniereActivite;
+    }
+
+    public Long getCoursActifId() {
+        return coursActifId;
+    }
+
     public Professeur getProfesseur() {
         return professeur;
     }
@@ -179,6 +193,14 @@ public class Utilisateur {
 
     public void setDateModification(LocalDateTime dateModification) {
         this.dateModification = dateModification;
+    }
+
+    public void setDerniereActivite(LocalDateTime derniereActivite) {
+        this.derniereActivite = derniereActivite;
+    }
+
+    public void setCoursActifId(Long coursActifId) {
+        this.coursActifId = coursActifId;
     }
 
     public void setProfesseur(Professeur professeur) {

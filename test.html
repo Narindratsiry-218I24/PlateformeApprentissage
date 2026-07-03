@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Certificat - L'ÉRUDITION</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#aab3c5;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+
+.certificate{
+    width:1000px;
+    height:700px;
+    background:#fdfdfd;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 10px 40px rgba(0,0,0,0.2);
+}
+
+/* Motif de fond */
+.certificate::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+    radial-gradient(#d8dce6 1px, transparent 1px);
+    background-size:18px 18px;
+    opacity:.7;
+}
+
+/* Bordure intérieure */
+.border{
+    position:absolute;
+    top:20px;
+    left:20px;
+    right:20px;
+    bottom:20px;
+    border:2px solid #d7b04d;
+}
+
+/* Coin supérieur gauche */
+.top-left{
+    position:absolute;
+    top:0;
+    left:0;
+    width:220px;
+    height:220px;
+    background:#123c91;
+    clip-path:polygon(0 0,100% 0,0 100%);
+}
+
+.top-left::after{
+    content:"";
+    position:absolute;
+    top:0;
+    right:0;
+    width:130px;
+    height:130px;
+    background:#d7b04d;
+    clip-path:polygon(100% 0,100% 100%,0 0);
+}
+
+/* Coin inférieur droit */
+.bottom-right{
+    position:absolute;
+    bottom:0;
+    right:0;
+    width:240px;
+    height:240px;
+    background:#123c91;
+    clip-path:polygon(100% 0,100% 100%,0 100%);
+}
+
+.bottom-right::after{
+    content:"";
+    position:absolute;
+    left:25px;
+    bottom:25px;
+    width:120px;
+    height:120px;
+    background:#d7b04d;
+    clip-path:polygon(100% 0,100% 100%,0 100%);
+}
+
+/* Petits triangles décoratifs */
+.small-triangle-1{
+    position:absolute;
+    left:35px;
+    top:260px;
+    width:60px;
+    height:60px;
+    background:#123c91;
+    clip-path:polygon(0 0,100% 50%,0 100%);
+}
+
+.small-triangle-2{
+    position:absolute;
+    right:35px;
+    top:320px;
+    width:25px;
+    height:25px;
+    background:#123c91;
+    clip-path:polygon(0 0,100% 50%,0 100%);
+}
+
+/* Badge */
+.badge{
+    position:absolute;
+    top:50px;
+    right:60px;
+    width:95px;
+    height:95px;
+    background:#d7b04d;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    color:white;
+    font-weight:bold;
+    font-size:14px;
+    z-index:10;
+}
+
+/* Contenu */
+.content{
+    position:relative;
+    z-index:5;
+    text-align:center;
+    padding:60px;
+}
+
+.title{
+    font-size:52px;
+    font-weight:bold;
+    color:#123c91;
+    letter-spacing:3px;
+}
+
+.subtitle{
+    font-size:22px;
+    margin-top:5px;
+    color:#444;
+}
+
+.school{
+    margin-top:15px;
+    font-size:26px;
+    font-weight:bold;
+    color:#123c91;
+}
+
+.slogan{
+    font-size:14px;
+    color:#777;
+    margin-bottom:30px;
+}
+
+.presented{
+    font-size:20px;
+    color:#555;
+    margin-top:20px;
+}
+
+.name{
+    font-family:'Great Vibes', cursive;
+    font-size:72px;
+    color:#c59d3d;
+    margin-top:15px;
+}
+
+.line{
+    width:500px;
+    height:2px;
+    background:#d0d5df;
+    margin:10px auto 25px;
+}
+
+.description{
+    width:75%;
+    margin:auto;
+    font-size:18px;
+    line-height:1.8;
+    color:#444;
+}
+
+.footer-text{
+    margin-top:30px;
+    font-size:16px;
+    color:#666;
+}
+
+.signatures{
+    margin-top:80px;
+    display:flex;
+    justify-content:center;
+    gap:150px;
+}
+
+.sign{
+    text-align:center;
+}
+
+.sign hr{
+    width:180px;
+    border:1px solid #444;
+    margin-bottom:10px;
+}
+
+.date{
+    margin-top:30px;
+    font-size:15px;
+    color:#666;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="certificate">
+
+<div class="border"></div>
+
+<div class="top-left"></div>
+<div class="bottom-right"></div>
+
+<div class="small-triangle-1"></div>
+<div class="small-triangle-2"></div>
+
+<div class="badge">
+    Excellence<br>Académique
+</div>
+
+<div class="content">
+
+    <div class="title">CERTIFICAT</div>
+
+    <div class="subtitle">DE RÉUSSITE</div>
+
+    <div class="school">L'ÉRUDITION</div>
+
+    <div class="slogan">
+        Centre d'Excellence en Formation et Innovation
+    </div>
+
+    <div class="presented">
+        Ce certificat est décerné avec honneur à :
+    </div>
+
+    <div class="name">Nom et Prénom</div>
+
+    <div class="line"></div>
+
+    <div class="description">
+
+        En reconnaissance de sa réussite, de son engagement
+        et de ses efforts remarquables durant sa formation.
+
+        <br><br>
+
+        L'ÉRUDITION atteste que le bénéficiaire a satisfait
+        aux exigences académiques requises et mérite cette distinction.
+
+    </div>
+
+    <div class="footer-text">
+        Excellence • Savoir • Innovation
+    </div>
+
+    <div class="date">
+        Fait le : ____ / ____ / ______
+    </div>
+
+    <div class="signatures">
+
+        <div class="sign">
+            <hr>
+            Directeur Général
+        </div>
+
+        <div class="sign">
+            <hr>
+            Responsable Pédagogique
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+</body>
+</html>
+

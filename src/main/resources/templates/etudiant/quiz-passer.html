@@ -11,8 +11,8 @@
     :root {
       --color-navy: #2563eb; /* Deep Navy Blue */
       --color-navy-light: #1d4ed8;
-      --color-gold: #D4AF37; /* Metallic Gold */
-      --color-gold-light: #FDE047;
+      --color-gold: #374ed4; /* Metallic Gold */
+      --color-gold-light: #061058cc;
       --color-bg: #F8FAFC;
     }
     body {
@@ -200,10 +200,13 @@
             <button type="button" id="prevBtn" class="px-6 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               Précédent
             </button>
+            <div id="autoSubmitMessage" class="hidden text-sm font-bold text-green-600 flex items-center gap-2">
+                <i class="fa-solid fa-check-circle"></i> Soumission dans <span id="autoSubmitCountdown">3</span>s...
+            </div>
             <button type="button" id="nextBtn" class="bg-[#2563eb] text-white px-8 py-2.5 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-md flex items-center gap-2">
               Suivant <i class="fa-solid fa-arrow-right text-sm"></i>
             </button>
-            <button type="submit" id="submitBtn" style="display:none" class="bg-[#D4AF37] text-[#2563eb] px-8 py-2.5 rounded-xl font-black hover:bg-[#c4a02e] transition-colors shadow-md flex items-center gap-2">
+            <button type="button" id="submitBtn" onclick="soumettreQuiz()" style="display:none" class="bg-[#D4AF37] text-[#2563eb] px-8 py-2.5 rounded-xl font-black hover:bg-[#c4a02e] transition-colors shadow-md flex items-center gap-2">
               Soumettre <i class="fa-solid fa-check"></i>
             </button>
           </div>
@@ -274,12 +277,17 @@
 
 <script th:inline="javascript">
   const totalQuestions = /*[[${#lists.size(quiz.questions)}]]*/ 0;
-  // Initialize with 10 minutes if not specified
-  const totalSeconds = 10 * 60; 
+  // Initialize from quiz settings
+  const tempsParQuestion = /*[[${quiz.tempsParQuestion != null ? quiz.tempsParQuestion : 120}]]*/ 120;
+  const totalTemps = /*[[${quiz.totalTemps}]]*/ null;
+  const totalSeconds = totalTemps != null ? totalTemps : (tempsParQuestion * totalQuestions); 
   let currentQuestionIndex = 0;
   let secondsLeft = totalSeconds;
   let timerRef = null;
   let warningCount = 0;
+  let autoSubmitTimer = null;
+  let autoSubmitSeconds = 3;
+  let isSubmitting = false;
   
   // Randomize question display array
   let questionOrder = Array.from({length: totalQuestions}, (_, i) => i);
@@ -359,15 +367,59 @@
     updateGridUI();
   }
 
+  function demarrerCountdown() {
+      if (isSubmitting) return;
+      
+      const msgEl = document.getElementById('autoSubmitMessage');
+      const counterEl = document.getElementById('autoSubmitCountdown');
+      
+      if(msgEl && counterEl) {
+          msgEl.style.display = 'flex';
+          msgEl.classList.remove('hidden');
+          autoSubmitSeconds = 3;
+          counterEl.textContent = autoSubmitSeconds;
+          
+          if (autoSubmitTimer) clearInterval(autoSubmitTimer);
+          
+          autoSubmitTimer = setInterval(() => {
+              autoSubmitSeconds--;
+              if (autoSubmitSeconds > 0) {
+                  counterEl.textContent = autoSubmitSeconds;
+              } else {
+                  clearInterval(autoSubmitTimer);
+                  soumettreQuiz();
+              }
+          }, 1000);
+      }
+  }
+
   function answerSelected(input) {
+    if (isSubmitting) return;
+
     updateProgress();
     updateGridUI();
     
-    // Auto-advance after short delay if not the last question
-    if(currentQuestionIndex < totalQuestions - 1) {
-      setTimeout(() => {
-        showQuestion(currentQuestionIndex + 1);
-      }, 400);
+    const answered = questionCards.filter(card => card.querySelector('input[type="radio"]:checked') !== null).length;
+    
+    if (answered === totalQuestions) {
+        demarrerCountdown();
+    } else {
+        // Stop any running countdown if for some reason we are no longer at full answers (not strictly needed with radios, but safe)
+        if (autoSubmitTimer) {
+            clearInterval(autoSubmitTimer);
+            const msgEl = document.getElementById('autoSubmitMessage');
+            if (msgEl) {
+                msgEl.style.display = 'none';
+                msgEl.classList.add('hidden');
+            }
+        }
+        
+        // Auto-advance after short delay if not the last question
+        if(currentQuestionIndex < totalQuestions - 1) {
+          setTimeout(() => {
+            showQuestion(currentQuestionIndex + 1);
+          }, 400);
+        }
     }
   }
 
@@ -430,10 +482,32 @@
       }
 
       if (secondsLeft <= 0) {
-        clearInterval(timerRef);
-        document.getElementById('quizForm')?.submit();
+        soumettreQuiz();
       }
     }, 1000);
+  }
+
+  function soumettreQuiz() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    if (timerRef) {
+      clearInterval(timerRef);
+    }
+    if (autoSubmitTimer) {
+      clearInterval(autoSubmitTimer);
+    }
+    const form = document.getElementById('quizForm');
+    if (form) {
+      // Do NOT disable inputs before submitting — disabled fields are not sent by the browser.
+      // Just show loading state on submit button and submit the form.
+      if (submitBtn) {
+        submitBtn.innerHTML = 'Envoi en cours <i class="fa-solid fa-spinner fa-spin"></i>';
+        submitBtn.disabled = true;
+      }
+
+      form.submit();
+    }
   }
 
   // Anti-cheat Focus Detection
@@ -444,7 +518,7 @@
         document.getElementById('antiCheatOverlay').classList.add('active');
       } else {
         // Auto submit on second offense
-        document.getElementById('quizForm')?.submit();
+        soumettreQuiz();
       }
     }
   });

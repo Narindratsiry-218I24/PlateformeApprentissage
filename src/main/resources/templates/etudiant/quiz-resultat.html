@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certification - L'Érudition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --color-navy: #2563eb;
+      --color-navy-light: #1d4ed8;
+      --color-gold: #365392;
+      --color-gold-light: #3174cc;
+      --color-bg: #F8FAFC;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-navy);
+      overflow-x: hidden;
+    }
+    
+    .bg-desk {
+      background-image: 
+        linear-gradient(to bottom, rgba(248, 250, 252, 0.9) 0%, rgba(248, 250, 252, 1) 100%),
+        url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="none"/><path d="M0 0l100 100M100 0L0 100" stroke="rgba(15,23,42,0.03)" stroke-width="1"/></svg>');
+      background-size: cover, 400px 400px;
+    }
+
+    .card-shadow {
+      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 10px 15px -5px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Certificate Specific Styles */
+    .cert-container {
+      background: #FFFFFF;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.15);
+    }
+    
+    .cert-border {
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      pointer-events: none;
+    }
+    .cert-border-inner {
+      position: absolute;
+      inset: 18px;
+      border: 2px solid #2563eb;
+      pointer-events: none;
+    }
+    
+    /* Corner Ornaments */
+    .cert-corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-gold);
+      z-index: 10;
+    }
+    .cert-corner.tl { top: 14px; left: 14px; border-right: none; border-bottom: none; }
+    .cert-corner.tr { top: 14px; right: 14px; border-left: none; border-bottom: none; }
+    .cert-corner.bl { bottom: 14px; left: 14px; border-right: none; border-top: none; }
+    .cert-corner.br { bottom: 14px; right: 14px; border-left: none; border-top: none; }
+
+    /* Geometric corner accents (Navy) */
+    .cert-geo {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+    .cert-geo.tl { top: 0; left: 0; border-width: 120px 120px 0 0; border-color: var(--color-navy) transparent transparent transparent; }
+    .cert-geo.br { bottom: 0; right: 0; border-width: 0 0 120px 120px; border-color: transparent transparent var(--color-navy) transparent; }
+    
+    .cert-geo-gold {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      z-index: 1;
+    }
+    .cert-geo-gold.tl { top: 0; left: 0; border-width: 150px 150px 0 0; border-color: var(--color-gold) transparent transparent transparent; opacity: 0.8; }
+    .cert-geo-gold.br { bottom: 0; right: 0; border-width: 0 0 150px 150px; border-color: transparent transparent var(--color-gold) transparent; opacity: 0.8;}
+
+    /* Background pattern for certificate */
+    .cert-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(15, 23, 42, 0.04) 2px, transparent 2px);
+      background-size: 30px 30px;
+      z-index: 0;
+    }
+
+    .font-serif {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Subtle Gold Border for Cards */
+    .gold-border-card {
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      background: white;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.03);
+    }
+  </style>
+</head>
+<body class="bg-desk min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 h-20 flex items-center justify-between px-6 sticky top-0 z-40">
+    <div class="flex-1">
+      <a th:href="'/etudiant/cours/' + ${cours.id} + '/visionner'" class="group inline-flex items-center gap-3 bg-[#2563eb] text-white px-4 py-2 rounded-xl font-medium transition-all hover:bg-slate-800 hover:shadow-md">
+        <i class="fa-solid fa-arrow-left text-sm group-hover:-translate-x-1 transition-transform"></i>
+        Retour au cours
+      </a>
+    </div>
+    
+    <div class="flex-1 text-center">
+      <h1 class="text-xl md:text-2xl font-bold text-[#2563eb]">Confirmation de Certification</h1>
+    </div>
+
+    <div class="flex-1 flex justify-end items-center gap-4">
+      <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+        <div class="text-right hidden sm:block">
+          <p class="text-sm font-bold text-[#2563eb]" th:text="${session.utilisateur != null ? session.utilisateur.nom : 'Jean Dupont'}">Jean Dupont</p>
+          <p class="text-xs text-slate-500">Session : ID-7A9B2X</p>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-[#D4AF37] overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=User&background=0F172A&color=fff" alt="Profile" class="w-full h-full object-cover">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-[1200px] w-full mx-auto p-4 md:p-8 flex flex-col gap-10">
+    
+    <!-- Case 1: SUCCESS -->
+    <div th:if="${score >= 100}" class="bg-green-50 border border-green-200 rounded-2xl p-8 mb-8 text-center max-w-3xl mx-auto shadow-sm certificat-section">
+        <h2 class="text-3xl font-black text-green-700 mb-2">🎉 FÉLICITATIONS !</h2>
+        <p class="text-green-800 text-lg mb-1">Vous avez réussi le quiz !</p>
+        <p class="font-bold text-green-700 mb-6">Score: <span th:text="${correctes}"></span>/<span th:text="${totalQuestions}"></span> (<span th:text="${#numbers.formatDecimal(score, 1, 0)}"></span>%)</p>
+        
+        <div class="bg-white rounded-xl p-6 border border-green-200 mt-6 shadow-sm email-form">
+            <label class="block text-green-800 font-bold mb-4">📧 Recevez votre certificat par email</label>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center mb-6 max-w-lg mx-auto">
+                <input type="email" id="emailInput" placeholder="Entrez votre email..." required 
+                       class="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                       th:value="${session.utilisateur != null ? session.utilisateur.email : ''}">
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <button onclick="envoyerCertificat()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">mail</span> Envoyer par email
+                </button>
+                <button onclick="telechargerCertificat()" class="bg-white border border-green-600 text-green-700 hover:bg-green-50 px-6 py-3 rounded-xl font-bold transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">download</span> Télécharger PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <a th:href="'/etudiant/cours/' + ${cours.id} + '/visionner'" class="text-green-700 font-bold hover:underline flex items-center justify-center gap-2">
+                Continuer vers le cours <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        const quizId = /*[[${quiz.id}]]*/ null;
+        
+        function envoyerCertificat() {
+            const email = document.getElementById('emailInput').value;
+            if (!email) {
+                alert('Veuillez saisir votre email');
+                return;
+            }
+            
+            const btn = event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="material-symbols-outlined text-sm">hourglass_empty</span> Envoi en cours...';
+            btn.disabled = true;
+            
+            fetch('/api/quiz/' + quizId + '/certificat/envoyer?email=' + encodeURIComponent(email), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('✅ Certificat envoyé à ' + email);
+                } else {
+                    alert('❌ Erreur lors de l\'envoi du certificat.');
+                }
+            })
+            .catch(error => {
+                alert('❌ Erreur: ' + error.message);
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function telechargerCertificat() {
+            const email = document.getElementById('emailInput').value;
+            if (!email) {
+                alert('Veuillez saisir votre email avant de télécharger');
+                return;
+            }
+            window.location.href = '/api/quiz/' + quizId + '/certificat/telecharger?email=' + encodeURIComponent(email);
+        }
+    </script>
+
+    <!-- Case 2: FAILURE -->
+    <div th:if="${score < 100}" class="bg-red-50 border border-red-200 rounded-2xl p-8 mb-8 text-center max-w-3xl mx-auto shadow-sm">
+        <h2 class="text-3xl font-black text-red-700 mb-2">❌ OUPS !</h2>
+        <p class="text-red-800 text-lg mb-1">Quiz: "<span th:text="${quiz.titre}"></span>"</p>
+        <p class="font-bold text-red-700 mb-6">Score: <span th:text="${correctes}"></span>/<span th:text="${totalQuestions}"></span> (<span th:text="${#numbers.formatDecimal(score, 1, 0)}"></span>%)</p>
+        
+        <div class="flex items-center justify-center gap-2 text-red-800 font-medium mb-6">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span>Vous devez réviser avant de retenter !</span>
+        </div>
+
+        <div class="bg-white/60 border border-red-100 rounded-xl p-6 mb-8 max-w-md mx-auto">
+            <div class="mb-4">
+                <p class="text-sm font-bold text-red-800 uppercase tracking-wider mb-1 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">timer</span> Prochaine tentative autorisée dans:
+                </p>
+                <div id="countdown" class="text-2xl font-mono font-black text-red-600 tracking-wider">
+                    Calcul en cours...
+                </div>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-red-800 uppercase tracking-wider mb-1 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">lock</span> Le quiz est verrouillé jusqu'au:
+                </p>
+                <div class="text-lg font-bold text-slate-700" th:text="${#temporals.format(dateProchaine, 'dd/MM/yyyy HH:mm:ss')}">
+                    Date
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4">
+            <a href="#details-reponses" class="bg-white border border-red-200 hover:bg-red-100 text-red-800 px-6 py-3 rounded-xl font-bold transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">visibility</span> Voir les réponses
+            </a>
+            <a th:href="'/etudiant/cours/' + ${cours.id} + '/visionner'" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold transition-colors flex items-center gap-2">
+                Retour <span class="material-symbols-outlined text-sm">arrow_back</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Détails des réponses -->
+    <div id="details-reponses" th:if="${details != null and !details.isEmpty()}" class="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
+      <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-[#2563eb]"></i> Détails de vos réponses
+      </h3>
+      <div class="space-y-4">
+        <div th:each="detail, stat : ${details}" class="p-4 rounded-xl border" th:classappend="${detail.estCorrecte} ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'">
+          <p class="font-bold mb-2 text-slate-800">
+            <span class="text-slate-500 mr-2" th:text="${stat.count} + '.'">1.</span>
+            <span th:text="${detail.question}">Question</span>
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 mt-3 text-sm">
+            <div class="flex-1">
+              <span class="text-slate-500 block mb-1">Votre réponse :</span>
+              <div class="flex items-center gap-2" th:classappend="${detail.estCorrecte} ? 'text-green-700' : 'text-red-700'">
+                <i class="fa-solid" th:classappend="${detail.estCorrecte} ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                <span class="font-medium" th:text="${detail.choisie}">Réponse</span>
+              </div>
+            </div>
+            <div class="flex-1" th:if="${!detail.estCorrecte}">
+              <span class="text-slate-500 block mb-1">Bonne réponse :</span>
+              <div class="flex items-center gap-2 text-green-700">
+                <i class="fa-solid fa-check-circle"></i>
+                <span class="font-medium" th:text="${detail.correcte}">Bonne réponse</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Derniers Cours & Main CTA -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end mb-12">
+      <div class="lg:col-span-2 gold-border-card rounded-2xl p-6">
+        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-layer-group text-[#D4AF37]"></i> Derniers Cours Complétés
+        </h3>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-serif font-bold text-lg">D</div>
+              <div>
+                <p class="font-bold text-[#2563eb] text-sm">Design Patterns Avancés</p>
+                <p class="text-xs text-slate-500">Complété le 15 Octobre 2026</p>
+              </div>
+            </div>
+            <button class="text-[#D4AF37] hover:text-[#b08f2a] p-2 bg-[#D4AF37]/10 rounded-lg transition-colors" title="Télécharger">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-serif font-bold text-lg">A</div>
+              <div>
+                <p class="font-bold text-[#2563eb] text-sm">Architecture Microservices</p>
+                <p class="text-xs text-slate-500">Complété le 02 Septembre 2026</p>
+              </div>
+            </div>
+            <button class="text-[#D4AF37] hover:text-[#b08f2a] p-2 bg-[#D4AF37]/10 rounded-lg transition-colors" title="Télécharger">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg bg-[#2563eb] text-white flex items-center justify-center font-serif font-bold text-lg">S</div>
+              <div>
+                <p class="font-bold text-[#2563eb] text-sm">Sécurité des Applications Web</p>
+                <p class="text-xs text-slate-500">Complété le 18 Août 2026</p>
+              </div>
+            </div>
+            <button class="text-[#D4AF37] hover:text-[#b08f2a] p-2 bg-[#D4AF37]/10 rounded-lg transition-colors" title="Télécharger">
+              <i class="fa-solid fa-download"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="lg:col-span-1 flex flex-col items-center justify-center">
+        <a th:href="@{/etudiant/mes-cours}" class="w-full py-5 bg-[#2563eb] text-white rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-[0_10px_20px_rgba(15,23,42,0.2)] hover:shadow-[0_15px_30px_rgba(15,23,42,0.3)] hover:-translate-y-1 group">
+          <i class="fa-solid fa-user-graduate text-[#D4AF37] text-2xl group-hover:rotate-12 transition-transform"></i>
+          VÉRIFIER MES COMPÉTENCES
+        </a>
+        <p class="mt-4 text-xs text-slate-500 text-center font-medium max-w-xs">Vos résultats ont été enregistrés dans votre dossier académique officiel.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script th:inline="javascript">
+    /* JS Countdown for next attempt */
+    const dateProchaineStr = /*[[${dateProchaine != null ? #temporals.format(dateProchaine, 'yyyy-MM-dd HH:mm:ss') : null}]]*/ null;
+    if (dateProchaineStr) {
+      // Create date object (assuming local time from server matches browser, otherwise need ISO string)
+      const dateProchaine = new Date(dateProchaineStr.replace(' ', 'T'));
+      
+      const updateCountdown = () => {
+        const now = new Date();
+        const diff = dateProchaine - now;
+        
+        const displayEl = document.getElementById('countdown');
+        
+        if (diff <= 0) {
+          if (displayEl) displayEl.innerHTML = "<span class='text-green-600'>Vous pouvez retenter le quiz maintenant !</span>";
+          // Optionally enable a retry button here
+          return;
+        }
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        if (displayEl) {
+          displayEl.innerHTML = 
+            String(hours).padStart(2, '0') + "h " + 
+            String(mins).padStart(2, '0') + "m " + 
+            String(secs).padStart(2, '0') + "s";
+        }
+      };
+      
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    }
+  </script>
+</body>
+</html>

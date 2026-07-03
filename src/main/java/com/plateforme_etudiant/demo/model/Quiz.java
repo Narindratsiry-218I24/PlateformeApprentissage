@@ -39,6 +39,12 @@ public class Quiz {
     @Column(name = "date_creation", updatable = false)
     private LocalDateTime dateCreation;
 
+    @Column(name = "temps_par_question", columnDefinition = "integer default 120")
+    private Integer tempsParQuestion = 120;
+
+    @Column(name = "total_temps")
+    private Integer totalTemps;
+
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Question> questions = new LinkedHashSet<>();
 
@@ -83,6 +89,22 @@ public class Quiz {
 
     public void setDateCreation(LocalDateTime dateCreation) {
         this.dateCreation = dateCreation;
+    }
+
+    public Integer getTempsParQuestion() {
+        return tempsParQuestion;
+    }
+
+    public void setTempsParQuestion(Integer tempsParQuestion) {
+        this.tempsParQuestion = tempsParQuestion;
+    }
+
+    public Integer getTotalTemps() {
+        return totalTemps;
+    }
+
+    public void setTotalTemps(Integer totalTemps) {
+        this.totalTemps = totalTemps;
     }
 
     public Set<Question> getQuestions() {

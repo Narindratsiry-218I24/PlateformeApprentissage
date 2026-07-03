@@ -74,7 +74,7 @@ public class EtudiantWebController {
             model.addAttribute("statistiques", statistiques);
 
             log.info("✅ Dashboard étudiant affiché pour: {}", etudiant.getEmail());
-            return "Etudiant/dashboard";
+            return "etudiant/dashboard";
 
         } catch (Exception e) {
             log.error("❌ Erreur dashboard étudiant: {}", e.getMessage(), e);
@@ -100,7 +100,7 @@ public class EtudiantWebController {
             model.addAttribute("etudiant", etudiant);
             model.addAttribute("cours", coursInscrits);
 
-            return "Etudiant/mes-cours";
+            return "etudiant/mes-cours";
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
@@ -140,7 +140,7 @@ public class EtudiantWebController {
             model.addAttribute("chartValues", chartValues);
             model.addAttribute("statistiques", etudiantService.getStatistiques(utilisateurId));
 
-            return "Etudiant/progression";
+            return "etudiant/progression";
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
@@ -165,11 +165,11 @@ public class EtudiantWebController {
             model.addAttribute("cours", coursDisponibles);
             model.addAttribute("keyword", keyword);
 
-            return "Etudiant/catalogue";
+            return "etudiant/catalogue";
 
         } catch (Exception e) {
             log.error("❌ Erreur: {}", e.getMessage());
-            return "Etudiant/catalogue";
+            return "etudiant/catalogue";
         }
     }
 
@@ -198,7 +198,7 @@ public class EtudiantWebController {
             EtudiantResponseDTO etudiant = etudiantService.getEtudiantById(utilisateurId);
             model.addAttribute("etudiant", etudiant);
             model.addAttribute("currentPage", "aide");
-            return "Etudiant/aide";
+            return "etudiant/aide";
         } catch (Exception e) {
             return "redirect:/etudiant/dashboard";
         }
@@ -305,7 +305,7 @@ public class EtudiantWebController {
             log.info("✅ Cours chargé avec {} sections. Certificat: {}", 
                 coursDetail.getSections() != null ? coursDetail.getSections().size() : 0, certificatDispo);
 
-            return "Etudiant/visionner-cours";
+            return "etudiant/visionner-cours";
 
         } catch (Exception e) {
             log.error("❌ Erreur visionnage cours: {}", e.getMessage(), e);

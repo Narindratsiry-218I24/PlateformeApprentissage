@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}" lang="fr">
 <head>
-    <title th:text="${pageTitle} ?: 'L\'Érudition - Professeur'">L'Érudition - Professeur</title>
+    <title th:text="${pageTitle} ?: 'L\'Érudition - Étudiant'">L'Érudition - Étudiant</title>
 </head>
 <body>
 
@@ -13,34 +13,34 @@
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tight text-primary">L'Érudition</h1>
-                <p class="text-[11px] text-gray-500 font-medium">Espace Professeur</p>
+                <p class="text-[11px] text-gray-500 font-medium">Espace Étudiant</p>
             </div>
         </div>
     </div>
 
     <nav class="flex-1 py-4 flex flex-col">
-        <a href="/professeur/dashboard" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
+        <a href="/etudiant/dashboard" class="nav-item" th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
             <i class="fi fi-sr-dashboard"></i>
             <span>Tableau de bord</span>
         </a>
-        <a href="/professeur/cours" class="nav-item" th:classappend="${currentPage == 'cours'} ? 'active' : ''">
+        <a href="/etudiant/mes-cours" class="nav-item" th:classappend="${currentPage == 'mes-cours'} ? 'active' : ''">
             <i class="fi fi-br-book-alt"></i>
-            <span>Mes formations</span>
+            <span>Mes cours</span>
         </a>
-        <a href="/professeur/etudiants" class="nav-item" th:classappend="${currentPage == 'etudiants'} ? 'active' : ''">
-            <i class="fi fi-br-users-alt"></i>
-            <span>Mes étudiants</span>
+        <a href="/etudiant/catalogue" class="nav-item" th:classappend="${currentPage == 'catalogue'} ? 'active' : ''">
+            <i class="fi fi-br-search"></i>
+            <span>Catalogue</span>
+        </a>
+        <a href="/etudiant/progression" class="nav-item" th:classappend="${currentPage == 'progression'} ? 'active' : ''">
+            <i class="fi fi-br-chart-line"></i>
+            <span>Progression</span>
         </a>
         <a href="/messages" class="nav-item" th:classappend="${currentPage == 'messages'} ? 'active' : ''">
             <i class="fi fi-br-comment-dots"></i>
-            <span>Messagerie</span>
+            <span>Messages</span>
         </a>
         
         <div class="mt-auto">
-            <div class="mx-4 p-4 rounded-xl bg-gray-50 mb-4 border border-gray-100">
-                <p class="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Support 24/7</p>
-                <p class="text-xs text-gray-500 font-medium">Besoin d'aide avec vos cours ?</p>
-            </div>
             <div class="border-t border-gray-100 my-4 mx-4"></div>
             <a href="/logout" class="nav-item text-red-500 hover:text-red-600 hover:bg-red-50">
                 <i class="fi fi-br-exit"></i>
@@ -52,17 +52,13 @@
 
 <div layout:fragment="user-profile" class="flex items-center gap-3">
     <div class="text-right hidden sm:block">
-        <p class="text-sm font-bold text-gray-800" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
-        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest" th:text="${professeur != null ? professeur.specialite : 'Formateur'}">Formateur</p>
+        <p class="text-sm font-bold text-gray-800" th:text="${etudiant != null ? etudiant.nomComplet : 'Étudiant'}">Étudiant</p>
+        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest" th:text="${etudiant != null ? etudiant.niveau : 'Débutant'}">Débutant</p>
     </div>
     <div class="w-10 h-10 rounded-xl bg-primary-light flex items-center justify-center font-black text-primary">
-        <span th:text="${professeur != null ? #strings.substring(professeur.prenom, 0, 1) : 'P'}">P</span>
+        <span th:text="${etudiant != null ? #strings.substring(etudiant.prenom, 0, 1) + #strings.substring(etudiant.nom, 0, 1) : 'E'}">É</span>
     </div>
 </div>
-
-<!-- Extra styles specific to professeur modals/wizards are kept here to be appended if needed by fragments, though most animations are in base -->
-<th:block layout:fragment="head-extra">
-</th:block>
 
 <main layout:fragment="content"></main>
 

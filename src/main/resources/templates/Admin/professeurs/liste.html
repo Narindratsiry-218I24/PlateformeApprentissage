@@ -7,6 +7,14 @@
 <div layout:fragment="content">
     <div th:with="currentPage='professeurs'"></div>
 
+        <!-- Messages Flash -->
+        <div th:if="${success}" class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl relative" role="alert">
+            <span class="block sm:inline" th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="mb-4 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl relative" role="alert">
+            <span class="block sm:inline" th:text="${error}"></span>
+        </div>
+
     <div class="flex items-center justify-between mb-8">
         <div>
             <h1 class="text-2xl font-black text-slate-900">Professeurs</h1>
@@ -71,7 +79,7 @@
         <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden scale-in-center">
             <div class="p-8 border-b border-slate-100 flex items-center justify-between">
                 <h2 class="text-xl font-black text-slate-900">Nouveau Professeur</h2>
-                <button onclick="document.getElementById('modalAdd').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fi fi-br-cross"></i></button>
+                <button type="button" onclick="document.getElementById('modalAdd').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fi fi-br-cross"></i></button>
             </div>
             <form action="/admin/professeurs/creer" method="POST" class="p-8 space-y-6">
                 <div class="grid grid-cols-2 gap-4">
@@ -113,7 +121,7 @@
         <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden">
             <div class="p-8 border-b border-slate-100 flex items-center justify-between">
                 <h2 class="text-xl font-black text-slate-900">Modifier Professeur</h2>
-                <button onclick="document.getElementById('modalEdit').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fi fi-br-cross"></i></button>
+                <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fi fi-br-cross"></i></button>
             </div>
             <form id="formEdit" method="POST" class="p-8 space-y-6">
                 <div class="grid grid-cols-2 gap-4">

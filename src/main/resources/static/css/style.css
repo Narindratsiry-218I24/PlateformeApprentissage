@@ -1,8 +1,8 @@
 /* static/css/style.css */
 :root {
-    --primary: #a855f7;
-    --primary-dark: #9333ea;
-    --secondary: #d946ef;
+    --primary: #003178;
+    --primary-dark: #002255;
+    --secondary: #1B2559;
     --tertiary: #003d28;
     --error: #ba1a1a;
 }
@@ -15,7 +15,16 @@
 
 body {
     font-family: 'Inter', sans-serif;
+    background-color: #F4F7FE;
+    color: #1B2559;
 }
+
+.text-primary { color: #003178; }
+.bg-primary { background-color: #003178; }
+.text-secondary { color: #1B2559; }
+.bg-secondary { background-color: #1B2559; }
+.text-muted { color: #64748B; }
+.bg-muted { background-color: #64748B; }
 
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;

@@ -82,7 +82,7 @@ public class MessageWebController {
         if (utilisateur.estProfesseur()) {
             return "professeur/messages/liste";
         } else {
-            return "Etudiant/messages";
+            return "etudiant/messages";
         }
     }
 
@@ -128,7 +128,7 @@ public class MessageWebController {
         if (utilisateur.estProfesseur()) {
             return "professeur/messages/liste";
         } else {
-            return "Etudiant/messages";
+            return "etudiant/messages";
         }
     }
 

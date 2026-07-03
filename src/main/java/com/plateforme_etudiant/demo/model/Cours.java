@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -63,6 +64,10 @@ public class Cours {
     @CreationTimestamp
     @Column(name = "date_creation", updatable = false)
     private LocalDateTime dateCreation;
+
+    @UpdateTimestamp
+    @Column(name = "date_modification")
+    private LocalDateTime dateModification;
 
     @Column(name = "date_publication")
     private LocalDateTime datePublication;
@@ -124,6 +129,10 @@ public class Cours {
         return dateCreation;
     }
 
+    public LocalDateTime getDateModification() {
+        return dateModification;
+    }
+
     public LocalDateTime getDatePublication() {
         return datePublication;
     }
@@ -183,6 +192,10 @@ public class Cours {
 
     public void setDateCreation(LocalDateTime dateCreation) {
         this.dateCreation = dateCreation;
+    }
+
+    public void setDateModification(LocalDateTime dateModification) {
+        this.dateModification = dateModification;
     }
 
     public void setDatePublication(LocalDateTime datePublication) {

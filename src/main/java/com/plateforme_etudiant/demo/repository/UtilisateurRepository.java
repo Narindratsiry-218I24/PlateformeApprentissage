@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Repository
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> {
@@ -36,4 +37,7 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
 
     @Query("SELECT COUNT(u) FROM Utilisateur u WHERE u.role = 'PROFESSEUR'")
     long countAllProfesseurs();
+
+    @Query("SELECT u FROM Utilisateur u WHERE u.role = 'APPRENANT' AND u.actif = true AND u.derniereActivite >= :since")
+    List<Utilisateur> findActiveApprenantsSince(@Param("since") LocalDateTime since);
 }

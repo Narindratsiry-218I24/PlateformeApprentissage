@@ -127,19 +127,19 @@
                 <div class="h-px bg-border-color"></div>
             </div>
             <nav class="space-y-1">
-                <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                <a href="/professeur/dashboard" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-[#003178] hover:bg-white/50 rounded-lg transition-all">
                     <span class="material-symbols-outlined" style="font-size: 1.25rem;">dashboard</span>
                     <span class="text-sm font-semibold">Tableau de bord</span>
                 </a>
-                <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                <a href="/professeur/cours" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-[#003178] hover:bg-white/50 rounded-lg transition-all">
                     <span class="material-symbols-outlined" style="font-size: 1.25rem;">menu_book</span>
                     <span class="text-sm font-semibold">Mes cours</span>
                 </a>
-                <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                <a href="/professeur/etudiants" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-[#003178] hover:bg-white/50 rounded-lg transition-all">
                     <span class="material-symbols-outlined" style="font-size: 1.25rem;">groups</span>
                     <span class="text-sm font-semibold">Étudiants</span>
                 </a>
-                <a href="/messages" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-primary hover:bg-white/50 rounded-lg transition-all">
+                <a href="/messages" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:text-[#003178] hover:bg-white/50 rounded-lg transition-all">
                     <span class="material-symbols-outlined" style="font-size: 1.25rem;">chat</span>
                     <span class="text-sm font-semibold">Messagerie</span>
                 </a>
@@ -158,11 +158,11 @@
 <div th:fragment="navbar">
     <nav class="navbar-fixed flex justify-between items-center px-4 md:px-8" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); height: 64px;">
         <div class="flex items-center gap-8 flex-1">
-            <span class="text-xl font-black tracking-tighter text-primary">L'Érudition Augmentée</span>
+            <span class="text-xl font-black tracking-tighter text-[#003178]">L'Érudition Augmentée</span>
             <div class="hidden md:flex items-center gap-6">
-                <a href="/professeur/dashboard" class="text-text-muted hover:text-primary transition-colors text-sm font-medium">Tableau de bord</a>
-                <a href="/professeur/cours" class="text-text-muted hover:text-primary transition-colors text-sm font-medium">Mes cours</a>
-                <a href="/professeur/etudiants" class="text-text-muted hover:text-primary transition-colors text-sm font-medium">Étudiants</a>
+                <a href="/professeur/dashboard" class="text-text-muted hover:text-[#003178] transition-colors text-sm font-medium">Tableau de bord</a>
+                <a href="/professeur/cours" class="text-text-muted hover:text-[#003178] transition-colors text-sm font-medium">Mes cours</a>
+                <a href="/professeur/etudiants" class="text-text-muted hover:text-[#003178] transition-colors text-sm font-medium">Étudiants</a>
             </div>
         </div>
         <div class="flex items-center gap-4">
@@ -174,7 +174,7 @@
                     <p class="text-sm font-bold text-text-dark" th:text="${professeur != null ? professeur.prenom + ' ' + professeur.nom : 'Professeur'}">Professeur</p>
                     <p class="text-xs text-text-muted" th:text="${professeur != null ? professeur.specialite : 'Formateur'}">Formateur</p>
                 </div>
-                <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shadow-md">
+                <div class="h-10 w-10 rounded-full bg-[#003178] flex items-center justify-center text-white font-bold text-sm shadow-md">
                     <span th:text="${professeur != null ? #strings.substring(professeur.prenom, 0, 1) + #strings.substring(professeur.nom, 0, 1) : 'P'}">P</span>
                 </div>
             </div>
@@ -288,7 +288,7 @@
             </div>
             <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-border-color">
                 <button type="button" id="closeModalBtn" class="px-6 py-2.5 bg-gray-200 text-text-dark rounded-lg hover:bg-gray-300 transition-colors font-medium">Annuler</button>
-                <button type="button" id="saveChapitreBtn" class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">Enregistrer</button>
+                <button type="button" id="saveChapitreBtn" class="px-6 py-2.5 bg-[#003178] text-white rounded-lg hover:bg-blue-700/90 transition-colors font-medium">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -342,7 +342,7 @@
             </div>
             <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-border-color">
                 <button type="button" id="closeContenuModalBtn" class="px-6 py-2.5 bg-gray-200 text-text-dark rounded-lg hover:bg-gray-300 transition-colors font-medium">Annuler</button>
-                <button type="button" id="saveContenuBtn" class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium">Enregistrer</button>
+                <button type="button" id="saveContenuBtn" class="px-6 py-2.5 bg-[#003178] text-white rounded-lg hover:bg-blue-700/90 transition-colors font-medium">Enregistrer</button>
             </div>
         </div>
     </div>

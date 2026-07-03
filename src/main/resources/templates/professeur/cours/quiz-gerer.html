@@ -32,6 +32,10 @@
         <div><label class="block text-sm font-semibold text-gray-700 mb-1">Titre du quiz *</label><input type="text" th:field="*{titre}" required class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-primary"></div>
         <div><label class="block text-sm font-semibold text-gray-700 mb-1">Description</label><input type="text" th:field="*{description}" class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-primary"></div>
       </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Temps par question (sec)</label><input type="number" th:field="*{tempsParQuestion}" min="30" max="600" class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-primary"></div>
+        <div><label class="block text-sm font-semibold text-gray-700 mb-1">Temps total (sec, optionnel)</label><input type="number" th:field="*{totalTemps}" min="60" class="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-primary"></div>
+      </div>
       <button type="submit" class="bg-primary text-white px-5 py-3 rounded-xl hover:bg-primary-dark transition-colors flex items-center gap-2"><i class="fas fa-plus"></i> Creer le quiz</button>
     </form>
   </div>

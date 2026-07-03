@@ -106,4 +106,19 @@ public class UtilisateurService {
     public long countAllProfesseurs() {
         return utilisateurRepository.findByRole(Role.PROFESSEUR).size();
     }
+
+    @Transactional
+    public void mettreAJourActivite(Long utilisateurId, Long coursActifId) {
+        Utilisateur u = findById(utilisateurId);
+        u.setDerniereActivite(LocalDateTime.now());
+        if (coursActifId != null) {
+            u.setCoursActifId(coursActifId);
+        }
+        utilisateurRepository.save(u);
+    }
+
+    public List<Utilisateur> getEtudiantsEnLigne(int minutesInactivite) {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(minutesInactivite);
+        return utilisateurRepository.findActiveApprenantsSince(threshold);
+    }
 }

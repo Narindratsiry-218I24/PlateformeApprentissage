@@ -30,6 +30,10 @@ public class QuizService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
+    public ResultatQuizRepository getResultatQuizRepository() {
+        return resultatQuizRepository;
+    }
+
     @Transactional(readOnly = true)
     public List<Quiz> getQuizByCours(Long coursId) {
         return quizRepository.findAllWithQuestionsByCoursId(coursId);
@@ -71,6 +75,18 @@ public class QuizService {
         Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
+        // Vérifier si une tentative récente existe (< 24h)
+        Optional<ResultatQuiz> derniereTentativeOpt = resultatQuizRepository.findFirstByEtudiantIdAndQuizIdOrderByDatePassageDesc(utilisateurId, quizId);
+        if (derniereTentativeOpt.isPresent()) {
+            ResultatQuiz derniereTentative = derniereTentativeOpt.get();
+            if (derniereTentative.getScore() != null && derniereTentative.getScore() < 100.0) {
+                java.time.LocalDateTime dateProchaineTentative = derniereTentative.getDatePassage().plusHours(24);
+                if (java.time.LocalDateTime.now().isBefore(dateProchaineTentative)) {
+                    throw new RuntimeException("Vous devez attendre 24h avant de pouvoir retenter ce quiz. Prochaine tentative possible à partir de : " + dateProchaineTentative.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                }
+            }
+        }
+
         int totalQuestions = quiz.getQuestions().size();
         int reponsesCorrectes = 0;
 
@@ -89,20 +105,14 @@ public class QuizService {
 
         double score = totalQuestions > 0 ? ((double) reponsesCorrectes / totalQuestions) * 100 : 0;
 
-        List<ResultatQuiz> historiques = resultatQuizRepository
-                .findByEtudiantIdAndQuizIdOrderByDatePassageDesc(utilisateurId, quizId);
-
-        ResultatQuiz resultat = historiques.isEmpty() ? new ResultatQuiz() : historiques.get(0);
-
+        // Créer une nouvelle tentative (au lieu d'écraser la précédente pour le suivi)
+        ResultatQuiz resultat = new ResultatQuiz();
         resultat.setQuiz(quiz);
         resultat.setEtudiant(etudiant);
         resultat.setScore(score);
+        resultat.setDatePassage(java.time.LocalDateTime.now());
 
-        ResultatQuiz saved = resultatQuizRepository.save(resultat);
-
-        // Nettoyage des doublons historiques pour eviter NonUniqueResultException
-        resultatQuizRepository.deleteDuplicatesForPair(utilisateurId, quizId, saved.getId());
-        return saved;
+        return resultatQuizRepository.save(resultat);
     }
 
     @Transactional(readOnly = true)

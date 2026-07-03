@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.charset.StandardCharsets;
@@ -122,13 +123,31 @@ public class QuizWebController {
     }
 
     @GetMapping("/etudiant/cours/{coursId}/quiz/{quizId}")
-    public String passerQuiz(@PathVariable Long coursId, @PathVariable Long quizId, Model model, HttpSession session) {
+    public String passerQuiz(@PathVariable Long coursId, @PathVariable Long quizId, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/login";
+
         Quiz quiz = quizService.getQuizById(quizId);
+
+        // Vérification du délai de 24h avant de permettre l'accès au quiz
+        java.util.Optional<ResultatQuiz> derniereTentativeOpt = quizService.getResultatQuizRepository().findFirstByEtudiantIdAndQuizIdOrderByDatePassageDesc(userId, quizId);
+        if (derniereTentativeOpt.isPresent()) {
+            ResultatQuiz derniereTentative = derniereTentativeOpt.get();
+            if (derniereTentative.getScore() != null && derniereTentative.getScore() < 100.0) {
+                java.time.LocalDateTime dateProchaineTentative = derniereTentative.getDatePassage().plusHours(24);
+                if (java.time.LocalDateTime.now().isBefore(dateProchaineTentative)) {
+                    redirectAttributes.addFlashAttribute("error", "Vous avez échoué à la dernière tentative. Vous devez attendre jusqu'au " + dateProchaineTentative.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy à HH:mm")) + " avant de pouvoir retenter.");
+                    return "redirect:/etudiant/cours/" + coursId + "/visionner";
+                }
+            } else if (derniereTentative.getScore() != null && derniereTentative.getScore() >= 100.0) {
+                // Déjà validé, on redirige vers le certificat / résultat
+                return "redirect:/etudiant/cours/" + coursId + "/quiz/" + quizId + "/resultat/" + derniereTentative.getId();
+            }
+        }
+
         model.addAttribute("quiz", quiz);
         model.addAttribute("cours", courseReadService.getCoursParId(coursId));
-        return "Etudiant/quiz-passer";
+        return "etudiant/quiz-passer";
     }
 
     @PostMapping("/etudiant/cours/{coursId}/quiz/{quizId}/soumettre")
@@ -152,7 +171,14 @@ public class QuizWebController {
             }
         }
 
-        ResultatQuiz resultat = quizService.soumettreQuiz(quizId, utilisateur.getId(), reponsesSoumises);
+        ResultatQuiz resultat;
+        try {
+            resultat = quizService.soumettreQuiz(quizId, utilisateur.getId(), reponsesSoumises);
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/etudiant/cours/" + coursId + "/visionner";
+        }
+        
         double score = resultat.getScore() != null ? resultat.getScore() : 0.0;
         int totalQuestions = quiz.getQuestions() != null ? quiz.getQuestions().size() : 0;
         int correctes = (int) Math.round((score / 100.0) * totalQuestions);
@@ -227,7 +253,15 @@ public class QuizWebController {
         }
         model.addAttribute("resultatId", resultat.getId());
 
-        return "Etudiant/quiz-resultat";
+        if (!model.containsAttribute("dateProchaine")) {
+            if (resultat.getScore() != null && resultat.getScore() < 100.0) {
+                model.addAttribute("dateProchaine", resultat.getDatePassage().plusHours(24));
+            } else {
+                model.addAttribute("dateProchaine", null);
+            }
+        }
+        
+        return "etudiant/quiz-resultat";
     }
 
     @PostMapping("/etudiant/cours/{coursId}/quiz/{quizId}/resultat/{resultatId}/envoyer-certificat")
@@ -342,4 +376,92 @@ public class QuizWebController {
         }
         return details;
     }
+
+    @GetMapping("/api/quiz/{id}/certificat/telecharger")
+    @ResponseBody
+    public ResponseEntity<?> telechargerCertificat(@PathVariable Long id, @RequestParam String email) {
+        Utilisateur etudiant;
+        try {
+            etudiant = utilisateurService.findByEmail(email);
+        } catch (RuntimeException ex) {
+            etudiant = null;
+        }
+        if (etudiant == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Utilisateur non trouvé avec cet email");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        ResultatQuiz resultat = quizService.getResultatQuizRepository().findFirstByEtudiantIdAndQuizIdOrderByDatePassageDesc(etudiant.getId(), id).orElse(null);
+        if (resultat == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Aucun résultat trouvé pour ce quiz et cet étudiant");
+            return ResponseEntity.badRequest().body(error);
+        }
+        if (resultat.getScore() == null || resultat.getScore() < MIN_SCORE_CERTIFICAT) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Score insuffisant pour obtenir un certificat");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        byte[] pdfBytes = certificatService.genererCertificatPDF(resultat);
+        String quizTitre = resultat.getQuiz() != null ? resultat.getQuiz().getTitre().replace(" ", "_") : "Quiz";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "certificat-" + quizTitre + ".pdf");
+        
+        return ResponseEntity.ok().headers(headers).body(pdfBytes);
+    }
+
+    @PostMapping("/api/quiz/{id}/certificat/envoyer")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> envoyerCertificat(@PathVariable Long id, @RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
+        
+        Utilisateur etudiant;
+        try {
+            etudiant = utilisateurService.findByEmail(email);
+        } catch (RuntimeException ex) {
+            etudiant = null;
+        }
+        if (etudiant == null) {
+            response.put("success", false);
+            response.put("message", "Utilisateur non trouvé avec cet email.");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        ResultatQuiz resultat = quizService.getResultatQuizRepository().findFirstByEtudiantIdAndQuizIdOrderByDatePassageDesc(etudiant.getId(), id).orElse(null);
+        if (resultat == null || resultat.getScore() < MIN_SCORE_CERTIFICAT) {
+            response.put("success", false);
+            response.put("message", "Aucun résultat éligible trouvé.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        byte[] pdfBytes = certificatService.genererCertificatPDF(resultat);
+        
+        String coursTitre = resultat.getQuiz() != null && resultat.getQuiz().getCours() != null ? resultat.getQuiz().getCours().getTitre() : "Cours";
+        String quizTitre = resultat.getQuiz() != null ? resultat.getQuiz().getTitre() : "Quiz";
+        
+        boolean sent = mailService.sendQuizCertificateEmail(
+            email,
+            etudiant.getNomComplet(),
+            coursTitre,
+            quizTitre,
+            resultat.getScore(),
+            "/api/quiz/" + id + "/certificat/telecharger?email=" + email,
+            pdfBytes
+        );
+
+        if (sent) {
+            response.put("success", true);
+            response.put("message", "Certificat envoyé.");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("success", false);
+            response.put("message", "Erreur d'envoi de l'email.");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
 }

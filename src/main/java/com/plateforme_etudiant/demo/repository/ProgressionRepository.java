@@ -50,6 +50,9 @@ public interface ProgressionRepository extends JpaRepository<Progression, Long> 
     @Query("SELECT COALESCE(SUM(CASE WHEN p.estComplete = true THEN 1 ELSE 0 END) * 100 / COUNT(p), 0) FROM Progression p WHERE p.contenuItem.section.cours.id = :coursId AND p.apprenant.id = :etudiantId")
     int getProgressionByCoursAndEtudiant(@Param("coursId") Long coursId, @Param("etudiantId") Long etudiantId);
 
+    @Query("SELECT AVG(COALESCE(CASE WHEN p.estComplete = true THEN 100.0 ELSE 0.0 END, 0.0)) FROM Progression p WHERE p.contenuItem.section.cours.id = :coursId")
+    Double getAverageProgressionByCoursId(@Param("coursId") Long coursId);
+
     @Query("SELECT COUNT(p) > 0 FROM Progression p WHERE p.contenuItem.chapitre.id = :chapitreId AND p.apprenant.id = :etudiantId AND p.estComplete = true AND p.contenuItem.chapitre IS NOT NULL")
     boolean isChapitreComplete(@Param("chapitreId") Long chapitreId, @Param("etudiantId") Long etudiantId);
 

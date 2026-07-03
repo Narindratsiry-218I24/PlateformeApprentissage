@@ -8,7 +8,7 @@
     <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
             <h1 class="text-4xl font-black text-secondary mb-2">Tableau de bord</h1>
-            <p class="text-muted font-medium">Bienvenue, <span class="text-primary font-bold" th:text="${professeur != null ? professeur.prenom : 'Professeur'}">Professeur</span>. Voici un aperçu de votre activité.</p>
+            <p class="text-muted font-medium">Bienvenue, <span class="text-[#003178] font-bold" th:text="${professeur != null ? professeur.prenom : 'Professeur'}">Professeur</span>. Voici un aperçu de votre activité.</p>
         </div>
         <a href="/professeur/cours/ajouter" class="btn-primary flex items-center gap-3">
             <i class="fi fi-br-add"></i>
@@ -18,114 +18,191 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <div class="card-premium flex items-center gap-5">
-            <div class="stat-icon bg-primary/10 text-primary">
-                <i class="fi fi-br-book-alt text-xl"></i>
+        <div class="card-unified flex items-center gap-5">
+            <div class="w-14 h-14 bg-blue-50 text-[#003178] rounded-xl flex items-center justify-center">
+                <i class="fi fi-br-book-alt text-2xl"></i>
             </div>
             <div>
-                <p class="text-muted text-xs font-bold uppercase tracking-wider">Total Cours</p>
-                <p class="text-2xl font-black text-secondary" th:text="${totalCours}">0</p>
+                <p class="text-text-muted text-xs font-bold uppercase tracking-wider">Total Cours</p>
+                <p class="text-3xl font-black text-text-main" th:text="${totalCours}">0</p>
             </div>
         </div>
-        <div class="card-premium flex items-center gap-5">
-            <div class="stat-icon bg-accent/10 text-accent">
-                <i class="fi fi-br-publish text-xl"></i>
+        <div class="card-unified flex items-center gap-5">
+            <div class="w-14 h-14 bg-green-50 text-accent rounded-xl flex items-center justify-center">
+                <i class="fi fi-br-publish text-2xl"></i>
             </div>
             <div>
-                <p class="text-muted text-xs font-bold uppercase tracking-wider">Publiés</p>
-                <p class="text-2xl font-black text-secondary" th:text="${coursPublies}">0</p>
+                <p class="text-text-muted text-xs font-bold uppercase tracking-wider">Publiés</p>
+                <p class="text-3xl font-black text-text-main" th:text="${coursPublies}">0</p>
             </div>
         </div>
-        <div class="card-premium flex items-center gap-5">
-            <div class="stat-icon bg-orange-100 text-orange-500">
-                <i class="fi fi-br-users-alt text-xl"></i>
+        <div class="card-unified flex items-center gap-5">
+            <div class="w-14 h-14 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center">
+                <i class="fi fi-br-users-alt text-2xl"></i>
             </div>
             <div>
-                <p class="text-muted text-xs font-bold uppercase tracking-wider">Étudiants</p>
-                <p class="text-2xl font-black text-secondary" th:text="${totalEtudiants}">0</p>
+                <p class="text-text-muted text-xs font-bold uppercase tracking-wider">Étudiants</p>
+                <p class="text-3xl font-black text-text-main" th:text="${totalEtudiants}">0</p>
             </div>
         </div>
-        <div class="card-premium flex items-center gap-5">
-            <div class="stat-icon bg-purple-100 text-purple-500">
-                <i class="fi fi-br-chart-line text-xl"></i>
+        <div class="card-unified flex items-center gap-5">
+            <div class="w-14 h-14 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center">
+                <i class="fi fi-br-chart-line text-2xl"></i>
             </div>
             <div>
-                <p class="text-muted text-xs font-bold uppercase tracking-wider">Progression</p>
-                <p class="text-2xl font-black text-secondary" th:text="${progressionMoyenne} + '%'">0%</p>
+                <p class="text-text-muted text-xs font-bold uppercase tracking-wider">Progression</p>
+                <p class="text-3xl font-black text-text-main" id="statProgression" th:text="${progressionMoyenne} + '%'">0%</p>
             </div>
         </div>
     </div>
 
+    <!-- MAIN DASHBOARD CONTENT -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Recent Courses -->
-        <div class="lg:col-span-2 card-premium">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-xl font-bold text-secondary">Dernières formations</h2>
-                <a href="/professeur/cours" class="text-primary font-bold text-sm hover:underline">Voir tout</a>
-            </div>
-            <div class="space-y-4">
-                <div th:each="c : ${derniersCours}" class="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-border-color">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-2xl overflow-hidden bg-white shadow-sm border border-border-color">
-                            <img th:src="${c.imageCouverture}" class="w-full h-full object-cover" th:if="${c.imageCouverture != null}">
-                            <div class="w-full h-full flex items-center justify-center bg-primary/5 text-primary" th:unless="${c.imageCouverture != null}">
-                                <i class="fi fi-br-book"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="font-bold text-secondary" th:text="${c.titre}">Titre</p>
-                            <p class="text-xs text-muted font-medium" th:text="${c.nombreApprenants} + ' étudiants inscrits'">0 étudiants</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span th:if="${c.publie}" class="text-[10px] bg-accent/10 text-accent px-3 py-1 rounded-full font-black uppercase">Publié</span>
-                        <span th:unless="${c.publie}" class="text-[10px] bg-orange-100 text-orange-500 px-3 py-1 rounded-full font-black uppercase">Brouillon</span>
-                        <a th:href="'/professeur/cours/' + ${c.id} + '/gerer'" class="w-10 h-10 rounded-xl bg-white border border-border-color flex items-center justify-center text-secondary hover:text-primary hover:border-primary transition-all">
-                            <i class="fi fi-br-settings"></i>
-                        </a>
-                    </div>
+        
+        <!-- Left Column: Active Students (New Polling Feature) -->
+        <div class="lg:col-span-1 space-y-8">
+            <div class="card-unified bg-white border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-text-main flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        Étudiants en ligne
+                    </h2>
+                    <span id="onlineCountBadge" class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">0</span>
                 </div>
-                <div th:if="${#lists.isEmpty(derniersCours)}" class="text-center py-20 text-muted">
-                    <i class="fi fi-br-book-alt text-5xl mb-3 block opacity-20"></i>
-                    <p class="font-bold">Aucune formation créée</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions / Mini Stats -->
-        <div class="space-y-8">
-            <div class="card-premium bg-gradient-to-br from-primary to-primary-dark text-white border-none relative overflow-hidden">
-                <div class="relative z-10">
-                    <h3 class="text-lg font-bold mb-2">Besoin d'aide ?</h3>
-                    <p class="text-white/70 text-sm mb-6">Consultez notre guide de création de contenu pour maximiser l'engagement de vos étudiants.</p>
-                    <button class="bg-white text-primary px-6 py-3 rounded-xl font-bold text-sm shadow-xl hover:bg-opacity-90 transition-all">
-                        Voir le guide
-                    </button>
-                </div>
-                <i class="fi fi-br-info absolute -right-4 -bottom-4 text-9xl text-white/10 rotate-12"></i>
-            </div>
-
-            <div class="card-premium">
-                <h3 class="text-lg font-bold text-secondary mb-6">Activité récente</h3>
-                <div class="space-y-6">
-                    <div class="flex gap-4">
-                        <div class="w-2 bg-accent rounded-full"></div>
-                        <div>
-                            <p class="text-sm font-bold text-secondary">Nouveau message</p>
-                            <p class="text-xs text-muted">Il y a 5 minutes</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <div class="w-2 bg-primary rounded-full"></div>
-                        <div>
-                            <p class="text-sm font-bold text-secondary">Étudiant inscrit</p>
-                            <p class="text-xs text-muted">Il y a 2 heures</p>
-                        </div>
+                
+                <!-- Polling container -->
+                <div id="onlineStudentsContainer" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="text-center py-10 text-gray-400 text-sm">
+                        <i class="fi fi-br-spinner animate-spin text-2xl mb-2"></i>
+                        <p>Chargement...</p>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Center/Right Column: Recent Courses & Quick Actions -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="card-unified bg-white border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-text-main">Dernières formations</h2>
+                    <a href="/professeur/cours" class="text-[#003178] font-bold text-sm hover:underline">Voir tout</a>
+                </div>
+                <!-- Dynamic Recent Courses container -->
+                <div id="recentCoursesContainer" class="space-y-4">
+                    <div class="text-center py-10 text-gray-400 text-sm">
+                        <i class="fi fi-br-spinner animate-spin text-2xl mb-2"></i>
+                        <p>Chargement des cours...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
+
+<script layout:fragment="script">
+    // Dashboard Polling JS
+    function fetchDashboardData() {
+        // 1. Fetch Statistiques
+        $.get('/professeur/api/statistiques', function(data) {
+            $('#statTotalCours').text(data.totalCours);
+            $('#statPublies').text(data.coursPublies);
+            $('#statEtudiants').text(data.totalEtudiants);
+            $('#statProgression').text(Math.round(data.progressionMoyenne) + '%');
+        });
+
+        // 2. Fetch Derniers Cours
+        $.get('/professeur/api/derniers-cours?limit=5', function(courses) {
+            let html = '';
+            if (courses.length === 0) {
+                html = `
+                    <div class="text-center py-12 text-text-muted">
+                        <i class="fi fi-br-book-alt text-5xl mb-3 block opacity-20"></i>
+                        <p class="font-bold">Aucune formation créée</p>
+                    </div>
+                `;
+            } else {
+                courses.forEach(c => {
+                    const statusBadge = c.publie 
+                        ? `<span class="text-[10px] bg-green-100 text-accent px-3 py-1 rounded-full font-black uppercase">Publié</span>`
+                        : `<span class="text-[10px] bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-black uppercase">Brouillon</span>`;
+                    
+                    const imgContent = c.imageCouverture 
+                        ? `<img src="${c.imageCouverture}" class="w-full h-full object-cover">`
+                        : `<div class="w-full h-full flex items-center justify-center bg-blue-50 text-[#003178]"><i class="fi fi-br-book"></i></div>`;
+                    
+                    html += `
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-all border border-transparent hover:border-border-color">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl overflow-hidden bg-white shadow-sm border border-border-color shrink-0">
+                                    ${imgContent}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-bold text-text-main truncate">${c.titre}</p>
+                                    <p class="text-xs text-text-muted font-medium">${c.nombreEtudiants} étudiants inscrits • Prog. moy. ${Math.round(c.progressionMoyenne)}%</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 shrink-0">
+                                ${statusBadge}
+                                <a href="/professeur/cours/${c.id}/gerer" class="w-10 h-10 rounded-xl bg-white border border-border-color flex items-center justify-center text-text-main hover:text-[#003178] hover:border-blue-600 transition-all shadow-sm">
+                                    <i class="fi fi-br-settings"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            $('#recentCoursesContainer').html(html);
+        });
+
+        // 3. Fetch Etudiants en Ligne
+        $.get('/professeur/api/etudiants-en-ligne', function(students) {
+            $('#onlineCountBadge').text(students.length);
+            
+            let html = '';
+            if (students.length === 0) {
+                html = `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fi fi-sr-user text-3xl mb-2 opacity-50 block"></i>
+                        <p class="text-sm">Aucun étudiant en ligne actuellement</p>
+                    </div>
+                `;
+            } else {
+                students.forEach(s => {
+                    const initials = s.nomComplet.substring(0, 2).toUpperCase();
+                    html += `
+                        <div class="p-3 bg-gray-50 rounded-xl flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 text-[#003178] flex items-center justify-center font-bold text-sm shrink-0">
+                                ${initials}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <p class="font-bold text-sm text-text-main truncate">${s.nomComplet}</p>
+                                    <span class="text-[10px] text-gray-400 font-medium">${s.statutTemps}</span>
+                                </div>
+                                <p class="text-xs text-[#003178] truncate"><i class="fi fi-sr-book-alt text-[10px]"></i> ${s.coursActuelTitre}</p>
+                                ${s.coursActuelId ? `
+                                    <div class="mt-1.5 flex items-center gap-2">
+                                        <div class="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="h-full bg-accent" style="width: ${s.progression}%"></div>
+                                        </div>
+                                        <span class="text-[10px] text-gray-500 font-bold">${Math.round(s.progression)}%</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            $('#onlineStudentsContainer').html(html);
+        });
+    }
+
+    // Initial load
+    fetchDashboardData();
+
+    // Poll every 10 seconds
+    setInterval(fetchDashboardData, 10000);
+</script>
 </body>
 </html>

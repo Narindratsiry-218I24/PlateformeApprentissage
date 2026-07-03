@@ -37,6 +37,9 @@ public interface InscriptionRepository extends JpaRepository<Inscription, Long> 
     @Query("SELECT i FROM Inscription i JOIN FETCH i.apprenant WHERE i.cours.id = :coursId")
     List<Inscription> findByCoursIdWithApprenant(@Param("coursId") Long coursId);
 
+    @Query("SELECT COUNT(i) FROM Inscription i WHERE i.cours.id = :coursId")
+    int countByCoursId(@Param("coursId") Long coursId);
+
     // Récupérer les inscriptions d'un étudiant pour les cours d'un professeur
     @Query("SELECT i FROM Inscription i JOIN FETCH i.cours c WHERE i.apprenant.id = :apprenantId AND c.professeur.id = :professeurId")
     List<Inscription> findByApprenantIdAndProfesseurId(@Param("apprenantId") Long apprenantId, @Param("professeurId") Long professeurId);
